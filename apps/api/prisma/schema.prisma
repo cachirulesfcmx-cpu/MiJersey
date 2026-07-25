@@ -1,0 +1,22 @@
+// Foundation schema. No business entities yet — see docs/prompts/001-Foundation-Bootstrap.md.
+// Domain modules (003+) will add their own models here as they are implemented.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Modelo técnico placeholder: Prisma exige al menos un modelo para generar
+/// el cliente. Este sprint (001) no define entidades de negocio a propósito;
+/// elimina este modelo en cuanto el primer módulo de dominio agregue su
+/// primer modelo real.
+model SchemaPlaceholder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  @@map("_schema_placeholder")
+}
