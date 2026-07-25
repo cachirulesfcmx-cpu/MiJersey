@@ -18,6 +18,16 @@ import { RedisModule } from './redis/redis.module';
       useFactory: (config: AppConfig) => ({
         pinoHttp: {
           level: config.logLevel,
+          // 03-CODING-STANDARDS.md §11: nunca registrar tokens/secretos.
+          redact: {
+            paths: [
+              'req.headers.authorization',
+              'req.headers.cookie',
+              'req.headers["x-api-key"]',
+              'res.headers["set-cookie"]',
+            ],
+            censor: '[REDACTED]',
+          },
           genReqId: (req: IncomingMessage, res: ServerResponse) => {
             const existing = req.headers['x-request-id'];
             const id = (Array.isArray(existing) ? existing[0] : existing) ?? randomUUID();
