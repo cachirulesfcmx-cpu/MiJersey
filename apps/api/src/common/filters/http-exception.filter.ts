@@ -1,7 +1,7 @@
+import type { ApiErrorResponse } from '@mijersey/shared-types';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { Catch, HttpException, HttpStatus } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import type { ApiErrorResponse } from '@mijersey/shared-types';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

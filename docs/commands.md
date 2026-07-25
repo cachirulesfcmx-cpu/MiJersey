@@ -15,6 +15,7 @@ Todos los comandos se ejecutan desde la raíz del monorepo salvo que se indique 
 | `pnpm format`       | Formatea el código con Prettier                              |
 | `pnpm format:check` | Verifica formato sin modificar archivos                      |
 | `pnpm clean`        | Limpia builds y `node_modules`                               |
+| `pnpm cache:clean`  | Limpia solo la caché local de Turborepo                      |
 
 ## Prisma (`apps/api`)
 

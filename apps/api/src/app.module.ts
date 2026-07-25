@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
+
 import { ConfigModule } from './config/config.module';
 import { APP_CONFIG } from './config/env.config';
 import type { AppConfig } from './config/env.schema';

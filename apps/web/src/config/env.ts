@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { loadEnv, nodeEnvSchema } from '@mijersey/config';
+import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: nodeEnvSchema,

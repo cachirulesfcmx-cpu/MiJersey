@@ -1,5 +1,6 @@
 import { ApiClient } from '@mijersey/sdk';
 import type { HealthStatus } from '@mijersey/shared-types';
+
 import { env } from '../config/env';
 
 async function getApiStatus(): Promise<HealthStatus> {

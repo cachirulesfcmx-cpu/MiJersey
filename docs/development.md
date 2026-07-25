@@ -5,9 +5,10 @@
 1. Sincroniza `main` y crea una rama a partir de ella.
 2. Instala dependencias con `pnpm install` en la raíz (nunca dentro de una app o paquete individual).
 3. Ejecuta `pnpm dev` para levantar todo el workspace en modo desarrollo.
-4. Antes de hacer commit, Husky ejecuta automáticamente `lint-staged` (ESLint + Prettier) sobre los archivos modificados.
+4. Antes de hacer commit, Husky ejecuta automáticamente `lint-staged` (ESLint + Prettier sobre los archivos modificados) y luego `pnpm typecheck` sobre todo el workspace. El commit se bloquea si algo falla.
+5. El mensaje del commit se valida con `commitlint` (`commit-msg` hook) siguiendo Conventional Commits — ver [git-workflow.md](git-workflow.md).
 
-> La estrategia de ramas, convenciones de commits y CI se definen en `docs/prompts/002-DevOps-Workspace.md` y se implementan en ese sprint.
+> La estrategia de ramas y convenciones de commits están detalladas en [git-workflow.md](git-workflow.md) y el checklist de contribución en [contributing.md](contributing.md), implementados en `docs/prompts/002-DevOps-Workspace.md`.
 
 ## Convenciones de código
 
@@ -40,6 +41,15 @@ El schema vive en `apps/api/prisma/schema.prisma`. Este sprint (001) no define e
 
 Cada dominio en `apps/api/src/<dominio>` sigue las capas definidas en `docs/prompts/04-ARCHITECTURE.md`: Controller → Use Case → Repository → Infrastructure. El dominio nunca depende de infraestructura.
 
+## Actualizar dependencias
+
+```bash
+pnpm outdated -r                      # ver qué está desactualizado en todo el workspace
+pnpm update --interactive --recursive # actualizar de forma controlada
+```
+
+Antes de subir una versión mayor de una dependencia, evalúa lo que pide `03-CODING-STANDARDS.md` §13: mantenimiento, comunidad, licenciamiento, tamaño, seguridad y compatibilidad. Tras actualizar, corre `pnpm install && pnpm build && pnpm lint && pnpm typecheck && pnpm test` antes de hacer commit.
+
 ## Resolución de problemas frecuentes
 
 | Problema                                            | Causa habitual                                      | Solución                                                                                                    |
@@ -47,3 +57,5 @@ Cada dominio en `apps/api/src/<dominio>` sigue las capas definidas en `docs/prom
 | `Environment validation failed` al iniciar una app  | Falta una variable requerida en `.env`              | Revisa [environment-variables.md](environment-variables.md) y compara con el `.env.example` correspondiente |
 | La API no conecta a PostgreSQL/Redis                | Los contenedores `postgres`/`redis` no están arriba | `docker compose up postgres redis -d`                                                                       |
 | Cambios en un `package/*` no se reflejan en una app | El paquete no se reconstruyó                        | Corre `pnpm dev` desde la raíz (ejecuta el watch de todos los paquetes) o `pnpm --filter <paquete> build`   |
+| El commit se rechaza con un error de `commitlint`   | El mensaje no sigue Conventional Commits            | Usa el formato `tipo(alcance opcional): descripción` — ver [git-workflow.md](git-workflow.md)               |
+| El pre-commit tarda o falla en `pnpm typecheck`     | Hay un error de tipos en el workspace               | Corre `pnpm typecheck` manualmente para ver el detalle antes de reintentar el commit                        |

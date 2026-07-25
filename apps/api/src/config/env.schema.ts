@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { booleanFromStringSchema, nodeEnvSchema, portSchema, urlSchema } from '@mijersey/config';
+import { z } from 'zod';
 
 export const appEnvSchema = z.object({
   NODE_ENV: nodeEnvSchema,

@@ -4,7 +4,7 @@ Plataforma eCommerce propietaria, desarrollada bajo la [Engineering Constitution
 
 ## Estado
 
-Sprint **001 — Foundation & Bootstrap** completado: monorepo funcional, sin funcionalidades de negocio. El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
+Sprints **001 — Foundation & Bootstrap** y **002 — DevOps Workspace** completados: monorepo funcional, sin funcionalidades de negocio, con CI, hooks de calidad y convenciones de commit. El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
 
 ## Stack
 
@@ -50,6 +50,8 @@ docker compose up
 
 - [Guía de instalación](docs/installation.md)
 - [Guía de desarrollo](docs/development.md)
+- [Guía de contribución](docs/contributing.md)
+- [Flujo de Git](docs/git-workflow.md)
 - [Arquitectura del repositorio](docs/architecture.md)
 - [Variables de entorno](docs/environment-variables.md)
 - [Comandos disponibles](docs/commands.md)

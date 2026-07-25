@@ -1,5 +1,5 @@
-import type { Config } from 'tailwindcss';
 import { tailwindPreset } from '@mijersey/design-tokens';
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   presets: [tailwindPreset as Config],

@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+
 import { colors, radius, shadow, spacing, typography } from './tokens.js';
 
 export const tailwindPreset: Partial<Config> = {

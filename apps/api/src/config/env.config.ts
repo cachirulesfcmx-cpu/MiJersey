@@ -1,6 +1,7 @@
 import { loadEnv } from '@mijersey/config';
-import { appEnvSchema } from './env.schema';
+
 import type { AppConfig } from './env.schema';
+import { appEnvSchema } from './env.schema';
 
 export const APP_CONFIG = Symbol('APP_CONFIG');
 
