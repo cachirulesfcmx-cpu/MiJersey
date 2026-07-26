@@ -164,21 +164,145 @@ enum ProductType {
 }
 
 model Product {
-  id                String            @id @default(uuid())
-  sku               String            @unique
-  slug              String            @unique
+  id                String              @id @default(uuid())
+  sku               String              @unique
+  slug              String              @unique
   name              String
   shortDescription  String?
   description       String?
-  status            ProductStatus     @default(DRAFT)
-  visibility        ProductVisibility @default(HIDDEN)
-  type              ProductType       @default(PHYSICAL)
+  status            ProductStatus       @default(DRAFT)
+  visibility        ProductVisibility   @default(HIDDEN)
+  type              ProductType         @default(PHYSICAL)
   deletedAt         DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  categories        ProductCategory[]
+  collections       CollectionProduct[]
 
   @@index([status])
   @@index([visibility])
   @@index([deletedAt])
   @@map("products")
+}
+
+// Dominio Taxonomy (categorías y colecciones) — ver docs/prompts/006-Categories-Collections.md.
+
+enum CategoryStatus {
+  ACTIVE
+  HIDDEN
+
+  @@map("category_status")
+}
+
+enum CollectionStatus {
+  ACTIVE
+  HIDDEN
+
+  @@map("collection_status")
+}
+
+enum CollectionType {
+  MANUAL
+  SMART
+
+  @@map("collection_type")
+}
+
+enum CollectionRuleField {
+  NAME
+  SKU
+  TYPE
+  STATUS
+
+  @@map("collection_rule_field")
+}
+
+enum CollectionRuleOperator {
+  EQUALS
+  CONTAINS
+
+  @@map("collection_rule_operator")
+}
+
+enum CollectionRuleMatchType {
+  ALL
+  ANY
+
+  @@map("collection_rule_match_type")
+}
+
+model Category {
+  id          String         @id @default(uuid())
+  parentId    String?
+  parent      Category?      @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[]     @relation("CategoryHierarchy")
+  slug        String         @unique
+  name        String
+  description String?
+  image       String?
+  sortOrder   Int            @default(0)
+  status      CategoryStatus @default(ACTIVE)
+  products    ProductCategory[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([parentId])
+  @@index([status])
+  @@map("categories")
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  sortOrder  Int      @default(0)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
+  @@map("product_categories")
+}
+
+model Collection {
+  id          String                   @id @default(uuid())
+  slug        String                   @unique
+  name        String
+  description String?
+  type        CollectionType
+  status      CollectionStatus         @default(ACTIVE)
+  matchType   CollectionRuleMatchType  @default(ALL)
+  rules       CollectionRule[]
+  products    CollectionProduct[]
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  @@index([status])
+  @@map("collections")
+}
+
+model CollectionRule {
+  id           String                 @id @default(uuid())
+  collectionId String
+  collection   Collection             @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  field        CollectionRuleField
+  operator     CollectionRuleOperator
+  value        String
+  createdAt    DateTime               @default(now())
+
+  @@index([collectionId])
+  @@map("collection_rules")
+}
+
+model CollectionProduct {
+  collectionId String
+  productId    String
+  sortOrder    Int        @default(0)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@id([collectionId, productId])
+  @@index([productId])
+  @@map("collection_products")
 }

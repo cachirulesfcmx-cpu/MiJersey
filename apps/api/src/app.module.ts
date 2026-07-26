@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module';
 import { AdministrationModule } from './modules/administration/administration.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 
@@ -50,6 +51,7 @@ import { RedisModule } from './redis/redis.module';
     HealthModule,
     IdentityModule,
     CatalogModule,
+    TaxonomyModule,
     AdministrationModule,
   ],
 })

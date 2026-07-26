@@ -30,6 +30,20 @@ import type {
   ProductStatus,
   UpdateProductInput,
 } from './catalog.types.js';
+import type {
+  Category,
+  CategoryTreeNode,
+  Collection,
+  CollectionRuleMatchType,
+  CollectionRuleValue,
+  CollectionWithProducts,
+  CreateCategoryInput,
+  CreateCollectionInput,
+  ListCollectionsParams,
+  ProductPageParams,
+  UpdateCategoryInput,
+  UpdateCollectionInput,
+} from './taxonomy.types.js';
 
 const HTTP_NO_CONTENT = 204;
 
@@ -353,5 +367,192 @@ export class ApiClient {
 
   getPublicProduct(slug: string): Promise<Product> {
     return this.request<Product>(`/products/${slug}`);
+  }
+
+  getCategoryTree(accessToken: string): Promise<CategoryTreeNode[]> {
+    return this.request<CategoryTreeNode[]>('/admin/categories', { accessToken });
+  }
+
+  getCategory(accessToken: string, id: string): Promise<Category> {
+    return this.request<Category>(`/admin/categories/${id}`, { accessToken });
+  }
+
+  getCategoryPath(accessToken: string, id: string): Promise<Category[]> {
+    return this.request<Category[]>(`/admin/categories/${id}/path`, { accessToken });
+  }
+
+  createCategory(accessToken: string, input: CreateCategoryInput): Promise<Category> {
+    return this.request<Category>('/admin/categories', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCategory(accessToken: string, id: string, input: UpdateCategoryInput): Promise<Category> {
+    return this.request<Category>(`/admin/categories/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  moveCategory(accessToken: string, id: string, parentId: string | null): Promise<Category> {
+    return this.request<Category>(`/admin/categories/${id}/move`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ parentId }),
+    });
+  }
+
+  reorderCategories(
+    accessToken: string,
+    parentId: string | null,
+    orderedIds: string[],
+  ): Promise<void> {
+    return this.request<void>('/admin/categories/reorder', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ parentId, orderedIds }),
+    });
+  }
+
+  deleteCategory(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/categories/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  assignProductsToCategory(
+    accessToken: string,
+    categoryId: string,
+    productIds: string[],
+  ): Promise<void> {
+    return this.request<void>(`/admin/categories/${categoryId}/products`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify({ productIds }),
+    });
+  }
+
+  removeProductFromCategory(
+    accessToken: string,
+    categoryId: string,
+    productId: string,
+  ): Promise<void> {
+    return this.request<void>(`/admin/categories/${categoryId}/products/${productId}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  getPublicCategoryTree(): Promise<CategoryTreeNode[]> {
+    return this.request<CategoryTreeNode[]>('/categories');
+  }
+
+  listCollections(
+    accessToken: string,
+    params: ListCollectionsParams = {},
+  ): Promise<PaginatedResult<Collection>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      status: params.status,
+      type: params.type,
+    });
+    return this.request<PaginatedResult<Collection>>(`/admin/collections${query}`, { accessToken });
+  }
+
+  getCollection(
+    accessToken: string,
+    id: string,
+    params: ProductPageParams = {},
+  ): Promise<CollectionWithProducts> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<CollectionWithProducts>(`/admin/collections/${id}${query}`, {
+      accessToken,
+    });
+  }
+
+  createCollection(accessToken: string, input: CreateCollectionInput): Promise<Collection> {
+    return this.request<Collection>('/admin/collections', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCollection(
+    accessToken: string,
+    id: string,
+    input: UpdateCollectionInput,
+  ): Promise<Collection> {
+    return this.request<Collection>(`/admin/collections/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteCollection(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/collections/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  updateCollectionRules(
+    accessToken: string,
+    id: string,
+    matchType: CollectionRuleMatchType,
+    rules: CollectionRuleValue[],
+  ): Promise<void> {
+    return this.request<void>(`/admin/collections/${id}/rules`, {
+      method: 'PUT',
+      accessToken,
+      body: JSON.stringify({ matchType, rules }),
+    });
+  }
+
+  addProductsToCollection(accessToken: string, id: string, productIds: string[]): Promise<void> {
+    return this.request<void>(`/admin/collections/${id}/products`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify({ productIds }),
+    });
+  }
+
+  removeProductFromCollection(accessToken: string, id: string, productId: string): Promise<void> {
+    return this.request<void>(`/admin/collections/${id}/products/${productId}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  reorderCollectionProducts(
+    accessToken: string,
+    id: string,
+    orderedProductIds: string[],
+  ): Promise<void> {
+    return this.request<void>(`/admin/collections/${id}/products/reorder`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ orderedProductIds }),
+    });
+  }
+
+  listPublicCollections(
+    params: ProductPageParams & { search?: string } = {},
+  ): Promise<{ items: Collection[]; total: number }> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+    });
+    return this.request<{ items: Collection[]; total: number }>(`/collections${query}`);
+  }
+
+  getPublicCollection(
+    slug: string,
+    params: ProductPageParams = {},
+  ): Promise<CollectionWithProducts> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<CollectionWithProducts>(`/collections/${slug}${query}`);
   }
 }

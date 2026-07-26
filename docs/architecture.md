@@ -62,6 +62,7 @@ arrancar en un estado inconsistente.
 - **IdentityModule** (`src/modules/identity`): primer módulo de dominio, con capas domain/application/infrastructure/presentation. `JwtAuthGuard` y `ThrottlerGuard` son globales (`APP_GUARD`); las rutas públicas se marcan con `@Public()`. Detalle completo en [authentication.md](authentication.md).
 - **AdministrationModule** (`src/modules/administration`): importa `IdentityModule` para reusar `PermissionsGuard` y estadísticas de usuarios; es dueño de la lectura de auditoría (`AuditLogQueryPort`) sobre la tabla que Identity escribe. Detalle completo en [admin-dashboard.md](admin-dashboard.md).
 - **CatalogModule** (`src/modules/catalog`): importa `IdentityModule` para `PermissionsGuard` y para auditar (`AUDIT_LOG_REPOSITORY`); expone `GetProductStatsUseCase` para que `AdministrationModule` reporte la métrica `products` del dashboard. Detalle completo en [product-catalog.md](product-catalog.md).
+- **TaxonomyModule** (`src/modules/taxonomy`): categorías jerárquicas y colecciones manuales/inteligentes. Importa `IdentityModule` igual que Catalog; no importa `CatalogModule` — accede a `products` mediante su propio `ProductQueryPort` de solo lectura (mismo patrón CQRS que `AuditLogQueryPort` en Administration), evitando acoplar el dominio de Catalog al concepto de "reglas de colección". Detalle completo en [categories-collections.md](categories-collections.md).
 
 ## Frontend (`apps/web`, `apps/admin`)
 
