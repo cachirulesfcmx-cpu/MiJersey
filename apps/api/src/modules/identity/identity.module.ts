@@ -97,6 +97,6 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
-  exports: [PermissionsGuard, PERMISSION_REPOSITORY, GetUserStatsUseCase],
+  exports: [PermissionsGuard, PERMISSION_REPOSITORY, AUDIT_LOG_REPOSITORY, GetUserStatsUseCase],
 })
 export class IdentityModule {}

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CatalogModule } from '../catalog/catalog.module';
 import { IdentityModule } from '../identity/identity.module';
 import { AUDIT_LOG_QUERY_REPOSITORY } from './administration.constants';
 import { GetDashboardMetricsUseCase } from './application/use-cases/get-dashboard-metrics.use-case';
@@ -10,7 +11,7 @@ import { AuditLogController } from './presentation/controllers/audit-log.control
 import { DashboardController } from './presentation/controllers/dashboard.controller';
 
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, CatalogModule],
   controllers: [DashboardController, AuditLogController],
   providers: [
     GetDashboardMetricsUseCase,

@@ -61,6 +61,7 @@ arrancar en un estado inconsistente.
 - **Logging**: `nestjs-pino`, con `x-request-id` generado o propagado por request para trazabilidad end-to-end.
 - **IdentityModule** (`src/modules/identity`): primer módulo de dominio, con capas domain/application/infrastructure/presentation. `JwtAuthGuard` y `ThrottlerGuard` son globales (`APP_GUARD`); las rutas públicas se marcan con `@Public()`. Detalle completo en [authentication.md](authentication.md).
 - **AdministrationModule** (`src/modules/administration`): importa `IdentityModule` para reusar `PermissionsGuard` y estadísticas de usuarios; es dueño de la lectura de auditoría (`AuditLogQueryPort`) sobre la tabla que Identity escribe. Detalle completo en [admin-dashboard.md](admin-dashboard.md).
+- **CatalogModule** (`src/modules/catalog`): importa `IdentityModule` para `PermissionsGuard` y para auditar (`AUDIT_LOG_REPOSITORY`); expone `GetProductStatsUseCase` para que `AdministrationModule` reporte la métrica `products` del dashboard. Detalle completo en [product-catalog.md](product-catalog.md).
 
 ## Frontend (`apps/web`, `apps/admin`)
 

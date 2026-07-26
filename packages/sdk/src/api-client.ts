@@ -22,6 +22,14 @@ import type {
   SessionSummary,
   UserProfile,
 } from './auth.types.js';
+import type {
+  CreateProductInput,
+  ListProductsParams,
+  ListPublicProductsParams,
+  Product,
+  ProductStatus,
+  UpdateProductInput,
+} from './catalog.types.js';
 
 const HTTP_NO_CONTENT = 204;
 
@@ -256,5 +264,94 @@ export class ApiClient {
     return this.request<PaginatedResult<AuditLogEntry>>(`/admin/audit-log${query}`, {
       accessToken,
     });
+  }
+
+  listProducts(
+    accessToken: string,
+    params: ListProductsParams = {},
+  ): Promise<PaginatedResult<Product>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      status: params.status,
+      visibility: params.visibility,
+      type: params.type,
+      sortBy: params.sortBy,
+      sortDir: params.sortDir,
+    });
+    return this.request<PaginatedResult<Product>>(`/admin/products${query}`, { accessToken });
+  }
+
+  getProduct(accessToken: string, id: string): Promise<Product> {
+    return this.request<Product>(`/admin/products/${id}`, { accessToken });
+  }
+
+  createProduct(accessToken: string, input: CreateProductInput): Promise<Product> {
+    return this.request<Product>('/admin/products', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateProduct(accessToken: string, id: string, input: UpdateProductInput): Promise<Product> {
+    return this.request<Product>(`/admin/products/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  publishProduct(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/products/${id}/publish`, { method: 'PATCH', accessToken });
+  }
+
+  archiveProduct(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/products/${id}/archive`, { method: 'PATCH', accessToken });
+  }
+
+  duplicateProduct(accessToken: string, id: string): Promise<Product> {
+    return this.request<Product>(`/admin/products/${id}/duplicate`, {
+      method: 'POST',
+      accessToken,
+    });
+  }
+
+  deleteProduct(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/products/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  bulkUpdateProductStatus(
+    accessToken: string,
+    ids: string[],
+    status: ProductStatus,
+  ): Promise<void> {
+    return this.request<void>('/admin/products/bulk/status', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ ids, status }),
+    });
+  }
+
+  bulkDeleteProducts(accessToken: string, ids: string[]): Promise<void> {
+    return this.request<void>('/admin/products/bulk/delete', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify({ ids }),
+    });
+  }
+
+  listPublicProducts(params: ListPublicProductsParams = {}): Promise<PaginatedResult<Product>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+    });
+    return this.request<PaginatedResult<Product>>(`/products${query}`);
+  }
+
+  getPublicProduct(slug: string): Promise<Product> {
+    return this.request<Product>(`/products/${slug}`);
   }
 }

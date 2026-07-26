@@ -23,3 +23,13 @@ export type {
   SessionSummary,
   UserProfile,
 } from './auth.types.js';
+export type {
+  CreateProductInput,
+  ListProductsParams,
+  ListPublicProductsParams,
+  Product,
+  ProductStatus,
+  ProductType,
+  ProductVisibility,
+  UpdateProductInput,
+} from './catalog.types.js';

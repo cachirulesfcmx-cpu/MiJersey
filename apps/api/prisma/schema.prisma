@@ -138,3 +138,47 @@ model AuditLog {
   @@index([action])
   @@map("audit_logs")
 }
+
+// Dominio Catalog — ver docs/prompts/005-Product-Catalog.md.
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+
+  @@map("product_status")
+}
+
+enum ProductVisibility {
+  PUBLIC
+  HIDDEN
+
+  @@map("product_visibility")
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+
+  @@map("product_type")
+}
+
+model Product {
+  id                String            @id @default(uuid())
+  sku               String            @unique
+  slug              String            @unique
+  name              String
+  shortDescription  String?
+  description       String?
+  status            ProductStatus     @default(DRAFT)
+  visibility        ProductVisibility @default(HIDDEN)
+  type              ProductType       @default(PHYSICAL)
+  deletedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status])
+  @@index([visibility])
+  @@index([deletedAt])
+  @@map("products")
+}

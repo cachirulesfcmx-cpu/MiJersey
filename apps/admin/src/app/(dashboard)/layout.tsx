@@ -16,6 +16,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', permission: 'admin:access' },
+  { href: '/products', label: 'Productos', permission: 'admin:access' },
   { href: '/users', label: 'Usuarios', permission: 'identity:manage' },
   { href: '/roles', label: 'Roles', permission: 'admin:access' },
   { href: '/audit-log', label: 'Auditoría', permission: 'admin:access' },
@@ -24,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const BREADCRUMB_LABELS: Record<string, string> = {
   '/': 'Dashboard',
+  '/products': 'Productos',
   '/users': 'Usuarios',
   '/roles': 'Roles',
   '/audit-log': 'Auditoría',
@@ -87,7 +89,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         <nav className="flex flex-1 flex-col gap-1 p-2" aria-label="Navegación principal">
           {visibleNavItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
 
             return (
               <Link

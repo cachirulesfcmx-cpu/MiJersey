@@ -4,7 +4,7 @@ Plataforma eCommerce propietaria, desarrollada bajo la [Engineering Constitution
 
 ## Estado
 
-Sprints **001 — Foundation & Bootstrap**, **002 — DevOps Workspace**, **003 — Authentication & Authorization** y **004 — Admin Dashboard** completados: monorepo funcional con CI, hooks de calidad, el dominio Identity (registro, login, sesiones con rotación, RBAC, recuperación y verificación de correo) y el panel administrativo (dashboard con KPIs, gestión de usuarios/roles, auditoría, perfil). El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
+Sprints **001 — Foundation & Bootstrap**, **002 — DevOps Workspace**, **003 — Authentication & Authorization**, **004 — Admin Dashboard** y **005 — Product Catalog** completados: monorepo funcional con CI, hooks de calidad, el dominio Identity (registro, login, sesiones con rotación, RBAC, recuperación y verificación de correo), el panel administrativo (dashboard con KPIs, gestión de usuarios/roles, auditoría, perfil) y el catálogo de productos (CRUD, publicación, duplicado, eliminación lógica, acciones masivas, API pública). El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
 
 ## Stack
 
@@ -55,6 +55,7 @@ docker compose up
 - [Arquitectura del repositorio](docs/architecture.md)
 - [Autenticación y autorización](docs/authentication.md)
 - [Panel administrativo](docs/admin-dashboard.md)
+- [Catálogo de productos](docs/product-catalog.md)
 - [Variables de entorno](docs/environment-variables.md)
 - [Comandos disponibles](docs/commands.md)
 

@@ -24,6 +24,11 @@ const PERMISSIONS: Array<{ key: string; description: string; roles: SeedRoleName
     description: 'Configurar ajustes globales de la plataforma',
     roles: ['SUPER_ADMIN'],
   },
+  {
+    key: 'catalog:manage',
+    description: 'Crear, editar, publicar y archivar productos del catálogo',
+    roles: ['SUPER_ADMIN', 'ADMIN', 'EDITOR'],
+  },
 ];
 
 async function seedRoles(): Promise<Map<SeedRoleName, string>> {
