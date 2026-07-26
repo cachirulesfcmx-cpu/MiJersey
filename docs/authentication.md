@@ -57,13 +57,12 @@ Todas las respuestas de error siguen el contrato `ApiErrorResponse` (`@mijersey/
 
 `ConsoleMailer` registra el enlace de verificación/recuperación en el log estructurado en vez de enviarlo. Es un adaptador de `MailerPort`; el proveedor real (SMTP/ESP) llega con `031-Email-Templates` sin tocar el dominio.
 
-## Migración pendiente
+## Migración
 
-El schema de Prisma (`apps/api/prisma/schema.prisma`) está completo, pero **no se generó la migración SQL** en este entorno porque no hay una instancia de PostgreSQL accesible (Docker no está instalado en esta máquina). Antes de desplegar o continuar con `004-Admin-Dashboard`, ejecuta una vez:
+`apps/api/prisma/migrations/20260726054245_init_identity` se generó y aplicó
+contra el servicio Postgres de Railway (proyecto `MiJersey`), ya que este
+entorno de desarrollo no tiene Docker instalado. El seed (`pnpm prisma:seed`)
+corrió contra la misma base: los 5 roles y los permisos mínimos ya existen.
 
-```bash
-docker compose up postgres -d   # o usa la instancia de Railway
-pnpm --filter @mijersey/api prisma:migrate
-```
-
-Esto genera `apps/api/prisma/migrations/` con la migración inicial del dominio Identity.
+Para desarrollo local con Docker, `pnpm prisma:migrate` aplicará esta misma
+migración contra el Postgres del `docker-compose.yml`.
