@@ -4,6 +4,8 @@ export const PASSWORD_RESET_REPOSITORY = Symbol('PASSWORD_RESET_REPOSITORY');
 export const EMAIL_VERIFICATION_REPOSITORY = Symbol('EMAIL_VERIFICATION_REPOSITORY');
 export const AUDIT_LOG_REPOSITORY = Symbol('AUDIT_LOG_REPOSITORY');
 export const PERMISSION_REPOSITORY = Symbol('PERMISSION_REPOSITORY');
+export const ROLE_REPOSITORY = Symbol('ROLE_REPOSITORY');
+export const USER_STATS_REPOSITORY = Symbol('USER_STATS_REPOSITORY');
 export const PASSWORD_HASHER = Symbol('PASSWORD_HASHER');
 export const TOKEN_SERVICE = Symbol('TOKEN_SERVICE');
 export const MAILER = Symbol('MAILER');
@@ -14,6 +16,8 @@ export const PASSWORD_RESET_TTL_HOURS = 1;
 export const EMAIL_VERIFICATION_TTL_HOURS = 24;
 export const BCRYPT_SALT_ROUNDS = 12;
 export const REFRESH_TOKEN_COOKIE_NAME = 'mijersey_refresh_token';
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
 
 /**
  * Hash bcrypt de un valor arbitrario, usado únicamente para comparar contra

@@ -6,11 +6,12 @@ export const appEnvSchema = z.object({
   PORT: portSchema.default(4000),
   DATABASE_URL: urlSchema,
   REDIS_URL: urlSchema,
-  CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
+  CORS_ORIGIN: z.string().min(1).default('http://localhost:3000,http://localhost:3001'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   ENABLE_SWAGGER: booleanFromStringSchema,
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres'),
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
+  PUBLIC_ADMIN_URL: z.string().url().default('http://localhost:3001'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -20,10 +21,12 @@ export interface AppConfig {
   port: number;
   databaseUrl: string;
   redisUrl: string;
-  corsOrigin: string;
+  /** Lista de orígenes permitidos por CORS (web + admin, separados por coma en la variable). */
+  corsOrigins: string[];
   logLevel: AppEnv['LOG_LEVEL'];
   enableSwagger: boolean;
   jwtAccessSecret: string;
   publicWebUrl: string;
+  publicAdminUrl: string;
   isProduction: boolean;
 }

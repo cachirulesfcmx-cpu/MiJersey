@@ -28,6 +28,10 @@ function buildUseCase(user: UserEntity | null, isValidPassword: boolean) {
     create: jest.fn(),
     updatePassword: jest.fn(),
     markEmailVerified: jest.fn(),
+    updateProfile: jest.fn(),
+    updateRole: jest.fn(),
+    setActive: jest.fn(),
+    findMany: jest.fn(),
   };
   const hasher: jest.Mocked<PasswordHasherPort> = {
     hash: jest.fn(),

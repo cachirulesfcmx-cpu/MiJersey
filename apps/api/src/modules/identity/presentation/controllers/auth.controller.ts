@@ -17,6 +17,7 @@ import type { Request, Response } from 'express';
 import { Public } from '../../../../common/decorators/public.decorator';
 import { APP_CONFIG } from '../../../../config/env.config';
 import type { AppConfig } from '../../../../config/env.schema';
+import { ChangePasswordUseCase } from '../../application/use-cases/change-password.use-case';
 import { ForgotPasswordUseCase } from '../../application/use-cases/forgot-password.use-case';
 import { GetCurrentUserUseCase } from '../../application/use-cases/get-current-user.use-case';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
@@ -27,9 +28,15 @@ import { ResetPasswordUseCase } from '../../application/use-cases/reset-password
 import { RevokeSessionUseCase } from '../../application/use-cases/revoke-session.use-case';
 import { VerifyEmailUseCase } from '../../application/use-cases/verify-email.use-case';
 import { SessionNotFoundError } from '../../domain/errors/identity.errors';
+import type { PermissionRepositoryPort } from '../../domain/ports/permission.repository.port';
 import type { AccessTokenPayload } from '../../domain/ports/token.service.port';
-import { REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN_TTL_DAYS } from '../../identity.constants';
+import {
+  PERMISSION_REPOSITORY,
+  REFRESH_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_TTL_DAYS,
+} from '../../identity.constants';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
@@ -45,6 +52,7 @@ const REFRESH_COOKIE_MAX_AGE_MS = REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
 export class AuthController {
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(PERMISSION_REPOSITORY) private readonly permissions: PermissionRepositoryPort,
     private readonly registerCustomerUseCase: RegisterCustomerUseCase,
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshSessionUseCase: RefreshSessionUseCase,
@@ -54,6 +62,7 @@ export class AuthController {
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly resendVerificationUseCase: ResendVerificationUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
+    private readonly changePasswordUseCase: ChangePasswordUseCase,
   ) {}
 
   @Public()
@@ -138,6 +147,22 @@ export class AuthController {
     });
   }
 
+  @Post('change-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePassword(
+    @Body() dto: ChangePasswordDto,
+    @CurrentUser() user: AccessTokenPayload,
+    @Ip() ip: string,
+  ) {
+    await this.changePasswordUseCase.execute({
+      userId: user.sub,
+      currentPassword: dto.currentPassword,
+      newPassword: dto.newPassword,
+      currentSessionId: user.sid,
+      ipAddress: ip,
+    });
+  }
+
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -156,7 +181,9 @@ export class AuthController {
   @Get('me')
   async me(@CurrentUser() user: AccessTokenPayload) {
     const currentUser = await this.getCurrentUserUseCase.execute(user.sub);
-    return currentUser.toPublicProfile();
+    const permissionKeys = await this.permissions.getPermissionKeysForRole(currentUser.role);
+
+    return { ...currentUser.toPublicProfile(), permissions: permissionKeys };
   }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {

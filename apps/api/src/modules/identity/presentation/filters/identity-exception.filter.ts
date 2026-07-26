@@ -4,6 +4,7 @@ import type { Request, Response } from 'express';
 
 import {
   AccountInactiveError,
+  CannotModifySelfError,
   EmailAlreadyRegisteredError,
   IdentityError,
   InvalidCredentialsError,
@@ -12,6 +13,7 @@ import {
   TokenAlreadyUsedError,
   TokenExpiredError,
   TokenInvalidError,
+  UserNotFoundError,
 } from '../../domain/errors/identity.errors';
 
 const STATUS_BY_ERROR = new Map<new (...args: never[]) => IdentityError, number>([
@@ -23,6 +25,8 @@ const STATUS_BY_ERROR = new Map<new (...args: never[]) => IdentityError, number>
   [TokenExpiredError, HttpStatus.BAD_REQUEST],
   [TokenAlreadyUsedError, HttpStatus.BAD_REQUEST],
   [TokenInvalidError, HttpStatus.BAD_REQUEST],
+  [UserNotFoundError, HttpStatus.NOT_FOUND],
+  [CannotModifySelfError, HttpStatus.FORBIDDEN],
 ]);
 
 function deriveErrorCode(error: IdentityError): string {

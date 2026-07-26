@@ -13,11 +13,14 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     port: env.PORT,
     databaseUrl: env.DATABASE_URL,
     redisUrl: env.REDIS_URL,
-    corsOrigin: env.CORS_ORIGIN,
+    corsOrigins: env.CORS_ORIGIN.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     logLevel: env.LOG_LEVEL,
     enableSwagger: env.ENABLE_SWAGGER,
     jwtAccessSecret: env.JWT_ACCESS_SECRET,
     publicWebUrl: env.PUBLIC_WEB_URL,
+    publicAdminUrl: env.PUBLIC_ADMIN_URL,
     isProduction: env.NODE_ENV === 'production',
   };
 }

@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import type { Role, User as PrismaUser } from '@prisma/client';
+import type { Prisma, Role, User as PrismaUser } from '@prisma/client';
 
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { UserEntity } from '../../domain/entities/user.entity';
-import type { CreateUserData, UserRepositoryPort } from '../../domain/ports/user.repository.port';
+import type {
+  CreateUserData,
+  ListUsersParams,
+  ListUsersResult,
+  UpdateProfileData,
+  UserRepositoryPort,
+} from '../../domain/ports/user.repository.port';
 import type { RoleName } from '../../domain/value-objects/role-name';
 
 type UserWithRole = PrismaUser & { role: Role };
@@ -43,6 +49,52 @@ export class PrismaUserRepository implements UserRepositoryPort {
 
   async markEmailVerified(userId: string): Promise<void> {
     await this.prisma.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileData): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { firstName: data.firstName, lastName: data.lastName },
+    });
+  }
+
+  async updateRole(userId: string, role: RoleName): Promise<void> {
+    const roleRecord = await this.prisma.role.findUniqueOrThrow({ where: { name: role } });
+    await this.prisma.user.update({ where: { id: userId }, data: { roleId: roleRecord.id } });
+  }
+
+  async setActive(userId: string, isActive: boolean): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { isActive } });
+  }
+
+  async findMany(params: ListUsersParams): Promise<ListUsersResult> {
+    const { filter, page, pageSize } = params;
+
+    const where: Prisma.UserWhereInput = {
+      ...(filter?.roles && filter.roles.length > 0 ? { role: { name: { in: filter.roles } } } : {}),
+      ...(filter?.search
+        ? {
+            OR: [
+              { email: { contains: filter.search, mode: 'insensitive' } },
+              { firstName: { contains: filter.search, mode: 'insensitive' } },
+              { lastName: { contains: filter.search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        include: { role: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { items: items.map((user) => this.toEntity(user)), total };
   }
 
   private toEntity(user: UserWithRole): UserEntity {

@@ -55,6 +55,10 @@ function buildUseCase(session: SessionEntity | null, user: UserEntity | null) {
     create: jest.fn(),
     updatePassword: jest.fn(),
     markEmailVerified: jest.fn(),
+    updateProfile: jest.fn(),
+    updateRole: jest.fn(),
+    setActive: jest.fn(),
+    findMany: jest.fn(),
   };
   const tokens: jest.Mocked<TokenServicePort> = {
     signAccessToken: jest.fn(),

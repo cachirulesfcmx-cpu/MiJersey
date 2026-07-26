@@ -5,3 +5,11 @@ export enum RoleName {
   SUPPORT = 'SUPPORT',
   CUSTOMER = 'CUSTOMER',
 }
+
+/** Roles que pueden acceder al panel administrativo (todos salvo Customer). */
+export const STAFF_ROLES: readonly RoleName[] = [
+  RoleName.SUPER_ADMIN,
+  RoleName.ADMIN,
+  RoleName.EDITOR,
+  RoleName.SUPPORT,
+];

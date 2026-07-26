@@ -52,3 +52,15 @@ export class TokenInvalidError extends IdentityError {
     super('El token es inválido');
   }
 }
+
+export class UserNotFoundError extends IdentityError {
+  constructor() {
+    super('Usuario no encontrado');
+  }
+}
+
+export class CannotModifySelfError extends IdentityError {
+  constructor() {
+    super('No puedes modificar tu propia cuenta desde este panel');
+  }
+}

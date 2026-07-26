@@ -1,0 +1,4 @@
+export const AUDIT_LOG_QUERY_REPOSITORY = Symbol('AUDIT_LOG_QUERY_REPOSITORY');
+export const RECENT_ACTIVITY_LIMIT = 20;
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;

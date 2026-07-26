@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get(Logger));
   app.use(helmet());
   app.use(cookieParser());
-  app.enableCors({ origin: config.corsOrigin, credentials: true });
+  app.enableCors({ origin: config.corsOrigins, credentials: true });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
