@@ -1,5 +1,6 @@
 import { ApiClient } from '@mijersey/sdk';
 import type { HealthStatus } from '@mijersey/shared-types';
+import Link from 'next/link';
 
 import { env } from '../config/env';
 
@@ -22,6 +23,9 @@ export default async function HomePage() {
       <h1 className="text-3xl font-semibold text-neutral-900">MiJersey</h1>
       <p className="text-neutral-500">Tienda en construcción.</p>
       <p className="text-sm text-neutral-400">Estado de la API: {status}</p>
+      <Link href="/login" className="text-brand-600 hover:text-brand-700 text-sm font-medium">
+        Iniciar sesión
+      </Link>
     </main>
   );
 }

@@ -3,6 +3,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { AuthProvider } from '../providers/auth-provider';
+
 export const metadata: Metadata = {
   title: 'MiJersey Admin',
   description: 'Panel administrativo de MiJersey',
@@ -12,7 +14,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
-      <body className="bg-white text-neutral-900 antialiased">{children}</body>
+      <body className="bg-white text-neutral-900 antialiased">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

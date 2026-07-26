@@ -16,6 +16,8 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     corsOrigin: env.CORS_ORIGIN,
     logLevel: env.LOG_LEVEL,
     enableSwagger: env.ENABLE_SWAGGER,
+    jwtAccessSecret: env.JWT_ACCESS_SECRET,
+    publicWebUrl: env.PUBLIC_WEB_URL,
     isProduction: env.NODE_ENV === 'production',
   };
 }

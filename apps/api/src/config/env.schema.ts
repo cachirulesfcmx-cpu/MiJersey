@@ -9,6 +9,8 @@ export const appEnvSchema = z.object({
   CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   ENABLE_SWAGGER: booleanFromStringSchema,
+  JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres'),
+  PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -21,5 +23,7 @@ export interface AppConfig {
   corsOrigin: string;
   logLevel: AppEnv['LOG_LEVEL'];
   enableSwagger: boolean;
+  jwtAccessSecret: string;
+  publicWebUrl: string;
   isProduction: boolean;
 }

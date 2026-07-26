@@ -2,8 +2,9 @@
 
 La arquitectura de negocio (DDD, Clean Architecture, capas) está definida en
 [`docs/prompts/04-ARCHITECTURE.md`](prompts/04-ARCHITECTURE.md). Este documento
-describe únicamente cómo está organizado el **repositorio** como resultado del
-sprint 001 — Foundation & Bootstrap.
+describe únicamente cómo está organizado el **repositorio**, actualizado
+conforme cada sprint agrega piezas (001 — Foundation & Bootstrap, 003 —
+Authentication & Authorization, ...).
 
 ## Monorepo
 
@@ -58,6 +59,7 @@ arrancar en un estado inconsistente.
 - **HealthModule**: expone `GET /health` (Terminus) verificando PostgreSQL y Redis.
 - **HttpExceptionFilter** (global): uniforma toda respuesta de error al contrato `ApiErrorResponse` de `@mijersey/shared-types`, incluyendo `requestId` para correlación.
 - **Logging**: `nestjs-pino`, con `x-request-id` generado o propagado por request para trazabilidad end-to-end.
+- **IdentityModule** (`src/modules/identity`): primer módulo de dominio, con capas domain/application/infrastructure/presentation. `JwtAuthGuard` y `ThrottlerGuard` son globales (`APP_GUARD`); las rutas públicas se marcan con `@Public()`. Detalle completo en [authentication.md](authentication.md).
 
 ## Frontend (`apps/web`, `apps/admin`)
 

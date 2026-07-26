@@ -1,5 +1,5 @@
-// Foundation schema. No business entities yet — see docs/prompts/001-Foundation-Bootstrap.md.
-// Domain modules (003+) will add their own models here as they are implemented.
+// Dominio Identity — ver docs/prompts/003-Authentication-Authorization.md.
+// Los siguientes módulos de dominio agregarán sus propios modelos aquí.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,13 +10,131 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Modelo técnico placeholder: Prisma exige al menos un modelo para generar
-/// el cliente. Este sprint (001) no define entidades de negocio a propósito;
-/// elimina este modelo en cuanto el primer módulo de dominio agregue su
-/// primer modelo real.
-model SchemaPlaceholder {
+enum RoleName {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  SUPPORT
+  CUSTOMER
+
+  @@map("role_name")
+}
+
+enum SessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+
+  @@map("session_status")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        RoleName         @unique
+  description String?
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  key         String           @unique
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id                 String                   @id @default(uuid())
+  email              String                   @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  roleId             String
+  role               Role                     @relation(fields: [roleId], references: [id])
+  emailVerifiedAt    DateTime?
+  isActive           Boolean                  @default(true)
+  sessions           Session[]
+  passwordResets     PasswordResetToken[]
+  emailVerifications EmailVerificationToken[]
+  auditLogs          AuditLog[]
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Session {
+  id               String        @id @default(uuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String        @unique
+  userAgent        String?
+  ipAddress        String?
+  status           SessionStatus @default(ACTIVE)
+  createdAt        DateTime      @default(now())
+  lastUsedAt       DateTime      @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model AuditLog {
   id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  ipAddress String?
+  metadata  Json?
   createdAt DateTime @default(now())
 
-  @@map("_schema_placeholder")
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
 }

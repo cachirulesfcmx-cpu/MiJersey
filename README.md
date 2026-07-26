@@ -4,7 +4,9 @@ Plataforma eCommerce propietaria, desarrollada bajo la [Engineering Constitution
 
 ## Estado
 
-Sprints **001 — Foundation & Bootstrap** y **002 — DevOps Workspace** completados: monorepo funcional, sin funcionalidades de negocio, con CI, hooks de calidad y convenciones de commit. El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
+Sprints **001 — Foundation & Bootstrap**, **002 — DevOps Workspace** y **003 — Authentication & Authorization** completados: monorepo funcional con CI, hooks de calidad, y el primer dominio de negocio (Identity: registro, login, sesiones con rotación, RBAC, recuperación y verificación de correo). El desarrollo continúa módulo por módulo siguiendo las especificaciones en `docs/prompts/`.
+
+> Pendiente antes de `004`: generar la migración de Prisma contra una base de datos real (ver [authentication.md](docs/authentication.md#migración-pendiente)) — este entorno no tiene Docker instalado.
 
 ## Stack
 
@@ -53,6 +55,7 @@ docker compose up
 - [Guía de contribución](docs/contributing.md)
 - [Flujo de Git](docs/git-workflow.md)
 - [Arquitectura del repositorio](docs/architecture.md)
+- [Autenticación y autorización](docs/authentication.md)
 - [Variables de entorno](docs/environment-variables.md)
 - [Comandos disponibles](docs/commands.md)
 

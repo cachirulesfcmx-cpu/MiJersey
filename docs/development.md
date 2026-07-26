@@ -35,11 +35,23 @@ pnpm --filter @mijersey/api prisma:migrate    # crear/aplicar una migración en 
 pnpm --filter @mijersey/api prisma:seed       # ejecutar el seed
 ```
 
-El schema vive en `apps/api/prisma/schema.prisma`. Este sprint (001) no define entidades de negocio; los módulos de dominio (003 en adelante) las incorporan progresivamente. El schema incluye un modelo técnico `SchemaPlaceholder` (Prisma exige al menos un modelo para generar el cliente); elimínalo en cuanto agregues el primer modelo de dominio real.
+El schema vive en `apps/api/prisma/schema.prisma`. El dominio Identity (`003-Authentication-Authorization`) fue el primero en agregar modelos reales (`User`, `Role`, `Permission`, `Session`, etc.); los siguientes módulos de dominio agregan los suyos ahí mismo.
 
-## Estructura de un módulo NestJS
+## Estructura de un módulo de dominio NestJS
 
-Cada dominio en `apps/api/src/<dominio>` sigue las capas definidas en `docs/prompts/04-ARCHITECTURE.md`: Controller → Use Case → Repository → Infrastructure. El dominio nunca depende de infraestructura.
+Cada dominio vive en `apps/api/src/modules/<dominio>` con las capas de `docs/prompts/04-ARCHITECTURE.md`:
+
+```
+<dominio>/
+  domain/           entidades, value objects, errores, puertos (interfaces)
+  application/      casos de uso (un archivo por caso de uso, un método execute())
+  infrastructure/   implementaciones de los puertos (Prisma, hashing, JWT, correo...)
+  presentation/     controllers, DTOs, guards, decoradores
+  <dominio>.module.ts
+  <dominio>.constants.ts   tokens de inyección (Symbol) y constantes del módulo
+```
+
+El dominio nunca importa de `infrastructure/` ni de `presentation/`. Ver [`identity`](../apps/api/src/modules/identity) como referencia, documentado en [authentication.md](authentication.md).
 
 ## Actualizar dependencias
 
