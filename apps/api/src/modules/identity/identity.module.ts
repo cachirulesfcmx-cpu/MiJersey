@@ -20,6 +20,7 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
 import { RevokeAllSessionsUseCase } from './application/use-cases/revoke-all-sessions.use-case';
 import { RevokeSessionUseCase } from './application/use-cases/revoke-session.use-case';
 import { SetUserActiveUseCase } from './application/use-cases/set-user-active.use-case';
+import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 import { UpdateUserRoleUseCase } from './application/use-cases/update-user-role.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
 import {
@@ -73,6 +74,7 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
     VerifyEmailUseCase,
     ResendVerificationUseCase,
     ChangePasswordUseCase,
+    UpdateProfileUseCase,
     ListUsersUseCase,
     CreateStaffUserUseCase,
     UpdateUserRoleUseCase,

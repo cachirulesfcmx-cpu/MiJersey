@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Inject,
   Ip,
+  Patch,
   Post,
   Req,
   Res,
@@ -26,7 +27,9 @@ import { RegisterCustomerUseCase } from '../../application/use-cases/register-cu
 import { ResendVerificationUseCase } from '../../application/use-cases/resend-verification.use-case';
 import { ResetPasswordUseCase } from '../../application/use-cases/reset-password.use-case';
 import { RevokeSessionUseCase } from '../../application/use-cases/revoke-session.use-case';
+import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.use-case';
 import { VerifyEmailUseCase } from '../../application/use-cases/verify-email.use-case';
+import type { UserEntity } from '../../domain/entities/user.entity';
 import { SessionNotFoundError } from '../../domain/errors/identity.errors';
 import type { PermissionRepositoryPort } from '../../domain/ports/permission.repository.port';
 import type { AccessTokenPayload } from '../../domain/ports/token.service.port';
@@ -42,6 +45,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { ResendVerificationDto } from '../dto/resend-verification.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { VerifyEmailDto } from '../dto/verify-email.dto';
 import { IdentityExceptionFilter } from '../filters/identity-exception.filter';
 
@@ -63,6 +67,7 @@ export class AuthController {
     private readonly resendVerificationUseCase: ResendVerificationUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
+    private readonly updateProfileUseCase: UpdateProfileUseCase,
   ) {}
 
   @Public()
@@ -93,7 +98,10 @@ export class AuthController {
 
     this.setRefreshCookie(res, result.refreshToken);
 
-    return { user: result.user.toPublicProfile(), accessToken: result.accessToken };
+    return {
+      user: await this.buildAuthenticatedUser(result.user),
+      accessToken: result.accessToken,
+    };
   }
 
   @Public()
@@ -109,7 +117,10 @@ export class AuthController {
     const result = await this.refreshSessionUseCase.execute(rawRefreshToken);
     this.setRefreshCookie(res, result.refreshToken);
 
-    return { user: result.user.toPublicProfile(), accessToken: result.accessToken };
+    return {
+      user: await this.buildAuthenticatedUser(result.user),
+      accessToken: result.accessToken,
+    };
   }
 
   @Post('logout')
@@ -181,9 +192,18 @@ export class AuthController {
   @Get('me')
   async me(@CurrentUser() user: AccessTokenPayload) {
     const currentUser = await this.getCurrentUserUseCase.execute(user.sub);
-    const permissionKeys = await this.permissions.getPermissionKeysForRole(currentUser.role);
+    return this.buildAuthenticatedUser(currentUser);
+  }
 
-    return { ...currentUser.toPublicProfile(), permissions: permissionKeys };
+  @Patch('profile')
+  async updateProfile(@Body() dto: UpdateProfileDto, @CurrentUser() user: AccessTokenPayload) {
+    const updated = await this.updateProfileUseCase.execute({ userId: user.sub, ...dto });
+    return this.buildAuthenticatedUser(updated);
+  }
+
+  private async buildAuthenticatedUser(user: UserEntity) {
+    const permissionKeys = await this.permissions.getPermissionKeysForRole(user.role);
+    return { ...user.toPublicProfile(), permissions: permissionKeys };
   }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {

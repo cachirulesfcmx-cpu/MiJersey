@@ -1,6 +1,6 @@
 'use client';
 
-import type { LoginInput, UserProfile } from '@mijersey/sdk';
+import type { AuthenticatedUser, LoginInput } from '@mijersey/sdk';
 import { ApiClient } from '@mijersey/sdk';
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -8,18 +8,19 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { env } from '../config/env';
 
 interface AuthContextValue {
-  user: UserProfile | null;
+  user: AuthenticatedUser | null;
   accessToken: string | null;
   isLoading: boolean;
-  login: (input: LoginInput) => Promise<UserProfile>;
+  login: (input: LoginInput) => Promise<AuthenticatedUser>;
   logout: () => Promise<void>;
+  hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const client = useMemo(() => new ApiClient({ baseUrl: env.NEXT_PUBLIC_API_URL }), []);
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [client]);
 
   const login = useCallback(
-    async (input: LoginInput): Promise<UserProfile> => {
+    async (input: LoginInput): Promise<AuthenticatedUser> => {
       const session = await client.login(input);
       setUser(session.user);
       setAccessToken(session.accessToken);
@@ -63,9 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
   }, [client, accessToken]);
 
+  const hasPermission = useCallback(
+    (permission: string) => user?.permissions.includes(permission) ?? false,
+    [user],
+  );
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, accessToken, isLoading, login, logout }),
-    [user, accessToken, isLoading, login, logout],
+    () => ({ user, accessToken, isLoading, login, logout, hasPermission }),
+    [user, accessToken, isLoading, login, logout, hasPermission],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

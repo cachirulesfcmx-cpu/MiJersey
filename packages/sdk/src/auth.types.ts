@@ -10,8 +10,12 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface AuthenticatedUser extends UserProfile {
+  permissions: string[];
+}
+
 export interface AuthSession {
-  user: UserProfile;
+  user: AuthenticatedUser;
   accessToken: string;
 }
 

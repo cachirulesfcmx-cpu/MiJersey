@@ -1,10 +1,24 @@
 import type { ApiErrorResponse, HealthCheckResult } from '@mijersey/shared-types';
 
 import type {
+  AuditLogEntry,
+  ChangePasswordInput,
+  CreateStaffUserInput,
+  DashboardMetrics,
+  ListUsersParams,
+  PaginatedResult,
+  QueryAuditLogParams,
+  RoleSummary,
+  StaffMember,
+  UpdateProfileInput,
+} from './admin.types.js';
+import type {
+  AuthenticatedUser,
   AuthSession,
   LoginInput,
   RegisterInput,
   ResetPasswordInput,
+  RoleName,
   SessionSummary,
   UserProfile,
 } from './auth.types.js';
@@ -32,6 +46,19 @@ export interface ApiRequestOptions extends RequestInit {
   accessToken?: string;
 }
 
+function toQueryString(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) {
+      search.set(key, String(value));
+    }
+  }
+
+  const query = search.toString();
+  return query ? `?${query}` : '';
+}
+
 /**
  * Thin, typed wrapper around the MiJersey API. Endpoint-specific methods are
  * added as domain APIs are implemented.
@@ -42,7 +69,9 @@ export class ApiClient {
 
   constructor(options: ApiClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    // `fetch` es un método de Window: si se invoca como `this.fetchImpl(...)` sin
+    // enlazar, el receptor cambia y los navegadores lanzan "Illegal invocation".
+    this.fetchImpl = options.fetchImpl ?? fetch.bind(globalThis);
   }
 
   async request<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -117,6 +146,14 @@ export class ApiClient {
     });
   }
 
+  changePassword(accessToken: string, input: ChangePasswordInput): Promise<void> {
+    return this.request<void>('/auth/change-password', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
   verifyEmail(token: string): Promise<void> {
     return this.request<void>('/auth/verify-email', {
       method: 'POST',
@@ -131,8 +168,16 @@ export class ApiClient {
     });
   }
 
-  me(accessToken: string): Promise<UserProfile> {
-    return this.request<UserProfile>('/auth/me', { accessToken });
+  me(accessToken: string): Promise<AuthenticatedUser> {
+    return this.request<AuthenticatedUser>('/auth/me', { accessToken });
+  }
+
+  updateProfile(accessToken: string, input: UpdateProfileInput): Promise<AuthenticatedUser> {
+    return this.request<AuthenticatedUser>('/auth/profile', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
   }
 
   listSessions(accessToken: string): Promise<SessionSummary[]> {
@@ -145,5 +190,71 @@ export class ApiClient {
 
   revokeAllSessions(accessToken: string): Promise<void> {
     return this.request<void>('/sessions', { method: 'DELETE', accessToken });
+  }
+
+  listStaffUsers(
+    accessToken: string,
+    params: ListUsersParams = {},
+  ): Promise<PaginatedResult<StaffMember>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      role: params.role,
+    });
+    return this.request<PaginatedResult<StaffMember>>(`/admin/users${query}`, { accessToken });
+  }
+
+  createStaffUser(accessToken: string, input: CreateStaffUserInput): Promise<StaffMember> {
+    return this.request<StaffMember>('/admin/users', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateStaffUserRole(accessToken: string, userId: string, role: RoleName): Promise<void> {
+    return this.request<void>(`/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  setStaffUserActive(accessToken: string, userId: string, isActive: boolean): Promise<void> {
+    return this.request<void>(`/admin/users/${userId}/status`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ isActive }),
+    });
+  }
+
+  listRoles(accessToken: string): Promise<RoleSummary[]> {
+    return this.request<RoleSummary[]>('/admin/roles', { accessToken });
+  }
+
+  getDashboardMetrics(accessToken: string): Promise<DashboardMetrics> {
+    return this.request<DashboardMetrics>('/admin/dashboard/metrics', { accessToken });
+  }
+
+  getRecentActivity(accessToken: string): Promise<AuditLogEntry[]> {
+    return this.request<AuditLogEntry[]>('/admin/dashboard/activity', { accessToken });
+  }
+
+  queryAuditLog(
+    accessToken: string,
+    params: QueryAuditLogParams = {},
+  ): Promise<PaginatedResult<AuditLogEntry>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      action: params.action,
+      userId: params.userId,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    });
+    return this.request<PaginatedResult<AuditLogEntry>>(`/admin/audit-log${query}`, {
+      accessToken,
+    });
   }
 }

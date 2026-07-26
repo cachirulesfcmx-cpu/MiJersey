@@ -60,6 +60,7 @@ arrancar en un estado inconsistente.
 - **HttpExceptionFilter** (global): uniforma toda respuesta de error al contrato `ApiErrorResponse` de `@mijersey/shared-types`, incluyendo `requestId` para correlación.
 - **Logging**: `nestjs-pino`, con `x-request-id` generado o propagado por request para trazabilidad end-to-end.
 - **IdentityModule** (`src/modules/identity`): primer módulo de dominio, con capas domain/application/infrastructure/presentation. `JwtAuthGuard` y `ThrottlerGuard` son globales (`APP_GUARD`); las rutas públicas se marcan con `@Public()`. Detalle completo en [authentication.md](authentication.md).
+- **AdministrationModule** (`src/modules/administration`): importa `IdentityModule` para reusar `PermissionsGuard` y estadísticas de usuarios; es dueño de la lectura de auditoría (`AuditLogQueryPort`) sobre la tabla que Identity escribe. Detalle completo en [admin-dashboard.md](admin-dashboard.md).
 
 ## Frontend (`apps/web`, `apps/admin`)
 
