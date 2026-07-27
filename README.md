@@ -59,6 +59,7 @@ docker compose up
 - [Categorías y colecciones](docs/categories-collections.md)
 - [Variantes de producto](docs/product-variants.md)
 - [Atributos y filtros](docs/attributes-filters.md)
+- [Inventario](docs/inventory.md)
 - [Variables de entorno](docs/environment-variables.md)
 - [Comandos disponibles](docs/commands.md)
 

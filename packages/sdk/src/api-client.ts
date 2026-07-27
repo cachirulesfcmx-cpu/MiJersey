@@ -45,6 +45,20 @@ import type {
   UpdateProductInput,
 } from './catalog.types.js';
 import type {
+  AdjustInventoryInput,
+  CreateWarehouseInput,
+  InventoryItem,
+  InventoryListItem,
+  InventoryMovement,
+  ListInventoryParams,
+  ListMovementsParams,
+  ListWarehousesParams,
+  ReservationReferenceInput,
+  SetSafetyStockInput,
+  UpdateWarehouseInput,
+  Warehouse,
+} from './inventory.types.js';
+import type {
   Category,
   CategoryTreeNode,
   Collection,
@@ -792,5 +806,124 @@ export class ApiClient {
       filters: params.filters?.length ? JSON.stringify(params.filters) : undefined,
     });
     return this.request<PaginatedResult<ProductSearchSummary>>(`/products/search${query}`);
+  }
+
+  listWarehouses(
+    accessToken: string,
+    params: ListWarehousesParams = {},
+  ): Promise<PaginatedResult<Warehouse>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<Warehouse>>(`/admin/warehouses${query}`, { accessToken });
+  }
+
+  getWarehouse(accessToken: string, id: string): Promise<Warehouse> {
+    return this.request<Warehouse>(`/admin/warehouses/${id}`, { accessToken });
+  }
+
+  createWarehouse(accessToken: string, input: CreateWarehouseInput): Promise<Warehouse> {
+    return this.request<Warehouse>('/admin/warehouses', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateWarehouse(
+    accessToken: string,
+    id: string,
+    input: UpdateWarehouseInput,
+  ): Promise<Warehouse> {
+    return this.request<Warehouse>(`/admin/warehouses/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listInventory(
+    accessToken: string,
+    params: ListInventoryParams = {},
+  ): Promise<PaginatedResult<InventoryListItem>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      warehouseId: params.warehouseId,
+      belowSafetyStock:
+        params.belowSafetyStock !== undefined ? String(params.belowSafetyStock) : undefined,
+    });
+    return this.request<PaginatedResult<InventoryListItem>>(`/admin/inventory${query}`, {
+      accessToken,
+    });
+  }
+
+  getInventoryItem(accessToken: string, variantId: string): Promise<InventoryItem[]> {
+    return this.request<InventoryItem[]>(`/admin/inventory/${variantId}`, { accessToken });
+  }
+
+  adjustInventory(accessToken: string, input: AdjustInventoryInput): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/admin/inventory/adjust', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  reserveStock(accessToken: string, input: ReservationReferenceInput): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/admin/inventory/reserve', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  releaseStock(accessToken: string, input: ReservationReferenceInput): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/admin/inventory/release', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  confirmReservation(
+    accessToken: string,
+    input: ReservationReferenceInput,
+  ): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/admin/inventory/confirm', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  setSafetyStock(accessToken: string, input: SetSafetyStockInput): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/admin/inventory/safety-stock', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listInventoryMovements(
+    accessToken: string,
+    params: ListMovementsParams = {},
+  ): Promise<PaginatedResult<InventoryMovement>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      variantId: params.variantId,
+      warehouseId: params.warehouseId,
+      type: params.type,
+      referenceType: params.referenceType,
+      referenceId: params.referenceId,
+    });
+    return this.request<PaginatedResult<InventoryMovement>>(`/admin/inventory/movements${query}`, {
+      accessToken,
+    });
   }
 }

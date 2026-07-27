@@ -53,6 +53,23 @@ export type {
   UpdateProductInput,
 } from './catalog.types.js';
 export type {
+  AdjustInventoryInput,
+  CreateWarehouseInput,
+  InventoryItem,
+  InventoryListItem,
+  InventoryMovement,
+  InventoryMovementType,
+  ListInventoryParams,
+  ListMovementsParams,
+  ListWarehousesParams,
+  ReservationReferenceInput,
+  SetSafetyStockInput,
+  UpdateWarehouseInput,
+  VariantSummary,
+  Warehouse,
+  WarehouseStatus,
+} from './inventory.types.js';
+export type {
   Category,
   CategoryStatus,
   CategoryTreeNode,
