@@ -4,11 +4,21 @@ import type { Request, Response } from 'express';
 
 import {
   CatalogError,
+  DuplicateOptionNameError,
+  DuplicateOptionValueError,
+  DuplicateVariantCombinationError,
   InvalidSkuError,
   InvalidSlugError,
+  InvalidVariantOptionValuesError,
+  OptionValueInUseError,
+  ProductHasVariantsError,
   ProductNotFoundError,
+  ProductOptionNotFoundError,
+  ProductVariantNotFoundError,
   SkuAlreadyExistsError,
   SlugAlreadyExistsError,
+  VariantSkuAlreadyExistsError,
+  VariantSlugAlreadyExistsError,
 } from '../../domain/errors/catalog.errors';
 
 const STATUS_BY_ERROR = new Map<new (...args: never[]) => CatalogError, number>([
@@ -17,6 +27,16 @@ const STATUS_BY_ERROR = new Map<new (...args: never[]) => CatalogError, number>(
   [SkuAlreadyExistsError, HttpStatus.CONFLICT],
   [SlugAlreadyExistsError, HttpStatus.CONFLICT],
   [ProductNotFoundError, HttpStatus.NOT_FOUND],
+  [ProductOptionNotFoundError, HttpStatus.NOT_FOUND],
+  [DuplicateOptionNameError, HttpStatus.CONFLICT],
+  [DuplicateOptionValueError, HttpStatus.CONFLICT],
+  [OptionValueInUseError, HttpStatus.CONFLICT],
+  [ProductHasVariantsError, HttpStatus.CONFLICT],
+  [ProductVariantNotFoundError, HttpStatus.NOT_FOUND],
+  [VariantSkuAlreadyExistsError, HttpStatus.CONFLICT],
+  [VariantSlugAlreadyExistsError, HttpStatus.CONFLICT],
+  [DuplicateVariantCombinationError, HttpStatus.CONFLICT],
+  [InvalidVariantOptionValuesError, HttpStatus.BAD_REQUEST],
 ]);
 
 function deriveErrorCode(error: CatalogError): string {

@@ -44,6 +44,18 @@ import type {
   UpdateCategoryInput,
   UpdateCollectionInput,
 } from './taxonomy.types.js';
+import type {
+  BulkUpdateVariantsInput,
+  CreateProductOptionInput,
+  CreateProductVariantInput,
+  GenerateVariantsInput,
+  GenerateVariantsResult,
+  ListVariantsParams,
+  ProductOption,
+  ProductVariant,
+  UpdateProductOptionInput,
+  UpdateProductVariantInput,
+} from './variant.types.js';
 
 const HTTP_NO_CONTENT = 204;
 
@@ -554,5 +566,113 @@ export class ApiClient {
   ): Promise<CollectionWithProducts> {
     const query = toQueryString({ page: params.page, pageSize: params.pageSize });
     return this.request<CollectionWithProducts>(`/collections/${slug}${query}`);
+  }
+
+  getProductOptions(accessToken: string, productId: string): Promise<ProductOption[]> {
+    return this.request<ProductOption[]>(`/admin/products/${productId}/options`, { accessToken });
+  }
+
+  createProductOption(
+    accessToken: string,
+    productId: string,
+    input: CreateProductOptionInput,
+  ): Promise<ProductOption> {
+    return this.request<ProductOption>(`/admin/products/${productId}/options`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateProductOption(
+    accessToken: string,
+    id: string,
+    input: UpdateProductOptionInput,
+  ): Promise<ProductOption> {
+    return this.request<ProductOption>(`/admin/options/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteProductOption(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/options/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listProductVariants(
+    accessToken: string,
+    productId: string,
+    params: ListVariantsParams = {},
+  ): Promise<PaginatedResult<ProductVariant>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<ProductVariant>>(
+      `/admin/products/${productId}/variants${query}`,
+      { accessToken },
+    );
+  }
+
+  getProductVariant(accessToken: string, id: string): Promise<ProductVariant> {
+    return this.request<ProductVariant>(`/admin/variants/${id}`, { accessToken });
+  }
+
+  createProductVariant(
+    accessToken: string,
+    productId: string,
+    input: CreateProductVariantInput,
+  ): Promise<ProductVariant> {
+    return this.request<ProductVariant>(`/admin/products/${productId}/variants`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateProductVariant(
+    accessToken: string,
+    id: string,
+    input: UpdateProductVariantInput,
+  ): Promise<ProductVariant> {
+    return this.request<ProductVariant>(`/admin/variants/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteProductVariant(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/variants/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  generateVariants(
+    accessToken: string,
+    productId: string,
+    input: GenerateVariantsInput = {},
+  ): Promise<GenerateVariantsResult> {
+    return this.request<GenerateVariantsResult>(`/admin/products/${productId}/variants/generate`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  bulkUpdateVariants(accessToken: string, input: BulkUpdateVariantsInput): Promise<void> {
+    return this.request<void>('/admin/variants/bulk', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  getPublicProductVariants(
+    slug: string,
+    params: ProductPageParams = {},
+  ): Promise<PaginatedResult<ProductVariant>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<ProductVariant>>(`/products/${slug}/variants${query}`);
   }
 }

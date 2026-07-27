@@ -63,6 +63,7 @@ arrancar en un estado inconsistente.
 - **AdministrationModule** (`src/modules/administration`): importa `IdentityModule` para reusar `PermissionsGuard` y estadísticas de usuarios; es dueño de la lectura de auditoría (`AuditLogQueryPort`) sobre la tabla que Identity escribe. Detalle completo en [admin-dashboard.md](admin-dashboard.md).
 - **CatalogModule** (`src/modules/catalog`): importa `IdentityModule` para `PermissionsGuard` y para auditar (`AUDIT_LOG_REPOSITORY`); expone `GetProductStatsUseCase` para que `AdministrationModule` reporte la métrica `products` del dashboard. Detalle completo en [product-catalog.md](product-catalog.md).
 - **TaxonomyModule** (`src/modules/taxonomy`): categorías jerárquicas y colecciones manuales/inteligentes. Importa `IdentityModule` igual que Catalog; no importa `CatalogModule` — accede a `products` mediante su propio `ProductQueryPort` de solo lectura (mismo patrón CQRS que `AuditLogQueryPort` en Administration), evitando acoplar el dominio de Catalog al concepto de "reglas de colección". Detalle completo en [categories-collections.md](categories-collections.md).
+- **Opciones y variantes de producto**: a diferencia de Taxonomy, viven dentro del propio `CatalogModule` (no un módulo nuevo) porque son parte estructural del agregado `Product`, no un concepto organizacional aparte. Detalle completo en [product-variants.md](product-variants.md).
 
 ## Frontend (`apps/web`, `apps/admin`)
 

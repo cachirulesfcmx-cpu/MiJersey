@@ -57,6 +57,7 @@ docker compose up
 - [Panel administrativo](docs/admin-dashboard.md)
 - [Catálogo de productos](docs/product-catalog.md)
 - [Categorías y colecciones](docs/categories-collections.md)
+- [Variantes de producto](docs/product-variants.md)
 - [Variables de entorno](docs/environment-variables.md)
 - [Comandos disponibles](docs/commands.md)
 

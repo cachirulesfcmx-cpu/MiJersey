@@ -34,3 +34,63 @@ export class ProductNotFoundError extends CatalogError {
     super('Producto no encontrado');
   }
 }
+
+export class ProductOptionNotFoundError extends CatalogError {
+  constructor() {
+    super('Opción de producto no encontrada');
+  }
+}
+
+export class DuplicateOptionNameError extends CatalogError {
+  constructor() {
+    super('Ya existe una opción con ese nombre en este producto');
+  }
+}
+
+export class DuplicateOptionValueError extends CatalogError {
+  constructor() {
+    super('Ya existe ese valor en la opción');
+  }
+}
+
+export class OptionValueInUseError extends CatalogError {
+  constructor() {
+    super('No se puede quitar un valor que usa alguna variante existente');
+  }
+}
+
+export class ProductHasVariantsError extends CatalogError {
+  constructor() {
+    super('El producto tiene variantes; elimínalas antes de modificar sus opciones');
+  }
+}
+
+export class ProductVariantNotFoundError extends CatalogError {
+  constructor() {
+    super('Variante no encontrada');
+  }
+}
+
+export class VariantSkuAlreadyExistsError extends CatalogError {
+  constructor() {
+    super('Ya existe una variante con ese SKU');
+  }
+}
+
+export class VariantSlugAlreadyExistsError extends CatalogError {
+  constructor() {
+    super('Ya existe una variante con ese slug');
+  }
+}
+
+export class DuplicateVariantCombinationError extends CatalogError {
+  constructor() {
+    super('Ya existe una variante con esa combinación de opciones');
+  }
+}
+
+export class InvalidVariantOptionValuesError extends CatalogError {
+  constructor() {
+    super('Debe indicarse exactamente un valor por cada opción del producto');
+  }
+}

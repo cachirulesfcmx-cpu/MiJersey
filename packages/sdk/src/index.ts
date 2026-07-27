@@ -54,3 +54,17 @@ export type {
   UpdateCategoryInput,
   UpdateCollectionInput,
 } from './taxonomy.types.js';
+export type {
+  BulkUpdateVariantsInput,
+  CreateProductOptionInput,
+  CreateProductVariantInput,
+  GenerateVariantsInput,
+  GenerateVariantsResult,
+  ListVariantsParams,
+  ProductOption,
+  ProductOptionValue,
+  ProductVariant,
+  ProductVariantStatus,
+  UpdateProductOptionInput,
+  UpdateProductVariantInput,
+} from './variant.types.js';

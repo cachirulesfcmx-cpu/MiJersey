@@ -178,11 +178,87 @@ model Product {
   updatedAt         DateTime            @updatedAt
   categories        ProductCategory[]
   collections       CollectionProduct[]
+  options           ProductOption[]
+  variants          ProductVariant[]
 
   @@index([status])
   @@index([visibility])
   @@index([deletedAt])
   @@map("products")
+}
+
+// Variantes de producto — ver docs/prompts/007-Product-Variants.md.
+
+model ProductOption {
+  id        String               @id @default(uuid())
+  productId String
+  product   Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  position  Int                  @default(0)
+  values    ProductOptionValue[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@unique([productId, name])
+  @@index([productId])
+  @@map("product_options")
+}
+
+model ProductOptionValue {
+  id        String                      @id @default(uuid())
+  optionId  String
+  option    ProductOption               @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  value     String
+  position  Int                         @default(0)
+  variants  ProductVariantOptionValue[]
+  createdAt DateTime                    @default(now())
+
+  @@unique([optionId, value])
+  @@index([optionId])
+  @@map("product_option_values")
+}
+
+enum ProductVariantStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("product_variant_status")
+}
+
+model ProductVariant {
+  id             String                      @id @default(uuid())
+  productId      String
+  product        Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku            String                      @unique
+  barcode        String?
+  slug           String                      @unique
+  title          String
+  price          Decimal                     @db.Decimal(10, 2)
+  compareAtPrice Decimal?                    @db.Decimal(10, 2)
+  weight         Float?
+  imageId        String?
+  status         ProductVariantStatus        @default(ACTIVE)
+  /// Combinación normalizada (optionValueIds ordenados y unidos) — garantiza combinaciones únicas por producto.
+  combinationKey String
+  optionValues   ProductVariantOptionValue[]
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  @@unique([productId, combinationKey])
+  @@index([productId])
+  @@index([status])
+  @@map("product_variants")
+}
+
+model ProductVariantOptionValue {
+  variantId     String
+  optionValueId String
+  variant       ProductVariant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  optionValue   ProductOptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+
+  @@id([variantId, optionValueId])
+  @@index([optionValueId])
+  @@map("product_variant_option_values")
 }
 
 // Dominio Taxonomy (categorías y colecciones) — ver docs/prompts/006-Categories-Collections.md.

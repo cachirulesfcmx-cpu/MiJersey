@@ -13,3 +13,8 @@ export enum ProductType {
   PHYSICAL = 'PHYSICAL',
   DIGITAL = 'DIGITAL',
 }
+
+export enum ProductVariantStatus {
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+}
