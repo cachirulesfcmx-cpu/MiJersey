@@ -70,6 +70,19 @@ export type {
   WarehouseStatus,
 } from './inventory.types.js';
 export type {
+  AssetTag,
+  CreateFolderInput,
+  Folder,
+  FolderTreeNode,
+  ListMediaParams,
+  MediaAsset,
+  MediaAssetStatus,
+  MediaType,
+  UpdateFolderInput,
+  UpdateMediaInput,
+  UploadMediaInput,
+} from './media.types.js';
+export type {
   Category,
   CategoryStatus,
   CategoryTreeNode,

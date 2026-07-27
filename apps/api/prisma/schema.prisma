@@ -533,3 +533,101 @@ model InventoryMovement {
   @@index([referenceType, referenceId])
   @@map("inventory_movements")
 }
+
+// Biblioteca de medios — ver docs/prompts/010-Media-Library.md.
+
+enum MediaAssetStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("media_asset_status")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+
+  @@map("media_type")
+}
+
+model Folder {
+  id        String       @id @default(uuid())
+  parentId  String?
+  parent    Folder?      @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Restrict)
+  children  Folder[]     @relation("FolderChildren")
+  name      String
+  slug      String       @unique
+  assets    MediaAsset[]
+  createdAt DateTime     @default(now())
+
+  @@index([parentId])
+  @@map("folders")
+}
+
+model AssetTag {
+  id     String          @id @default(uuid())
+  name   String          @unique
+  slug   String          @unique
+  assets MediaAssetTag[]
+
+  @@map("asset_tags")
+}
+
+model MediaAsset {
+  id           String            @id @default(uuid())
+  /// Nombre generado internamente para el archivo almacenado (único por construcción).
+  filename     String            @unique
+  originalName String
+  mimeType     String
+  type         MediaType
+  size         Int
+  width        Int?
+  height       Int?
+  duration     Float?
+  altText      String?
+  title        String?
+  status       MediaAssetStatus  @default(ACTIVE)
+  /// SHA-256 del contenido — garantiza "no duplicar archivos idénticos" (spec §5).
+  contentHash  String            @unique
+  storageKey   String
+  url          String
+  thumbnailUrl String?
+  folderId     String?
+  folder       Folder?           @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags         MediaAssetTag[]
+  usages       MediaAssetUsage[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([folderId])
+  @@index([status])
+  @@index([type])
+  @@map("media_assets")
+}
+
+model MediaAssetTag {
+  mediaAssetId String
+  assetTagId   String
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  assetTag     AssetTag   @relation(fields: [assetTagId], references: [id], onDelete: Cascade)
+
+  @@id([mediaAssetId, assetTagId])
+  @@index([assetTagId])
+  @@map("media_asset_tags")
+}
+
+/// Referencia genérica de uso (spec §5 "mantener historial de uso" / "eliminar solo sin referencias") — mismo patrón que InventoryMovement.referenceType/referenceId.
+model MediaAssetUsage {
+  id            String     @id @default(uuid())
+  mediaAssetId  String
+  mediaAsset    MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  referenceType String
+  referenceId   String
+  createdAt     DateTime   @default(now())
+
+  @@unique([mediaAssetId, referenceType, referenceId])
+  @@index([mediaAssetId])
+  @@index([referenceType, referenceId])
+  @@map("media_asset_usages")
+}

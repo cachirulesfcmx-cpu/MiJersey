@@ -13,6 +13,7 @@ import { AttributesModule } from './modules/attributes/attributes.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { MediaModule } from './modules/media/media.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
@@ -56,6 +57,7 @@ import { RedisModule } from './redis/redis.module';
     CatalogModule,
     TaxonomyModule,
     InventoryModule,
+    MediaModule,
     AdministrationModule,
   ],
 })

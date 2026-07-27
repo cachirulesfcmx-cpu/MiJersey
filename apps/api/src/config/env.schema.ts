@@ -12,6 +12,10 @@ export const appEnvSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres'),
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
   PUBLIC_ADMIN_URL: z.string().url().default('http://localhost:3001'),
+  /** Origen público de esta misma API — usado para construir URLs absolutas de archivos servidos (Media Library, 010). */
+  PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
+  /** Carpeta (relativa al cwd del proceso, o absoluta) donde `LocalDiskStorageAdapter` guarda los archivos subidos. */
+  MEDIA_UPLOADS_DIR: z.string().min(1).default('uploads'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -28,5 +32,7 @@ export interface AppConfig {
   jwtAccessSecret: string;
   publicWebUrl: string;
   publicAdminUrl: string;
+  publicApiUrl: string;
+  mediaUploadsDir: string;
   isProduction: boolean;
 }

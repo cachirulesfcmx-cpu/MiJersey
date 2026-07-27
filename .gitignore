@@ -7,6 +7,9 @@ coverage/
 .turbo/
 *.tsbuildinfo
 
+# Archivos subidos localmente a la Media Library (010) — no son código fuente.
+apps/api/uploads/
+
 .env
 .env.local
 .env.*.local

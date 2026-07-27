@@ -59,6 +59,17 @@ import type {
   Warehouse,
 } from './inventory.types.js';
 import type {
+  AssetTag,
+  CreateFolderInput,
+  Folder,
+  FolderTreeNode,
+  ListMediaParams,
+  MediaAsset,
+  UpdateFolderInput,
+  UpdateMediaInput,
+  UploadMediaInput,
+} from './media.types.js';
+import type {
   Category,
   CategoryTreeNode,
   Collection,
@@ -138,6 +149,9 @@ export class ApiClient {
 
   async request<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
     const { accessToken, headers, ...rest } = options;
+    // FormData necesita que el navegador fije su propio Content-Type con el
+    // boundary del multipart; forzar 'application/json' lo rompe.
+    const isFormData = typeof FormData !== 'undefined' && rest.body instanceof FormData;
 
     const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
       ...rest,
@@ -145,7 +159,7 @@ export class ApiClient {
       // el origen del frontend y el de la API.
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...headers,
       },
@@ -925,5 +939,88 @@ export class ApiClient {
     return this.request<PaginatedResult<InventoryMovement>>(`/admin/inventory/movements${query}`, {
       accessToken,
     });
+  }
+
+  listMedia(
+    accessToken: string,
+    params: ListMediaParams = {},
+  ): Promise<PaginatedResult<MediaAsset>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      folderId: params.folderId,
+      type: params.type,
+      status: params.status,
+      tagId: params.tagId,
+    });
+    return this.request<PaginatedResult<MediaAsset>>(`/admin/media${query}`, { accessToken });
+  }
+
+  getMedia(accessToken: string, id: string): Promise<MediaAsset> {
+    return this.request<MediaAsset>(`/admin/media/${id}`, { accessToken });
+  }
+
+  listMediaTags(accessToken: string): Promise<{ items: AssetTag[] }> {
+    return this.request<{ items: AssetTag[] }>('/admin/media/tags', { accessToken });
+  }
+
+  uploadMedia(accessToken: string, input: UploadMediaInput): Promise<MediaAsset> {
+    const formData = new FormData();
+    formData.set('file', input.file);
+    if (input.folderId) formData.set('folderId', input.folderId);
+    if (input.title) formData.set('title', input.title);
+    if (input.altText) formData.set('altText', input.altText);
+    if (input.tags?.length) formData.set('tags', input.tags.join(','));
+
+    return this.request<MediaAsset>('/admin/media/upload', {
+      method: 'POST',
+      accessToken,
+      body: formData,
+    });
+  }
+
+  updateMedia(accessToken: string, id: string, input: UpdateMediaInput): Promise<MediaAsset> {
+    return this.request<MediaAsset>(`/admin/media/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteMedia(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/media/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listFolders(accessToken: string): Promise<FolderTreeNode[]> {
+    return this.request<FolderTreeNode[]>('/admin/folders', { accessToken });
+  }
+
+  createFolder(accessToken: string, input: CreateFolderInput): Promise<Folder> {
+    return this.request<Folder>('/admin/folders', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateFolder(accessToken: string, id: string, input: UpdateFolderInput): Promise<Folder> {
+    return this.request<Folder>(`/admin/folders/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  moveFolder(accessToken: string, id: string, parentId: string | null): Promise<Folder> {
+    return this.request<Folder>(`/admin/folders/${id}/move`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ parentId }),
+    });
+  }
+
+  deleteFolder(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/folders/${id}`, { method: 'DELETE', accessToken });
   }
 }

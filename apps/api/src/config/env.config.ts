@@ -21,6 +21,8 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     jwtAccessSecret: env.JWT_ACCESS_SECRET,
     publicWebUrl: env.PUBLIC_WEB_URL,
     publicAdminUrl: env.PUBLIC_ADMIN_URL,
+    publicApiUrl: env.PUBLIC_API_URL,
+    mediaUploadsDir: env.MEDIA_UPLOADS_DIR,
     isProduction: env.NODE_ENV === 'production',
   };
 }
