@@ -9,6 +9,7 @@ import { APP_CONFIG } from './config/env.config';
 import type { AppConfig } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AdministrationModule } from './modules/administration/administration.module';
+import { AttributesModule } from './modules/attributes/attributes.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
@@ -50,6 +51,7 @@ import { RedisModule } from './redis/redis.module';
     RedisModule,
     HealthModule,
     IdentityModule,
+    AttributesModule,
     CatalogModule,
     TaxonomyModule,
     AdministrationModule,

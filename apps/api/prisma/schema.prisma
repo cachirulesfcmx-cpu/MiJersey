@@ -180,6 +180,7 @@ model Product {
   collections       CollectionProduct[]
   options           ProductOption[]
   variants          ProductVariant[]
+  attributes        ProductAttribute[]
 
   @@index([status])
   @@index([visibility])
@@ -381,4 +382,80 @@ model CollectionProduct {
   @@id([collectionId, productId])
   @@index([productId])
   @@map("collection_products")
+}
+
+// Atributos y filtros — ver docs/prompts/008-Attributes-Filters.md.
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+  LIST
+  COLOR
+  MEASUREMENT
+
+  @@map("attribute_type")
+}
+
+enum AttributeStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("attribute_status")
+}
+
+model Attribute {
+  id           String             @id @default(uuid())
+  code         String             @unique
+  name         String
+  type         AttributeType
+  isFilterable Boolean            @default(false)
+  isComparable Boolean            @default(false)
+  isRequired   Boolean            @default(false)
+  sortOrder    Int                @default(0)
+  status       AttributeStatus    @default(ACTIVE)
+  /// Eliminación lógica (mismo patrón que Product.deletedAt en 005) — nunca se borra la fila.
+  deletedAt    DateTime?
+  values       AttributeValue[]
+  assignments  ProductAttribute[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id          String             @id @default(uuid())
+  attributeId String
+  attribute   Attribute          @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value       String
+  label       String
+  sortOrder   Int                @default(0)
+  assignments ProductAttribute[]
+  createdAt   DateTime           @default(now())
+
+  @@unique([attributeId, value])
+  @@index([attributeId])
+  @@map("attribute_values")
+}
+
+model ProductAttribute {
+  id          String          @id @default(uuid())
+  productId   String
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeId String
+  attribute   Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  valueId     String?
+  value       AttributeValue? @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  customValue String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([productId, attributeId])
+  @@index([attributeId])
+  @@index([valueId])
+  @@map("product_attributes")
 }

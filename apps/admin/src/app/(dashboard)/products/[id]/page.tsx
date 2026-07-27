@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
+import { AttributesEditor } from '../AttributesEditor';
 import { OptionsEditor } from '../OptionsEditor';
 import { ProductForm, type ProductFormValues } from '../ProductForm';
 import { VariantsManager } from '../VariantsManager';
@@ -105,6 +106,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             client={client}
             canManage={canManage}
             optionsVersion={optionsVersion}
+          />
+          <hr className="border-neutral-200" />
+          <AttributesEditor
+            productId={product.id}
+            accessToken={accessToken}
+            client={client}
+            canManage={canManage}
           />
         </>
       )}

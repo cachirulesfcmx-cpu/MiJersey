@@ -14,6 +14,25 @@ export type {
 export type { ApiClientOptions, ApiRequestOptions } from './api-client.js';
 export { ApiClient, ApiClientError } from './api-client.js';
 export type {
+  AssignAttributeInput,
+  Attribute,
+  AttributeFilterInput,
+  AttributeStatus,
+  AttributeType,
+  AttributeValue,
+  AttributeValueInput,
+  BulkAssignAttributesInput,
+  CreateAttributeInput,
+  FacetResult,
+  FacetValue,
+  ListAttributesParams,
+  ProductAttributeAssignment,
+  ProductAttributeView,
+  ProductSearchSummary,
+  SearchProductsParams,
+  UpdateAttributeInput,
+} from './attribute.types.js';
+export type {
   AuthenticatedUser,
   AuthSession,
   LoginInput,

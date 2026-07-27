@@ -13,6 +13,20 @@ import type {
   UpdateProfileInput,
 } from './admin.types.js';
 import type {
+  AssignAttributeInput,
+  Attribute,
+  AttributeFilterInput,
+  BulkAssignAttributesInput,
+  CreateAttributeInput,
+  FacetResult,
+  ListAttributesParams,
+  ProductAttributeAssignment,
+  ProductAttributeView,
+  ProductSearchSummary,
+  SearchProductsParams,
+  UpdateAttributeInput,
+} from './attribute.types.js';
+import type {
   AuthenticatedUser,
   AuthSession,
   LoginInput,
@@ -674,5 +688,109 @@ export class ApiClient {
   ): Promise<PaginatedResult<ProductVariant>> {
     const query = toQueryString({ page: params.page, pageSize: params.pageSize });
     return this.request<PaginatedResult<ProductVariant>>(`/products/${slug}/variants${query}`);
+  }
+
+  listAttributes(
+    accessToken: string,
+    params: ListAttributesParams = {},
+  ): Promise<PaginatedResult<Attribute>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      status: params.status,
+      type: params.type,
+      isFilterable: params.isFilterable !== undefined ? String(params.isFilterable) : undefined,
+    });
+    return this.request<PaginatedResult<Attribute>>(`/admin/attributes${query}`, { accessToken });
+  }
+
+  getAttribute(accessToken: string, id: string): Promise<Attribute> {
+    return this.request<Attribute>(`/admin/attributes/${id}`, { accessToken });
+  }
+
+  createAttribute(accessToken: string, input: CreateAttributeInput): Promise<Attribute> {
+    return this.request<Attribute>('/admin/attributes', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateAttribute(
+    accessToken: string,
+    id: string,
+    input: UpdateAttributeInput,
+  ): Promise<Attribute> {
+    return this.request<Attribute>(`/admin/attributes/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteAttribute(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/attributes/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  getProductAttributes(accessToken: string, productId: string): Promise<ProductAttributeView[]> {
+    return this.request<ProductAttributeView[]>(`/admin/products/${productId}/attributes`, {
+      accessToken,
+    });
+  }
+
+  assignProductAttribute(
+    accessToken: string,
+    productId: string,
+    input: AssignAttributeInput,
+  ): Promise<ProductAttributeAssignment> {
+    return this.request<ProductAttributeAssignment>(`/admin/products/${productId}/attributes`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  bulkAssignProductAttributes(
+    accessToken: string,
+    productId: string,
+    input: BulkAssignAttributesInput,
+  ): Promise<void> {
+    return this.request<void>(`/admin/products/${productId}/attributes/bulk`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  removeProductAttribute(
+    accessToken: string,
+    productId: string,
+    attributeId: string,
+  ): Promise<void> {
+    return this.request<void>(`/admin/products/${productId}/attributes/${attributeId}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  getFilters(filters: AttributeFilterInput[] = []): Promise<FacetResult[]> {
+    const query = toQueryString({
+      filters: filters.length > 0 ? JSON.stringify(filters) : undefined,
+    });
+    return this.request<FacetResult[]>(`/filters${query}`);
+  }
+
+  searchProducts(
+    params: SearchProductsParams = {},
+  ): Promise<PaginatedResult<ProductSearchSummary>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      sortBy: params.sortBy,
+      sortDir: params.sortDir,
+      filters: params.filters?.length ? JSON.stringify(params.filters) : undefined,
+    });
+    return this.request<PaginatedResult<ProductSearchSummary>>(`/products/search${query}`);
   }
 }
