@@ -37,6 +37,15 @@ import type {
   UserProfile,
 } from './auth.types.js';
 import type {
+  Brand,
+  BrandProductSummary,
+  CreateBrandInput,
+  ListBrandProductsParams,
+  ListBrandsParams,
+  PublicBrand,
+  UpdateBrandInput,
+} from './brand.types.js';
+import type {
   CreateProductInput,
   ListProductsParams,
   ListPublicProductsParams,
@@ -1022,5 +1031,101 @@ export class ApiClient {
 
   deleteFolder(accessToken: string, id: string): Promise<void> {
     return this.request<void>(`/admin/folders/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listBrands(accessToken: string, params: ListBrandsParams = {}): Promise<PaginatedResult<Brand>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<Brand>>(`/admin/brands${query}`, { accessToken });
+  }
+
+  getBrand(accessToken: string, id: string): Promise<Brand> {
+    return this.request<Brand>(`/admin/brands/${id}`, { accessToken });
+  }
+
+  createBrand(accessToken: string, input: CreateBrandInput): Promise<Brand> {
+    return this.request<Brand>('/admin/brands', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateBrand(accessToken: string, id: string, input: UpdateBrandInput): Promise<Brand> {
+    return this.request<Brand>(`/admin/brands/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteBrand(accessToken: string, id: string, force = false): Promise<void> {
+    const query = toQueryString({ force: force ? 'true' : undefined });
+    return this.request<void>(`/admin/brands/${id}${query}`, { method: 'DELETE', accessToken });
+  }
+
+  reorderBrands(accessToken: string, orderedIds: string[]): Promise<void> {
+    return this.request<void>('/admin/brands/reorder', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ orderedIds }),
+    });
+  }
+
+  listBrandProducts(
+    accessToken: string,
+    brandId: string,
+    params: ListBrandProductsParams = {},
+  ): Promise<PaginatedResult<BrandProductSummary>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      sortBy: params.sortBy,
+      sortDir: params.sortDir,
+    });
+    return this.request<PaginatedResult<BrandProductSummary>>(
+      `/admin/brands/${brandId}/products${query}`,
+      { accessToken },
+    );
+  }
+
+  assignProductsToBrand(accessToken: string, brandId: string, productIds: string[]): Promise<void> {
+    return this.request<void>(`/admin/brands/${brandId}/products`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify({ productIds }),
+    });
+  }
+
+  removeProductFromBrand(accessToken: string, brandId: string, productId: string): Promise<void> {
+    return this.request<void>(`/admin/brands/${brandId}/products/${productId}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  listPublicBrands(): Promise<{ items: PublicBrand[] }> {
+    return this.request<{ items: PublicBrand[] }>('/brands');
+  }
+
+  getPublicBrand(slug: string): Promise<PublicBrand> {
+    return this.request<PublicBrand>(`/brands/${slug}`);
+  }
+
+  listPublicBrandProducts(
+    slug: string,
+    params: ListBrandProductsParams = {},
+  ): Promise<PaginatedResult<BrandProductSummary>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      sortBy: params.sortBy,
+      sortDir: params.sortDir,
+    });
+    return this.request<PaginatedResult<BrandProductSummary>>(`/brands/${slug}/products${query}`);
   }
 }

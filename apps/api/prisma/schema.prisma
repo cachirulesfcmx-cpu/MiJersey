@@ -173,6 +173,9 @@ model Product {
   status            ProductStatus       @default(DRAFT)
   visibility        ProductVisibility   @default(HIDDEN)
   type              ProductType         @default(PHYSICAL)
+  /// Propiedad exclusiva de Brands (011): un producto pertenece a una marca como máximo (spec §4).
+  brandId           String?
+  brand             Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
   deletedAt         DateTime?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -185,6 +188,7 @@ model Product {
   @@index([status])
   @@index([visibility])
   @@index([deletedAt])
+  @@index([brandId])
   @@map("products")
 }
 
@@ -630,4 +634,32 @@ model MediaAssetUsage {
   @@index([mediaAssetId])
   @@index([referenceType, referenceId])
   @@map("media_asset_usages")
+}
+
+enum BrandStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("brand_status")
+}
+
+model Brand {
+  id               String      @id @default(uuid())
+  slug             String      @unique
+  name             String      @unique
+  description      String?
+  shortDescription String?
+  /// IDs de MediaAsset (010) — sin relación de Prisma a propósito: Brands consulta/registra uso vía MediaUsageService, no importa el módulo Media.
+  logoMediaId      String?
+  coverMediaId     String?
+  website          String?
+  country          String?
+  status           BrandStatus @default(ACTIVE)
+  sortOrder        Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  products         Product[]
+
+  @@index([status])
+  @@map("brands")
 }

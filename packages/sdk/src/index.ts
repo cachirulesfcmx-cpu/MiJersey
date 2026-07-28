@@ -43,6 +43,18 @@ export type {
   UserProfile,
 } from './auth.types.js';
 export type {
+  Brand,
+  BrandProductSortBy,
+  BrandProductSummary,
+  BrandStatus,
+  CreateBrandInput,
+  ListBrandProductsParams,
+  ListBrandsParams,
+  PublicBrand,
+  SortDirection,
+  UpdateBrandInput,
+} from './brand.types.js';
+export type {
   CreateProductInput,
   ListProductsParams,
   ListPublicProductsParams,

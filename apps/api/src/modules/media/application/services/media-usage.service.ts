@@ -48,4 +48,12 @@ export class MediaUsageService {
   findByAsset(mediaAssetId: string): Promise<MediaAssetUsageRecord[]> {
     return this.usages.findByAsset(mediaAssetId);
   }
+
+  /** Resuelve las URLs servibles de un asset — para que un consumidor público (p. ej. la página de marca) no tenga que llamar a los endpoints administrativos de Media. */
+  async resolveUrls(
+    mediaAssetId: string,
+  ): Promise<{ url: string; thumbnailUrl: string | null } | null> {
+    const asset = await this.assets.findById(mediaAssetId);
+    return asset ? { url: asset.url, thumbnailUrl: asset.thumbnailUrl } : null;
+  }
 }
