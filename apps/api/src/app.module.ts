@@ -12,6 +12,7 @@ import { AdministrationModule } from './modules/administration/administration.mo
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
+import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
@@ -62,6 +63,7 @@ import { RedisModule } from './redis/redis.module';
     MediaModule,
     BrandsModule,
     SeoModule,
+    HomeModule,
     AdministrationModule,
   ],
 })

@@ -54,6 +54,12 @@ import type {
   UpdateProductInput,
 } from './catalog.types.js';
 import type {
+  CreateHomeSectionInput,
+  HomeSection,
+  PublicHomeSection,
+  UpdateHomeSectionInput,
+} from './home.types.js';
+import type {
   AdjustInventoryInput,
   CreateWarehouseInput,
   InventoryItem,
@@ -1186,5 +1192,45 @@ export class ApiClient {
   resolveRedirect(path: string): Promise<ResolvedRedirect | null> {
     const query = toQueryString({ path });
     return this.request<ResolvedRedirect | null>(`/redirects/resolve${query}`);
+  }
+
+  listHomeSections(accessToken: string): Promise<{ items: HomeSection[] }> {
+    return this.request<{ items: HomeSection[] }>('/admin/home/sections', { accessToken });
+  }
+
+  createHomeSection(accessToken: string, input: CreateHomeSectionInput): Promise<HomeSection> {
+    return this.request<HomeSection>('/admin/home/sections', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateHomeSection(
+    accessToken: string,
+    id: string,
+    input: UpdateHomeSectionInput,
+  ): Promise<HomeSection> {
+    return this.request<HomeSection>(`/admin/home/sections/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteHomeSection(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/home/sections/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  reorderHomeSections(accessToken: string, order: string[]): Promise<void> {
+    return this.request<void>('/admin/home/sections/reorder', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify({ order }),
+    });
+  }
+
+  getPublicHome(): Promise<{ sections: PublicHomeSection[] }> {
+    return this.request<{ sections: PublicHomeSection[] }>('/home');
   }
 }

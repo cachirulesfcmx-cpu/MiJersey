@@ -722,3 +722,43 @@ model Redirect {
 
   @@map("redirects")
 }
+
+enum HomeSectionType {
+  HERO_BANNER
+  BANNER_GRID
+  FEATURED_PRODUCTS
+  FEATURED_CATEGORIES
+  FEATURED_COLLECTIONS
+  FEATURED_BRANDS
+  PROMOTION_BANNER
+  RICH_TEXT
+  IMAGE_TEXT
+  VIDEO_BANNER
+  NEWSLETTER
+
+  @@map("home_section_type")
+}
+
+enum HomeSectionStatus {
+  DRAFT
+  PUBLISHED
+
+  @@map("home_section_status")
+}
+
+/// Bloque configurable de la Home (013) — reordenable, activable/desactivable. `configuration` es JSON libre cuya forma depende de `type` (ver domain/value-objects/home-section-config.ts).
+model HomeSection {
+  id            String            @id @default(uuid())
+  type          HomeSectionType
+  title         String
+  configuration Json
+  sortOrder     Int               @default(0)
+  status        HomeSectionStatus @default(DRAFT)
+  /// Interruptor rápido independiente de `status` — spec §5 "visibility": permite ocultar temporalmente una sección publicada sin perder su configuración ni volver a borrador.
+  isVisible     Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status, isVisible, sortOrder])
+  @@map("home_sections")
+}

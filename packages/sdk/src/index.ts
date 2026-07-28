@@ -65,6 +65,14 @@ export type {
   UpdateProductInput,
 } from './catalog.types.js';
 export type {
+  CreateHomeSectionInput,
+  HomeSection,
+  HomeSectionStatus,
+  HomeSectionType,
+  PublicHomeSection,
+  UpdateHomeSectionInput,
+} from './home.types.js';
+export type {
   AdjustInventoryInput,
   CreateWarehouseInput,
   InventoryItem,

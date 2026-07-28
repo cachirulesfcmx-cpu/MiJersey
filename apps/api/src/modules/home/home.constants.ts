@@ -1,0 +1,2 @@
+export const HOME_SECTION_REPOSITORY = Symbol('HOME_SECTION_REPOSITORY');
+export const HOME_LOOKUP = Symbol('HOME_LOOKUP');
