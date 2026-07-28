@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { AttributesModule } from '../attributes/attributes.module';
 import { IdentityModule } from '../identity/identity.module';
 import { MediaModule } from '../media/media.module';
 import { SeoModule } from '../seo/seo.module';
@@ -21,7 +22,7 @@ import { AdminBrandsController } from './presentation/controllers/admin-brands.c
 import { PublicBrandsController } from './presentation/controllers/public-brands.controller';
 
 @Module({
-  imports: [IdentityModule, MediaModule, SeoModule],
+  imports: [IdentityModule, MediaModule, SeoModule, AttributesModule],
   controllers: [AdminBrandsController, PublicBrandsController],
   providers: [
     ListBrandsUseCase,

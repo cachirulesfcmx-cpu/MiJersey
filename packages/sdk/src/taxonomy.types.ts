@@ -1,3 +1,5 @@
+import type { PublicSeoView } from './seo.types';
+
 export type CategoryStatus = 'ACTIVE' | 'HIDDEN';
 export type CollectionStatus = 'ACTIVE' | 'HIDDEN';
 export type CollectionType = 'MANUAL' | 'SMART';
@@ -20,6 +22,18 @@ export interface Category {
 
 export interface CategoryTreeNode extends Category {
   children: CategoryTreeNode[];
+}
+
+export interface PublicCategoryBreadcrumb {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+/** Respuesta de `GET /categories/:slug` — incluye la ruta de breadcrumbs y las etiquetas SEO ya resueltas. */
+export interface PublicCategory extends Category {
+  breadcrumbs: PublicCategoryBreadcrumb[];
+  seo: PublicSeoView;
 }
 
 export interface CreateCategoryInput {
@@ -76,6 +90,7 @@ export interface CollectionWithProducts extends Collection {
   total: number;
   page: number;
   pageSize: number;
+  seo: PublicSeoView;
 }
 
 export interface CreateCollectionInput {

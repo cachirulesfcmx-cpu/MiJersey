@@ -1,3 +1,4 @@
+import type { AttributeFilterInput } from './attribute.types';
 import type { PublicSeoView } from './seo.types';
 
 export type BrandStatus = 'ACTIVE' | 'ARCHIVED';
@@ -73,4 +74,7 @@ export interface ListBrandProductsParams {
   pageSize?: number;
   sortBy?: BrandProductSortBy;
   sortDir?: SortDirection;
+  /** Filtros facetados y búsqueda de texto libre (014) — mismo motor que `/products/search`. */
+  filters?: AttributeFilterInput[];
+  search?: string;
 }

@@ -22,6 +22,7 @@ import type {
   ListAttributesParams,
   ProductAttributeAssignment,
   ProductAttributeView,
+  ProductListingScope,
   ProductSearchSummary,
   SearchProductsParams,
   UpdateAttributeInput,
@@ -104,6 +105,7 @@ import type {
   CreateCollectionInput,
   ListCollectionsParams,
   ProductPageParams,
+  PublicCategory,
   UpdateCategoryInput,
   UpdateCollectionInput,
 } from './taxonomy.types.js';
@@ -526,6 +528,28 @@ export class ApiClient {
     return this.request<CategoryTreeNode[]>('/categories');
   }
 
+  getPublicCategory(slug: string): Promise<PublicCategory> {
+    return this.request<PublicCategory>(`/categories/${slug}`);
+  }
+
+  /** Delega en el mismo motor de `searchProducts` con `categoryId` como alcance (014). */
+  listCategoryProducts(
+    slug: string,
+    params: SearchProductsParams = {},
+  ): Promise<PaginatedResult<ProductSearchSummary>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      sortBy: params.sortBy,
+      sortDir: params.sortDir,
+      search: params.search,
+      filters: params.filters?.length ? JSON.stringify(params.filters) : undefined,
+    });
+    return this.request<PaginatedResult<ProductSearchSummary>>(
+      `/categories/${slug}/products${query}`,
+    );
+  }
+
   listCollections(
     accessToken: string,
     params: ListCollectionsParams = {},
@@ -826,9 +850,15 @@ export class ApiClient {
     });
   }
 
-  getFilters(filters: AttributeFilterInput[] = []): Promise<FacetResult[]> {
+  getFilters(
+    filters: AttributeFilterInput[] = [],
+    scope: ProductListingScope = {},
+  ): Promise<FacetResult[]> {
     const query = toQueryString({
       filters: filters.length > 0 ? JSON.stringify(filters) : undefined,
+      categoryId: scope.categoryId,
+      brandId: scope.brandId,
+      search: scope.search,
     });
     return this.request<FacetResult[]>(`/filters${query}`);
   }
@@ -842,6 +872,9 @@ export class ApiClient {
       sortBy: params.sortBy,
       sortDir: params.sortDir,
       filters: params.filters?.length ? JSON.stringify(params.filters) : undefined,
+      categoryId: params.categoryId,
+      brandId: params.brandId,
+      search: params.search,
     });
     return this.request<PaginatedResult<ProductSearchSummary>>(`/products/search${query}`);
   }
@@ -1140,6 +1173,8 @@ export class ApiClient {
       pageSize: params.pageSize,
       sortBy: params.sortBy,
       sortDir: params.sortDir,
+      search: params.search,
+      filters: params.filters?.length ? JSON.stringify(params.filters) : undefined,
     });
     return this.request<PaginatedResult<BrandProductSummary>>(`/brands/${slug}/products${query}`);
   }

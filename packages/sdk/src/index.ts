@@ -28,6 +28,7 @@ export type {
   ListAttributesParams,
   ProductAttributeAssignment,
   ProductAttributeView,
+  ProductListingScope,
   ProductSearchSummary,
   SearchProductsParams,
   UpdateAttributeInput,
@@ -132,6 +133,8 @@ export type {
   CreateCollectionInput,
   ListCollectionsParams,
   ProductPageParams,
+  PublicCategory,
+  PublicCategoryBreadcrumb,
   UpdateCategoryInput,
   UpdateCollectionInput,
 } from './taxonomy.types.js';

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { AttributesModule } from '../attributes/attributes.module';
 import { IdentityModule } from '../identity/identity.module';
 import { SeoModule } from '../seo/seo.module';
 import { TaxonomyCacheService } from './application/services/taxonomy-cache.service';
@@ -13,6 +14,7 @@ import { GetCategoryUseCase } from './application/use-cases/get-category.use-cas
 import { GetCategoryPathUseCase } from './application/use-cases/get-category-path.use-case';
 import { GetCategoryTreeUseCase } from './application/use-cases/get-category-tree.use-case';
 import { GetCollectionUseCase } from './application/use-cases/get-collection.use-case';
+import { GetPublicCategoryUseCase } from './application/use-cases/get-public-category.use-case';
 import { GetPublicCategoryTreeUseCase } from './application/use-cases/get-public-category-tree.use-case';
 import { GetPublicCollectionUseCase } from './application/use-cases/get-public-collection.use-case';
 import { ListCollectionsUseCase } from './application/use-cases/list-collections.use-case';
@@ -35,7 +37,7 @@ import { PublicCollectionsController } from './presentation/controllers/public-c
 import { CATEGORY_REPOSITORY, COLLECTION_REPOSITORY, PRODUCT_QUERY } from './taxonomy.constants';
 
 @Module({
-  imports: [IdentityModule, SeoModule],
+  imports: [IdentityModule, SeoModule, AttributesModule],
   controllers: [
     AdminCategoriesController,
     PublicCategoriesController,
@@ -52,6 +54,7 @@ import { CATEGORY_REPOSITORY, COLLECTION_REPOSITORY, PRODUCT_QUERY } from './tax
     GetCategoryUseCase,
     GetCategoryTreeUseCase,
     GetPublicCategoryTreeUseCase,
+    GetPublicCategoryUseCase,
     GetCategoryPathUseCase,
     AssignProductsToCategoryUseCase,
     RemoveProductFromCategoryUseCase,

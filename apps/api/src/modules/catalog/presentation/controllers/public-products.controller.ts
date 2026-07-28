@@ -46,6 +46,9 @@ export class PublicProductsController {
       pageSize: query.pageSize,
       ...(query.sortBy ? { sortBy: query.sortBy } : {}),
       ...(query.sortDir ? { sortDir: query.sortDir } : {}),
+      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+      ...(query.brandId ? { brandId: query.brandId } : {}),
+      ...(query.search ? { search: query.search } : {}),
     });
 
     return {

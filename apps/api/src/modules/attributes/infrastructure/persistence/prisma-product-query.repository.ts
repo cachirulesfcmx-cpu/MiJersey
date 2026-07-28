@@ -5,6 +5,7 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 import type {
   AttributeFilterInput,
   FacetResult,
+  ProductListingScope,
   ProductQueryPort,
   SearchProductsParams,
   SearchProductsResult,
@@ -41,6 +42,23 @@ function buildFiltersWhere(
   };
 }
 
+/** Alcance de categoría/marca/texto libre (014) — reutilizado por PLP de categorías, marcas y búsqueda. */
+function buildScopeWhere(scope?: ProductListingScope): Prisma.ProductWhereInput {
+  if (!scope) return {};
+  return {
+    ...(scope.categoryId ? { categories: { some: { categoryId: scope.categoryId } } } : {}),
+    ...(scope.brandId ? { brandId: scope.brandId } : {}),
+    ...(scope.search
+      ? {
+          OR: [
+            { name: { contains: scope.search, mode: 'insensitive' } },
+            { sku: { contains: scope.search, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
+  };
+}
+
 @Injectable()
 export class PrismaProductQueryRepository implements ProductQueryPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -50,7 +68,10 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
     return count > 0;
   }
 
-  async computeFacets(filters: AttributeFilterInput[]): Promise<FacetResult[]> {
+  async computeFacets(
+    filters: AttributeFilterInput[],
+    scope?: ProductListingScope,
+  ): Promise<FacetResult[]> {
     const filterableAttributes = await this.prisma.attribute.findMany({
       where: { deletedAt: null, status: 'ACTIVE', isFilterable: true },
       include: { values: { orderBy: { sortOrder: 'asc' } } },
@@ -63,6 +84,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
       const scopedWhere: Prisma.ProductWhereInput = {
         ...PUBLIC_PRODUCT_WHERE,
         ...buildFiltersWhere(filters, attribute.id),
+        ...buildScopeWhere(scope),
       };
       const isValueBased = attribute.type === 'LIST' || attribute.type === 'COLOR';
 
@@ -119,6 +141,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
     const where: Prisma.ProductWhereInput = {
       ...PUBLIC_PRODUCT_WHERE,
       ...buildFiltersWhere(params.filters),
+      ...buildScopeWhere(params),
     };
     const sortBy = params.sortBy ?? 'createdAt';
     const sortDir = params.sortDir ?? 'desc';

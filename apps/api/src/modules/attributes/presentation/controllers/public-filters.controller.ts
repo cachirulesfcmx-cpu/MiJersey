@@ -14,6 +14,10 @@ export class PublicFiltersController {
 
   @Get()
   async get(@Query() query: FiltersQueryDto) {
-    return this.getFiltersUseCase.execute(parseFiltersParam(query.filters));
+    return this.getFiltersUseCase.execute(parseFiltersParam(query.filters), {
+      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+      ...(query.brandId ? { brandId: query.brandId } : {}),
+      ...(query.search ? { search: query.search } : {}),
+    });
   }
 }

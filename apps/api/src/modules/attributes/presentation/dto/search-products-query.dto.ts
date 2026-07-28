@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '../../attributes.constants';
 
@@ -29,4 +29,17 @@ export class SearchProductsQueryDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   sortDir?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  brandId?: string;
+
+  /** Texto libre sobre nombre/SKU. */
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

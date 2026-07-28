@@ -1,17 +1,19 @@
+import type { CollectionWithProducts } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
+import { CollectionListingClient } from '../../../components/plp/CollectionListingClient';
 import { env } from '../../../config/env';
-import BrandDetailClient from './BrandDetailClient';
 
 function getClient() {
   return new ApiClient({ baseUrl: env.NEXT_PUBLIC_API_URL });
 }
 
-async function loadBrand(slug: string) {
+async function loadCollection(slug: string): Promise<CollectionWithProducts | null> {
   try {
-    return await getClient().getPublicBrand(slug);
+    return await getClient().getPublicCollection(slug);
   } catch (err) {
     if (err instanceof ApiClientError && err.status === 404) {
       return null;
@@ -25,12 +27,12 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const brand = await loadBrand(params.slug);
-  if (!brand) {
-    return { title: 'Marca no encontrada' };
+  const collection = await loadCollection(params.slug);
+  if (!collection) {
+    return { title: 'Colección no encontrada' };
   }
 
-  const { seo } = brand;
+  const { seo } = collection;
   const index = seo.robots === 'INDEX_FOLLOW' || seo.robots === 'INDEX_NOFOLLOW';
   const follow = seo.robots === 'INDEX_FOLLOW' || seo.robots === 'NOINDEX_FOLLOW';
 
@@ -50,24 +52,22 @@ export async function generateMetadata({
       card: seo.twitterCard === 'SUMMARY_LARGE_IMAGE' ? 'summary_large_image' : 'summary',
       title: seo.ogTitle,
       ...(seo.ogDescription ? { description: seo.ogDescription } : {}),
-      ...(seo.ogImageUrl ? { images: [seo.ogImageUrl] } : {}),
     },
   };
 }
 
-export default async function BrandDetailPage({ params }: { params: { slug: string } }) {
-  const brand = await loadBrand(params.slug);
-  if (!brand) {
+export default async function CollectionPage({ params }: { params: { slug: string } }) {
+  const collection = await loadCollection(params.slug);
+  if (!collection) {
     notFound();
   }
 
-  const structuredData = brand.seo.structuredData ?? {
+  const structuredData = collection.seo.structuredData ?? {
     '@context': 'https://schema.org',
-    '@type': 'Brand',
-    name: brand.name,
-    description: brand.seo.metaDescription ?? undefined,
-    url: brand.seo.canonicalUrl,
-    logo: brand.logoUrl ?? undefined,
+    '@type': 'CollectionPage',
+    name: collection.name,
+    description: collection.seo.metaDescription ?? undefined,
+    url: collection.seo.canonicalUrl,
   };
 
   return (
@@ -77,7 +77,20 @@ export default async function BrandDetailPage({ params }: { params: { slug: stri
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <BrandDetailClient brand={brand} />
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10">
+        <Breadcrumbs
+          items={[
+            { label: 'Inicio', href: '/' },
+            { label: 'Colecciones' },
+            { label: collection.name },
+          ]}
+        />
+        <h1 className="text-3xl font-semibold text-neutral-900">{collection.name}</h1>
+        {collection.description && (
+          <p className="max-w-3xl text-neutral-600">{collection.description}</p>
+        )}
+        <CollectionListingClient slug={params.slug} />
+      </main>
     </>
   );
 }

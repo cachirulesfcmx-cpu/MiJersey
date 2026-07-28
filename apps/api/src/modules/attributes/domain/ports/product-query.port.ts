@@ -30,7 +30,19 @@ export interface ProductSummary {
   createdAt: Date;
 }
 
-export interface SearchProductsParams {
+/**
+ * Alcance opcional reutilizado por categorías/marcas/búsqueda (014): el mismo
+ * motor de `searchProducts`/`computeFacets` sirve de PLP para los tres, en
+ * vez de reimplementar filtros facetados por separado en Taxonomy y Brands.
+ */
+export interface ProductListingScope {
+  categoryId?: string;
+  brandId?: string;
+  /** Texto libre, buscado en `name`/`sku` (contains, insensible a mayúsculas). */
+  search?: string;
+}
+
+export interface SearchProductsParams extends ProductListingScope {
   filters: AttributeFilterInput[];
   page: number;
   pageSize: number;
@@ -50,6 +62,9 @@ export interface SearchProductsResult {
  */
 export interface ProductQueryPort {
   exists(productId: string): Promise<boolean>;
-  computeFacets(filters: AttributeFilterInput[]): Promise<FacetResult[]>;
+  computeFacets(
+    filters: AttributeFilterInput[],
+    scope?: ProductListingScope,
+  ): Promise<FacetResult[]>;
   searchProducts(params: SearchProductsParams): Promise<SearchProductsResult>;
 }

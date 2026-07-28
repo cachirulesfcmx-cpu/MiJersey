@@ -122,7 +122,14 @@ export interface ProductSearchSummary {
   createdAt: string;
 }
 
-export interface SearchProductsParams {
+/** Alcance opcional reutilizado por categorías/marcas/búsqueda (014) — el mismo motor de listados sirve a los tres. */
+export interface ProductListingScope {
+  categoryId?: string;
+  brandId?: string;
+  search?: string;
+}
+
+export interface SearchProductsParams extends ProductListingScope {
   filters?: AttributeFilterInput[];
   page?: number;
   pageSize?: number;

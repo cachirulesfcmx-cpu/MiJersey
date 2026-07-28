@@ -25,12 +25,19 @@ export class PublicCollectionsController {
 
   @Get(':slug')
   async getBySlug(@Param('slug') slug: string, @Query() query: PaginationQueryDto) {
-    const { collection, products, total } = await this.getPublicCollectionUseCase.execute({
+    const { collection, products, total, seo } = await this.getPublicCollectionUseCase.execute({
       slug,
       page: query.page,
       pageSize: query.pageSize,
     });
 
-    return { ...collection.toJSON(), products, total, page: query.page, pageSize: query.pageSize };
+    return {
+      ...collection.toJSON(),
+      products,
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+      seo,
+    };
   }
 }
