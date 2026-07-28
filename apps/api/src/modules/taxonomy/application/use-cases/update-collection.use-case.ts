@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { AuditLogRepositoryPort } from '../../../identity/domain/ports/audit-log.repository.port';
 import { AUDIT_LOG_REPOSITORY } from '../../../identity/identity.constants';
+import { SeoRedirectService } from '../../../seo/application/services/seo-redirect.service';
+import { SeoEntityType } from '../../../seo/domain/value-objects/seo-enums';
 import type { CollectionEntity } from '../../domain/entities/collection.entity';
 import {
   CollectionNotFoundError,
@@ -29,6 +31,7 @@ export class UpdateCollectionUseCase {
     @Inject(COLLECTION_REPOSITORY) private readonly collections: CollectionRepositoryPort,
     @Inject(AUDIT_LOG_REPOSITORY) private readonly auditLog: AuditLogRepositoryPort,
     private readonly cache: TaxonomyCacheService,
+    private readonly seoRedirect: SeoRedirectService,
   ) {}
 
   async execute(input: UpdateCollectionInput): Promise<CollectionEntity> {
@@ -54,6 +57,10 @@ export class UpdateCollectionUseCase {
         : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
     });
+
+    if (slug !== undefined && slug !== existing.slug) {
+      await this.seoRedirect.recordSlugChange(SeoEntityType.COLLECTION, existing.slug, slug);
+    }
 
     await this.auditLog.record({
       userId: input.actorUserId,

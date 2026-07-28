@@ -5,6 +5,7 @@ import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { SeoMetadataEditor } from '../../../../components/SeoMetadataEditor';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { BrandForm, type BrandFormValues } from '../BrandForm';
@@ -88,6 +89,14 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
             accessToken={accessToken}
             client={client}
             canManage={canManage}
+          />
+
+          <SeoMetadataEditor
+            entityType="BRAND"
+            entityId={brand.id}
+            accessToken={accessToken}
+            client={client}
+            publicUrl={`${env.NEXT_PUBLIC_WEB_URL}/brands/${brand.slug}`}
           />
         </>
       )}

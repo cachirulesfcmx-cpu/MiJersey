@@ -5,8 +5,8 @@ import { ApiClient } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { useState } from 'react';
 
+import { MediaPicker } from '../../../components/MediaPicker';
 import { env } from '../../../config/env';
-import { MediaPicker } from './MediaPicker';
 
 export interface BrandFormValues {
   name: string;

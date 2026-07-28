@@ -4,6 +4,7 @@ import type { Product } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { SeoMetadataEditor } from '../../../../components/SeoMetadataEditor';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { AttributesEditor } from '../AttributesEditor';
@@ -113,6 +114,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             accessToken={accessToken}
             client={client}
             canManage={canManage}
+          />
+          <hr className="border-neutral-200" />
+          <SeoMetadataEditor
+            entityType="PRODUCT"
+            entityId={product.id}
+            accessToken={accessToken}
+            client={client}
+            publicUrl={`${env.NEXT_PUBLIC_WEB_URL}/products/${product.slug}`}
           />
         </>
       )}

@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { AuditLogRepositoryPort } from '../../../identity/domain/ports/audit-log.repository.port';
 import { AUDIT_LOG_REPOSITORY } from '../../../identity/identity.constants';
+import { SeoRedirectService } from '../../../seo/application/services/seo-redirect.service';
+import { SeoEntityType } from '../../../seo/domain/value-objects/seo-enums';
 import type { CategoryEntity } from '../../domain/entities/category.entity';
 import {
   CategoryNotFoundError,
@@ -30,6 +32,7 @@ export class UpdateCategoryUseCase {
     @Inject(CATEGORY_REPOSITORY) private readonly categories: CategoryRepositoryPort,
     @Inject(AUDIT_LOG_REPOSITORY) private readonly auditLog: AuditLogRepositoryPort,
     private readonly cache: TaxonomyCacheService,
+    private readonly seoRedirect: SeoRedirectService,
   ) {}
 
   async execute(input: UpdateCategoryInput): Promise<CategoryEntity> {
@@ -56,6 +59,10 @@ export class UpdateCategoryUseCase {
       ...(input.image !== undefined ? { image: input.image?.trim() || null } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
     });
+
+    if (slug !== undefined && slug !== existing.slug) {
+      await this.seoRedirect.recordSlugChange(SeoEntityType.CATEGORY, existing.slug, slug);
+    }
 
     await this.auditLog.record({
       userId: input.actorUserId,

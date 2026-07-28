@@ -663,3 +663,62 @@ model Brand {
   @@index([status])
   @@map("brands")
 }
+
+enum SeoEntityType {
+  PRODUCT
+  CATEGORY
+  COLLECTION
+  BRAND
+
+  @@map("seo_entity_type")
+}
+
+enum SeoRobotsDirective {
+  INDEX_FOLLOW
+  NOINDEX_FOLLOW
+  INDEX_NOFOLLOW
+  NOINDEX_NOFOLLOW
+
+  @@map("seo_robots_directive")
+}
+
+enum SeoTwitterCardType {
+  SUMMARY
+  SUMMARY_LARGE_IMAGE
+
+  @@map("seo_twitter_card_type")
+}
+
+/// Metadatos SEO por entidad — spec §4 "cada entidad tendrá como máximo un registro SEO".
+model SeoMetadata {
+  id              String             @id @default(uuid())
+  entityType      SeoEntityType
+  entityId        String
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  canonicalUrl    String?
+  robots          SeoRobotsDirective @default(INDEX_FOLLOW)
+  ogTitle         String?
+  ogDescription   String?
+  /// ID de MediaAsset (010) — sin relación de Prisma a propósito, mismo criterio que Brand.logoMediaId.
+  ogImageMediaId  String?
+  twitterCard     SeoTwitterCardType @default(SUMMARY_LARGE_IMAGE)
+  structuredData  Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([entityType, entityId])
+  @@map("seo_metadata")
+}
+
+/// Redirecciones permanentes — spec §4 "redirecciones permanentes cuando cambie un slug".
+model Redirect {
+  id         String   @id @default(uuid())
+  fromPath   String   @unique
+  toPath     String
+  statusCode Int      @default(301)
+  createdAt  DateTime @default(now())
+
+  @@map("redirects")
+}

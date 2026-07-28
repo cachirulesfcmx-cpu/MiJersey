@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { IdentityModule } from '../identity/identity.module';
 import { MediaModule } from '../media/media.module';
+import { SeoModule } from '../seo/seo.module';
 import { AssignProductsToBrandUseCase } from './application/use-cases/assign-products-to-brand.use-case';
 import { CreateBrandUseCase } from './application/use-cases/create-brand.use-case';
 import { DeleteBrandUseCase } from './application/use-cases/delete-brand.use-case';
@@ -20,7 +21,7 @@ import { AdminBrandsController } from './presentation/controllers/admin-brands.c
 import { PublicBrandsController } from './presentation/controllers/public-brands.controller';
 
 @Module({
-  imports: [IdentityModule, MediaModule],
+  imports: [IdentityModule, MediaModule, SeoModule],
   controllers: [AdminBrandsController, PublicBrandsController],
   providers: [
     ListBrandsUseCase,

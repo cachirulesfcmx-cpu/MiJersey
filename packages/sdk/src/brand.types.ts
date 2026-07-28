@@ -1,3 +1,5 @@
+import type { PublicSeoView } from './seo.types';
+
 export type BrandStatus = 'ACTIVE' | 'ARCHIVED';
 
 export interface Brand {
@@ -20,6 +22,7 @@ export interface Brand {
 export interface PublicBrand extends Brand {
   logoUrl: string | null;
   coverUrl: string | null;
+  seo: PublicSeoView;
 }
 
 export interface BrandProductSummary {

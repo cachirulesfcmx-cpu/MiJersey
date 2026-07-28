@@ -79,6 +79,15 @@ import type {
   UploadMediaInput,
 } from './media.types.js';
 import type {
+  CreateRedirectInput,
+  ListRedirectsParams,
+  Redirect,
+  ResolvedRedirect,
+  SeoEntityType,
+  SeoMetadata,
+  UpsertSeoMetadataInput,
+} from './seo.types.js';
+import type {
   Category,
   CategoryTreeNode,
   Collection,
@@ -1127,5 +1136,55 @@ export class ApiClient {
       sortDir: params.sortDir,
     });
     return this.request<PaginatedResult<BrandProductSummary>>(`/brands/${slug}/products${query}`);
+  }
+
+  getSeoMetadata(
+    accessToken: string,
+    entityType: SeoEntityType,
+    entityId: string,
+  ): Promise<SeoMetadata | null> {
+    return this.request<SeoMetadata | null>(`/admin/seo/${entityType}/${entityId}`, {
+      accessToken,
+    });
+  }
+
+  upsertSeoMetadata(
+    accessToken: string,
+    entityType: SeoEntityType,
+    entityId: string,
+    input: UpsertSeoMetadataInput,
+  ): Promise<SeoMetadata> {
+    return this.request<SeoMetadata>(`/admin/seo/${entityType}/${entityId}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listRedirects(
+    accessToken: string,
+    params: ListRedirectsParams = {},
+  ): Promise<PaginatedResult<Redirect>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<Redirect>>(`/admin/seo/redirects${query}`, {
+      accessToken,
+    });
+  }
+
+  createRedirect(accessToken: string, input: CreateRedirectInput): Promise<Redirect> {
+    return this.request<Redirect>('/admin/seo/redirects', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteRedirect(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/seo/redirects/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  resolveRedirect(path: string): Promise<ResolvedRedirect | null> {
+    const query = toQueryString({ path });
+    return this.request<ResolvedRedirect | null>(`/redirects/resolve${query}`);
   }
 }

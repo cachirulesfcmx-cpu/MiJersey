@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { AuditLogRepositoryPort } from '../../../identity/domain/ports/audit-log.repository.port';
 import { AUDIT_LOG_REPOSITORY } from '../../../identity/identity.constants';
+import { SeoRedirectService } from '../../../seo/application/services/seo-redirect.service';
+import { SeoEntityType } from '../../../seo/domain/value-objects/seo-enums';
 import { PRODUCT_REPOSITORY } from '../../catalog.constants';
 import type { ProductEntity } from '../../domain/entities/product.entity';
 import { ProductNotFoundError, SlugAlreadyExistsError } from '../../domain/errors/catalog.errors';
@@ -26,6 +28,7 @@ export class UpdateProductUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY) private readonly products: ProductRepositoryPort,
     @Inject(AUDIT_LOG_REPOSITORY) private readonly auditLog: AuditLogRepositoryPort,
+    private readonly seoRedirect: SeoRedirectService,
   ) {}
 
   async execute(input: UpdateProductInput): Promise<ProductEntity> {
@@ -55,6 +58,10 @@ export class UpdateProductUseCase {
       ...(input.type !== undefined ? { type: input.type } : {}),
       ...(input.visibility !== undefined ? { visibility: input.visibility } : {}),
     });
+
+    if (slug !== undefined && slug !== existing.slug) {
+      await this.seoRedirect.recordSlugChange(SeoEntityType.PRODUCT, existing.slug, slug);
+    }
 
     await this.auditLog.record({
       userId: input.actorUserId,

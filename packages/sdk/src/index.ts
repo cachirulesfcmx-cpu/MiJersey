@@ -95,6 +95,18 @@ export type {
   UploadMediaInput,
 } from './media.types.js';
 export type {
+  CreateRedirectInput,
+  ListRedirectsParams,
+  PublicSeoView,
+  Redirect,
+  ResolvedRedirect,
+  SeoEntityType,
+  SeoMetadata,
+  SeoRobotsDirective,
+  SeoTwitterCardType,
+  UpsertSeoMetadataInput,
+} from './seo.types.js';
+export type {
   Category,
   CategoryStatus,
   CategoryTreeNode,

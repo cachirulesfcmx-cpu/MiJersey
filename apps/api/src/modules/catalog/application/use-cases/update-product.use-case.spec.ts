@@ -1,4 +1,5 @@
 import type { AuditLogRepositoryPort } from '../../../identity/domain/ports/audit-log.repository.port';
+import type { SeoRedirectService } from '../../../seo/application/services/seo-redirect.service';
 import { ProductEntity, type ProductProps } from '../../domain/entities/product.entity';
 import { ProductNotFoundError, SlugAlreadyExistsError } from '../../domain/errors/catalog.errors';
 import type { ProductRepositoryPort } from '../../domain/ports/product.repository.port';
@@ -44,9 +45,12 @@ function buildUseCase(existing: ProductEntity | null, slugOwner: ProductEntity |
   const auditLog: jest.Mocked<AuditLogRepositoryPort> = {
     record: jest.fn().mockResolvedValue(undefined),
   };
+  const seoRedirect = {
+    recordSlugChange: jest.fn().mockResolvedValue(undefined),
+  } as unknown as jest.Mocked<SeoRedirectService>;
 
-  const useCase = new UpdateProductUseCase(products, auditLog);
-  return { useCase, products, auditLog };
+  const useCase = new UpdateProductUseCase(products, auditLog, seoRedirect);
+  return { useCase, products, auditLog, seoRedirect };
 }
 
 describe('UpdateProductUseCase', () => {

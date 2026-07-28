@@ -11,6 +11,7 @@ import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { SeoMetadataEditor } from '../../../../components/SeoMetadataEditor';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { RuleBuilder } from '../RuleBuilder';
@@ -276,6 +277,16 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
             ))}
           </ul>
         </div>
+      )}
+
+      {accessToken && (
+        <SeoMetadataEditor
+          entityType="COLLECTION"
+          entityId={collection.id}
+          accessToken={accessToken}
+          client={client}
+          publicUrl={`${env.NEXT_PUBLIC_WEB_URL}/collections/${collection.slug}`}
+        />
       )}
     </div>
   );

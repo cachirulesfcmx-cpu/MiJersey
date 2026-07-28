@@ -5,6 +5,7 @@ import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { SeoMetadataEditor } from '../../../../components/SeoMetadataEditor';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { CategoryForm, type CategoryFormValues } from '../CategoryForm';
@@ -78,13 +79,25 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       {loadError && <p className="text-danger-600 text-sm">{loadError}</p>}
 
       {category && (
-        <CategoryForm
-          mode="edit"
-          initialValues={toFormValues(category)}
-          parentOptions={parentOptions}
-          onSubmit={handleSubmit}
-          submitLabel="Guardar cambios"
-        />
+        <>
+          <CategoryForm
+            mode="edit"
+            initialValues={toFormValues(category)}
+            parentOptions={parentOptions}
+            onSubmit={handleSubmit}
+            submitLabel="Guardar cambios"
+          />
+
+          {accessToken && (
+            <SeoMetadataEditor
+              entityType="CATEGORY"
+              entityId={category.id}
+              accessToken={accessToken}
+              client={client}
+              publicUrl={`${env.NEXT_PUBLIC_WEB_URL}/categories/${category.slug}`}
+            />
+          )}
+        </>
       )}
     </div>
   );

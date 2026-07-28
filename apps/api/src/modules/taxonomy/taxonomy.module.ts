@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { IdentityModule } from '../identity/identity.module';
+import { SeoModule } from '../seo/seo.module';
 import { TaxonomyCacheService } from './application/services/taxonomy-cache.service';
 import { AddProductsToCollectionUseCase } from './application/use-cases/add-products-to-collection.use-case';
 import { AssignProductsToCategoryUseCase } from './application/use-cases/assign-products-to-category.use-case';
@@ -34,7 +35,7 @@ import { PublicCollectionsController } from './presentation/controllers/public-c
 import { CATEGORY_REPOSITORY, COLLECTION_REPOSITORY, PRODUCT_QUERY } from './taxonomy.constants';
 
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, SeoModule],
   controllers: [
     AdminCategoriesController,
     PublicCategoriesController,

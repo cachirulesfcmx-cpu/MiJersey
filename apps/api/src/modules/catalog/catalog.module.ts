@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AttributesModule } from '../attributes/attributes.module';
 import { IdentityModule } from '../identity/identity.module';
+import { SeoModule } from '../seo/seo.module';
 import { ArchiveProductUseCase } from './application/use-cases/archive-product.use-case';
 import { BulkDeleteProductsUseCase } from './application/use-cases/bulk-delete-products.use-case';
 import { BulkUpdateProductStatusUseCase } from './application/use-cases/bulk-update-product-status.use-case';
@@ -43,7 +44,7 @@ import { AdminVariantsController } from './presentation/controllers/admin-varian
 import { PublicProductsController } from './presentation/controllers/public-products.controller';
 
 @Module({
-  imports: [IdentityModule, AttributesModule],
+  imports: [IdentityModule, AttributesModule, SeoModule],
   controllers: [
     AdminProductsController,
     AdminProductOptionsController,

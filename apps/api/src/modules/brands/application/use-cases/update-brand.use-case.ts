@@ -3,6 +3,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { AuditLogRepositoryPort } from '../../../identity/domain/ports/audit-log.repository.port';
 import { AUDIT_LOG_REPOSITORY } from '../../../identity/identity.constants';
 import { MediaUsageService } from '../../../media/application/services/media-usage.service';
+import { SeoRedirectService } from '../../../seo/application/services/seo-redirect.service';
+import { SeoEntityType } from '../../../seo/domain/value-objects/seo-enums';
 import { BRAND_REPOSITORY } from '../../brands.constants';
 import type { BrandEntity } from '../../domain/entities/brand.entity';
 import {
@@ -38,6 +40,7 @@ export class UpdateBrandUseCase {
     @Inject(BRAND_REPOSITORY) private readonly brands: BrandRepositoryPort,
     @Inject(AUDIT_LOG_REPOSITORY) private readonly auditLog: AuditLogRepositoryPort,
     private readonly mediaUsage: MediaUsageService,
+    private readonly seoRedirect: SeoRedirectService,
   ) {}
 
   async execute(input: UpdateBrandInput): Promise<BrandEntity> {
@@ -88,6 +91,10 @@ export class UpdateBrandUseCase {
       ...(input.country !== undefined ? { country: input.country?.trim() || null } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
     });
+
+    if (slug !== undefined && slug !== existing.slug) {
+      await this.seoRedirect.recordSlugChange(SeoEntityType.BRAND, existing.slug, slug);
+    }
 
     await this.auditLog.record({
       userId: input.actorUserId,
