@@ -16,6 +16,7 @@ import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
+import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -64,6 +65,7 @@ import { RedisModule } from './redis/redis.module';
     BrandsModule,
     SeoModule,
     HomeModule,
+    SearchModule,
     AdministrationModule,
   ],
 })

@@ -776,3 +776,52 @@ model HomeSection {
   @@index([status, isVisible, sortOrder])
   @@map("home_sections")
 }
+
+enum SearchResultType {
+  PRODUCT
+  CATEGORY
+  BRAND
+  COLLECTION
+
+  @@map("search_result_type")
+}
+
+/// Registro de cada búsqueda ejecutada (016) — base de "historial"/"trending"/"sin resultados". `sessionId` es un id anónimo generado por el storefront (no existe todavía un concepto de sesión de invitado a nivel de backend).
+model SearchQueryLog {
+  id             String   @id @default(uuid())
+  term           String
+  normalizedTerm String
+  resultsCount   Int
+  sessionId      String?
+  customerId     String?
+  createdAt      DateTime @default(now())
+
+  @@index([normalizedTerm])
+  @@index([createdAt])
+  @@index([resultsCount])
+  @@map("search_query_logs")
+}
+
+/// Clic sobre un resultado de búsqueda (016) — insumo mínimo de conversión; el embudo completo (compra posterior) llega con 032-Analytics.
+model SearchClickLog {
+  id         String           @id @default(uuid())
+  term       String
+  entityType SearchResultType
+  entityId   String
+  sessionId  String?
+  createdAt  DateTime         @default(now())
+
+  @@index([term])
+  @@map("search_click_logs")
+}
+
+/// Grupo de sinónimos (016): buscar por cualquier término del grupo expande la consulta a todos los demás. Sin relación hacia Attributes/Catalog — es un concepto propio del motor de búsqueda.
+model SearchSynonym {
+  id        String   @id @default(uuid())
+  term      String   @unique
+  synonyms  String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("search_synonyms")
+}

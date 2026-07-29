@@ -90,6 +90,18 @@ import type {
   UploadMediaInput,
 } from './media.types.js';
 import type {
+  CreateSearchSynonymInput,
+  LogSearchClickInput,
+  SearchAnalytics,
+  SearchParams,
+  SearchResult,
+  SearchResultItem,
+  SearchSuggestionsParams,
+  SearchSynonym,
+  TrendingTerm,
+  UpdateSearchSynonymInput,
+} from './search.types.js';
+import type {
   CreateRedirectInput,
   ListRedirectsParams,
   Redirect,
@@ -1294,6 +1306,71 @@ export class ApiClient {
       accessToken,
       body: JSON.stringify({ order }),
     });
+  }
+
+  search(params: SearchParams): Promise<SearchResult> {
+    const query = toQueryString({
+      q: params.q,
+      page: params.page,
+      pageSize: params.pageSize,
+      sessionId: params.sessionId,
+    });
+    return this.request<SearchResult>(`/search${query}`);
+  }
+
+  getSearchSuggestions(params: SearchSuggestionsParams): Promise<{ items: SearchResultItem[] }> {
+    const query = toQueryString({ q: params.q, limit: params.limit });
+    return this.request<{ items: SearchResultItem[] }>(`/search/suggestions${query}`);
+  }
+
+  getTrendingSearches(limit?: number): Promise<{ items: TrendingTerm[] }> {
+    const query = toQueryString({ limit });
+    return this.request<{ items: TrendingTerm[] }>(`/search/trending${query}`);
+  }
+
+  logSearchClick(input: LogSearchClickInput): Promise<void> {
+    return this.request<void>('/search/click', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  listSearchSynonyms(accessToken: string): Promise<{ items: SearchSynonym[] }> {
+    return this.request<{ items: SearchSynonym[] }>('/admin/search/synonyms', { accessToken });
+  }
+
+  createSearchSynonym(
+    accessToken: string,
+    input: CreateSearchSynonymInput,
+  ): Promise<SearchSynonym> {
+    return this.request<SearchSynonym>('/admin/search/synonyms', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateSearchSynonym(
+    accessToken: string,
+    id: string,
+    input: UpdateSearchSynonymInput,
+  ): Promise<SearchSynonym> {
+    return this.request<SearchSynonym>(`/admin/search/synonyms/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteSearchSynonym(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/search/synonyms/${id}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  getSearchAnalytics(accessToken: string): Promise<SearchAnalytics> {
+    return this.request<SearchAnalytics>('/admin/search/analytics', { accessToken });
   }
 
   getPublicHome(): Promise<{ sections: PublicHomeSection[] }> {

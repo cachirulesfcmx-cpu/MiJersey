@@ -6,6 +6,7 @@ import { EmptyState, Pagination, Skeleton } from '@mijersey/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
+import { SearchBox } from '../search/SearchBox';
 import { ActiveFilters } from './ActiveFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { ProductGrid } from './ProductGrid';
@@ -100,31 +101,20 @@ export function ProductListingClient({ scope, showSearchBox = false }: ProductLi
     update({ filters, page: 1 });
   }
 
-  function handleSearchSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    update({ search: searchInput, page: 1 });
-  }
-
   const hasActiveFilters = state.filters.length > 0 || state.search.length > 0;
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row">
       <aside className="w-full shrink-0 sm:w-64">
         {showSearchBox && (
-          <form onSubmit={handleSearchSubmit} className="mb-4 flex gap-2">
-            <input
-              className="w-full rounded-md border border-neutral-200 px-3 py-2 text-sm"
-              placeholder="Buscar productos…"
+          <div className="mb-4">
+            <SearchBox
+              client={client}
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={setSearchInput}
+              onSubmit={(term) => update({ search: term, page: 1 })}
             />
-            <button
-              type="submit"
-              className="rounded-md border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50"
-            >
-              Buscar
-            </button>
-          </form>
+          </div>
         )}
         {facets === null ? (
           <Skeleton className="h-40 w-full" />

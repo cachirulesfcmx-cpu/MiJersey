@@ -112,6 +112,19 @@ export type {
   UploadMediaInput,
 } from './media.types.js';
 export type {
+  CreateSearchSynonymInput,
+  LogSearchClickInput,
+  SearchAnalytics,
+  SearchParams,
+  SearchResult,
+  SearchResultItem,
+  SearchResultType,
+  SearchSuggestionsParams,
+  SearchSynonym,
+  TrendingTerm,
+  UpdateSearchSynonymInput,
+} from './search.types.js';
+export type {
   CreateRedirectInput,
   ListRedirectsParams,
   PublicSeoView,
