@@ -184,12 +184,26 @@ model Product {
   options           ProductOption[]
   variants          ProductVariant[]
   attributes        ProductAttribute[]
+  media             ProductMedia[]
 
   @@index([status])
   @@index([visibility])
   @@index([deletedAt])
   @@index([brandId])
   @@map("products")
+}
+
+/// Galería ordenada de imágenes/video del producto (015). `mediaId` es un ID de MediaAsset (010) sin relación de Prisma hacia esa tabla a propósito — se consulta/registra uso vía MediaUsageService, mismo criterio que Brand.logoMediaId.
+model ProductMedia {
+  productId String
+  mediaId   String
+  sortOrder Int      @default(0)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([productId, mediaId])
+  @@index([productId])
+  @@map("product_media")
 }
 
 // Variantes de producto — ver docs/prompts/007-Product-Variants.md.

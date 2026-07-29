@@ -40,6 +40,8 @@ export interface ProductListingScope {
   brandId?: string;
   /** Texto libre, buscado en `name`/`sku` (contains, insensible a mayúsculas). */
   search?: string;
+  /** Excluye un producto puntual — usado por "productos relacionados" (015) para no listarse a sí mismo. */
+  excludeProductId?: string;
 }
 
 export interface SearchProductsParams extends ProductListingScope {

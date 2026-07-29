@@ -25,13 +25,16 @@ import { CreateProductUseCase } from '../../application/use-cases/create-product
 import { DeleteProductUseCase } from '../../application/use-cases/delete-product.use-case';
 import { DuplicateProductUseCase } from '../../application/use-cases/duplicate-product.use-case';
 import { GetProductUseCase } from '../../application/use-cases/get-product.use-case';
+import { GetProductGalleryUseCase } from '../../application/use-cases/get-product-gallery.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
 import { PublishProductUseCase } from '../../application/use-cases/publish-product.use-case';
+import { SetProductGalleryUseCase } from '../../application/use-cases/set-product-gallery.use-case';
 import { UpdateProductUseCase } from '../../application/use-cases/update-product.use-case';
 import { BulkProductIdsDto } from '../dto/bulk-product-ids.dto';
 import { BulkUpdateProductStatusDto } from '../dto/bulk-update-product-status.dto';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { ListProductsQueryDto } from '../dto/list-products-query.dto';
+import { SetProductGalleryDto } from '../dto/set-product-gallery.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { CatalogExceptionFilter } from '../filters/catalog-exception.filter';
 
@@ -50,6 +53,8 @@ export class AdminProductsController {
     private readonly deleteProductUseCase: DeleteProductUseCase,
     private readonly bulkUpdateProductStatusUseCase: BulkUpdateProductStatusUseCase,
     private readonly bulkDeleteProductsUseCase: BulkDeleteProductsUseCase,
+    private readonly getProductGalleryUseCase: GetProductGalleryUseCase,
+    private readonly setProductGalleryUseCase: SetProductGalleryUseCase,
   ) {}
 
   @Get()
@@ -158,6 +163,28 @@ export class AdminProductsController {
   @RequirePermission('catalog:manage')
   async remove(@Param('id') id: string, @CurrentUser() user: AccessTokenPayload, @Ip() ip: string) {
     await this.deleteProductUseCase.execute({ id, actorUserId: user.sub, ipAddress: ip });
+  }
+
+  @Get(':id/gallery')
+  @RequirePermission('admin:access')
+  getGallery(@Param('id') id: string) {
+    return this.getProductGalleryUseCase.execute(id);
+  }
+
+  @Patch(':id/gallery')
+  @RequirePermission('catalog:manage')
+  async setGallery(
+    @Param('id') id: string,
+    @Body() dto: SetProductGalleryDto,
+    @CurrentUser() user: AccessTokenPayload,
+    @Ip() ip: string,
+  ) {
+    await this.setProductGalleryUseCase.execute({
+      productId: id,
+      mediaIds: dto.mediaIds,
+      actorUserId: user.sub,
+      ipAddress: ip,
+    });
   }
 
   @Patch('bulk/status')

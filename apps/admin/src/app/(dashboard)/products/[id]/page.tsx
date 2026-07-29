@@ -8,6 +8,7 @@ import { SeoMetadataEditor } from '../../../../components/SeoMetadataEditor';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { AttributesEditor } from '../AttributesEditor';
+import { GalleryEditor } from '../GalleryEditor';
 import { OptionsEditor } from '../OptionsEditor';
 import { ProductForm, type ProductFormValues } from '../ProductForm';
 import { VariantsManager } from '../VariantsManager';
@@ -92,6 +93,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
       {product && accessToken && (
         <>
+          <hr className="border-neutral-200" />
+          <GalleryEditor
+            productId={product.id}
+            accessToken={accessToken}
+            client={client}
+            canManage={canManage}
+          />
           <hr className="border-neutral-200" />
           <OptionsEditor
             productId={product.id}

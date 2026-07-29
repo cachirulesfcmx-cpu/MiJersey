@@ -51,7 +51,11 @@ import type {
   ListProductsParams,
   ListPublicProductsParams,
   Product,
+  ProductGalleryItem,
   ProductStatus,
+  PublicProduct,
+  PublicProductVariant,
+  SetProductGalleryInput,
   UpdateProductInput,
 } from './catalog.types.js';
 import type {
@@ -445,8 +449,35 @@ export class ApiClient {
     return this.request<PaginatedResult<Product>>(`/products${query}`);
   }
 
-  getPublicProduct(slug: string): Promise<Product> {
-    return this.request<Product>(`/products/${slug}`);
+  getPublicProduct(slug: string): Promise<PublicProduct> {
+    return this.request<PublicProduct>(`/products/${slug}`);
+  }
+
+  getRelatedProducts(slug: string, limit?: number): Promise<{ items: ProductSearchSummary[] }> {
+    const query = toQueryString({ limit });
+    return this.request<{ items: ProductSearchSummary[] }>(`/products/${slug}/related${query}`);
+  }
+
+  getPublicVariant(id: string): Promise<PublicProductVariant> {
+    return this.request<PublicProductVariant>(`/variants/${id}`);
+  }
+
+  getProductGallery(accessToken: string, productId: string): Promise<ProductGalleryItem[]> {
+    return this.request<ProductGalleryItem[]>(`/admin/products/${productId}/gallery`, {
+      accessToken,
+    });
+  }
+
+  setProductGallery(
+    accessToken: string,
+    productId: string,
+    input: SetProductGalleryInput,
+  ): Promise<void> {
+    return this.request<void>(`/admin/products/${productId}/gallery`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
   }
 
   getCategoryTree(accessToken: string): Promise<CategoryTreeNode[]> {

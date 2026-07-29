@@ -60,9 +60,17 @@ export type {
   ListProductsParams,
   ListPublicProductsParams,
   Product,
+  ProductGalleryItem,
   ProductStatus,
   ProductType,
   ProductVisibility,
+  PublicProduct,
+  PublicProductBrandSummary,
+  PublicProductCategorySummary,
+  PublicProductOption,
+  PublicProductOptionValue,
+  PublicProductVariant,
+  SetProductGalleryInput,
   UpdateProductInput,
 } from './catalog.types.js';
 export type {

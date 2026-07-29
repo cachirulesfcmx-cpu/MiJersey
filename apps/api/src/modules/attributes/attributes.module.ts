@@ -52,6 +52,7 @@ import { PublicFiltersController } from './presentation/controllers/public-filte
   // SearchProductsUseCase se exporta para que CatalogModule lo use en `GET /products/search`
   // (única excepción a la regla "el módulo nuevo lee Catalog vía su propio puerto": esa ruta
   // debe vivir en el controlador que ya es dueño de `/products` para no chocar con `:slug`).
-  exports: [SearchProductsUseCase],
+  // Exportado además de SearchProductsUseCase para que Catalog (015) muestre especificaciones en la PDP.
+  exports: [SearchProductsUseCase, ListProductAttributesUseCase],
 })
 export class AttributesModule {}

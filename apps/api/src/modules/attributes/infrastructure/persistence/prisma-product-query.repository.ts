@@ -48,6 +48,7 @@ function buildScopeWhere(scope?: ProductListingScope): Prisma.ProductWhereInput 
   return {
     ...(scope.categoryId ? { categories: { some: { categoryId: scope.categoryId } } } : {}),
     ...(scope.brandId ? { brandId: scope.brandId } : {}),
+    ...(scope.excludeProductId ? { id: { not: scope.excludeProductId } } : {}),
     ...(scope.search
       ? {
           OR: [
