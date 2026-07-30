@@ -100,6 +100,18 @@ export type {
   UpdateShippingMethodInput,
 } from './checkout.types.js';
 export type {
+  Address,
+  AddressType,
+  CreateAddressInput,
+  CustomerOrderDetail,
+  CustomerOrderItem,
+  CustomerOrderSummary,
+  CustomerPreferences,
+  MyAccount,
+  UpdateAddressInput,
+  UpdateMyAccountInput,
+} from './customer.types.js';
+export type {
   CreateHomeSectionInput,
   HomeSection,
   HomeSectionStatus,

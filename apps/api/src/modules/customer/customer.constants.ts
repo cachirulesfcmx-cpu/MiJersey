@@ -1,0 +1,5 @@
+export const CUSTOMER_PROFILE_REPOSITORY = Symbol('CUSTOMER_PROFILE_REPOSITORY');
+export const ADDRESS_REPOSITORY = Symbol('ADDRESS_REPOSITORY');
+export const CUSTOMER_ORDER_LOOKUP = Symbol('CUSTOMER_ORDER_LOOKUP');
+
+export const DEFAULT_PREFERENCES = { marketingEmailsOptIn: false };

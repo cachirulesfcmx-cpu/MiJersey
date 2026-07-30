@@ -74,6 +74,15 @@ import type {
   UpdateShippingMethodInput,
 } from './checkout.types.js';
 import type {
+  Address,
+  CreateAddressInput,
+  CustomerOrderDetail,
+  CustomerOrderSummary,
+  MyAccount,
+  UpdateAddressInput,
+  UpdateMyAccountInput,
+} from './customer.types.js';
+import type {
   CreateHomeSectionInput,
   HomeSection,
   PublicHomeSection,
@@ -1564,5 +1573,55 @@ export class ApiClient {
       method: 'DELETE',
       accessToken,
     });
+  }
+
+  getMyAccount(accessToken: string): Promise<MyAccount> {
+    return this.request<MyAccount>('/me', { accessToken });
+  }
+
+  updateMyAccount(accessToken: string, input: UpdateMyAccountInput): Promise<MyAccount> {
+    return this.request<MyAccount>('/me', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listMyAddresses(accessToken: string): Promise<{ items: Address[] }> {
+    return this.request<{ items: Address[] }>('/me/addresses', { accessToken });
+  }
+
+  createMyAddress(accessToken: string, input: CreateAddressInput): Promise<Address> {
+    return this.request<Address>('/me/addresses', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateMyAddress(accessToken: string, id: string, input: UpdateAddressInput): Promise<Address> {
+    return this.request<Address>(`/me/addresses/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteMyAddress(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/me/addresses/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listMyOrders(
+    accessToken: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<CustomerOrderSummary>> {
+    return this.request<PaginatedResult<CustomerOrderSummary>>(
+      `/me/orders${toQueryString({ page: params.page, pageSize: params.pageSize })}`,
+      { accessToken },
+    );
+  }
+
+  getMyOrder(accessToken: string, id: string): Promise<CustomerOrderDetail> {
+    return this.request<CustomerOrderDetail>(`/me/orders/${id}`, { accessToken });
   }
 }

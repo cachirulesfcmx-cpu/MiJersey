@@ -103,6 +103,8 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
     AUDIT_LOG_REPOSITORY,
     GetUserStatsUseCase,
     TOKEN_SERVICE,
+    GetCurrentUserUseCase,
+    UpdateProfileUseCase,
   ],
 })
 export class IdentityModule {}

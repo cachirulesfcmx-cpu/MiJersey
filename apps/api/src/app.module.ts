@@ -14,6 +14,7 @@ import { BrandsModule } from './modules/brands/brands.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { CheckoutModule } from './modules/checkout/checkout.module';
+import { CustomerModule } from './modules/customer/customer.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -62,6 +63,7 @@ import { RedisModule } from './redis/redis.module';
     AttributesModule,
     CartModule,
     CheckoutModule,
+    CustomerModule,
     CatalogModule,
     TaxonomyModule,
     InventoryModule,
