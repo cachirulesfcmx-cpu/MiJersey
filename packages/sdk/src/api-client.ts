@@ -66,6 +66,14 @@ import type {
   UpdateProductInput,
 } from './catalog.types.js';
 import type {
+  Checkout,
+  CreateShippingMethodInput,
+  Order,
+  SetCheckoutAddressInput,
+  ShippingMethod,
+  UpdateShippingMethodInput,
+} from './checkout.types.js';
+import type {
   CreateHomeSectionInput,
   HomeSection,
   PublicHomeSection,
@@ -1469,5 +1477,92 @@ export class ApiClient {
 
   getPublicHome(): Promise<{ sections: PublicHomeSection[] }> {
     return this.request<{ sections: PublicHomeSection[] }>('/home');
+  }
+
+  getCheckoutShippingMethods(): Promise<{ items: ShippingMethod[] }> {
+    return this.request<{ items: ShippingMethod[] }>('/checkout/shipping-methods');
+  }
+
+  getCheckout(sessionId: string, accessToken?: string): Promise<Checkout> {
+    return this.request<Checkout>('/checkout', {
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  setCheckoutAddress(
+    sessionId: string,
+    input: SetCheckoutAddressInput,
+    accessToken?: string,
+  ): Promise<Checkout> {
+    return this.request<Checkout>('/checkout/address', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify(input),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  setCheckoutShippingMethod(
+    sessionId: string,
+    shippingMethodId: string,
+    accessToken?: string,
+  ): Promise<Checkout> {
+    return this.request<Checkout>('/checkout/shipping', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify({ shippingMethodId }),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  reviewCheckout(sessionId: string, accessToken?: string): Promise<Checkout> {
+    return this.request<Checkout>('/checkout/review', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  confirmCheckout(sessionId: string, accessToken?: string): Promise<{ order: Order }> {
+    return this.request<{ order: Order }>('/checkout/confirm', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  listShippingMethods(accessToken: string): Promise<{ items: ShippingMethod[] }> {
+    return this.request<{ items: ShippingMethod[] }>('/admin/shipping-methods', { accessToken });
+  }
+
+  createShippingMethod(
+    accessToken: string,
+    input: CreateShippingMethodInput,
+  ): Promise<ShippingMethod> {
+    return this.request<ShippingMethod>('/admin/shipping-methods', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateShippingMethod(
+    accessToken: string,
+    id: string,
+    input: UpdateShippingMethodInput,
+  ): Promise<ShippingMethod> {
+    return this.request<ShippingMethod>(`/admin/shipping-methods/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteShippingMethod(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/shipping-methods/${id}`, {
+      method: 'DELETE',
+      accessToken,
+    });
   }
 }

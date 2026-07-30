@@ -164,27 +164,27 @@ enum ProductType {
 }
 
 model Product {
-  id                String              @id @default(uuid())
-  sku               String              @unique
-  slug              String              @unique
-  name              String
-  shortDescription  String?
-  description       String?
-  status            ProductStatus       @default(DRAFT)
-  visibility        ProductVisibility   @default(HIDDEN)
-  type              ProductType         @default(PHYSICAL)
+  id               String              @id @default(uuid())
+  sku              String              @unique
+  slug             String              @unique
+  name             String
+  shortDescription String?
+  description      String?
+  status           ProductStatus       @default(DRAFT)
+  visibility       ProductVisibility   @default(HIDDEN)
+  type             ProductType         @default(PHYSICAL)
   /// Propiedad exclusiva de Brands (011): un producto pertenece a una marca como máximo (spec §4).
-  brandId           String?
-  brand             Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  deletedAt         DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  categories        ProductCategory[]
-  collections       CollectionProduct[]
-  options           ProductOption[]
-  variants          ProductVariant[]
-  attributes        ProductAttribute[]
-  media             ProductMedia[]
+  brandId          String?
+  brand            Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  deletedAt        DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  categories       ProductCategory[]
+  collections      CollectionProduct[]
+  options          ProductOption[]
+  variants         ProductVariant[]
+  attributes       ProductAttribute[]
+  media            ProductMedia[]
 
   @@index([status])
   @@index([visibility])
@@ -328,19 +328,19 @@ enum CollectionRuleMatchType {
 }
 
 model Category {
-  id          String         @id @default(uuid())
+  id          String            @id @default(uuid())
   parentId    String?
-  parent      Category?      @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children    Category[]     @relation("CategoryHierarchy")
-  slug        String         @unique
+  parent      Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[]        @relation("CategoryHierarchy")
+  slug        String            @unique
   name        String
   description String?
   image       String?
-  sortOrder   Int            @default(0)
-  status      CategoryStatus @default(ACTIVE)
+  sortOrder   Int               @default(0)
+  status      CategoryStatus    @default(ACTIVE)
   products    ProductCategory[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@index([parentId])
   @@index([status])
@@ -361,17 +361,17 @@ model ProductCategory {
 }
 
 model Collection {
-  id          String                   @id @default(uuid())
-  slug        String                   @unique
+  id          String                  @id @default(uuid())
+  slug        String                  @unique
   name        String
   description String?
   type        CollectionType
-  status      CollectionStatus         @default(ACTIVE)
-  matchType   CollectionRuleMatchType  @default(ALL)
+  status      CollectionStatus        @default(ACTIVE)
+  matchType   CollectionRuleMatchType @default(ALL)
   rules       CollectionRule[]
   products    CollectionProduct[]
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
 
   @@index([status])
   @@map("collections")
@@ -891,4 +891,148 @@ model Coupon {
   updatedAt DateTime   @updatedAt
 
   @@map("coupons")
+}
+
+enum CheckoutStatus {
+  STARTED
+  CONFIRMED
+  ABANDONED
+
+  @@map("checkout_status")
+}
+
+/// 021-Orders (§4) enumera 8 estados (Pending, Confirmed, Paid, Processing, Shipped, Delivered, Cancelled, Refunded) sin decir en cuál de los tres campos mínimos (`status`, `paymentStatus`, `fulfillmentStatus`) va cada uno. Se repartieron sin ambigüedad: `OrderStatus` es el estado general del pedido (ciclo de vida de alto nivel), `PaymentStatus` el estado del cobro y `FulfillmentStatus` el del cumplimiento — cada uno de los 8 nombres aparece en exactamente un enum.
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+
+  @@map("order_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+
+  @@map("payment_status")
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+
+  @@map("fulfillment_status")
+}
+
+/// Dirección propia de Checkout (018): una foto de captura, no una libreta de direcciones reutilizable. 019-Customer-Account definirá su propio `Address` (con `customerId`, `type`, `isDefault`) para guardar direcciones entre compras; hasta entonces, cada checkout —incluido el de invitados, que no tienen cuenta— captura la suya desde cero. Referenciada tanto por `CheckoutSession` (mientras se arma el pedido) como por `Order` (foto congelada al confirmar).
+model CheckoutAddress {
+  id                     String            @id @default(uuid())
+  firstName              String
+  lastName               String
+  company                String?
+  addressLine1           String
+  addressLine2           String?
+  city                   String
+  state                  String
+  postalCode             String
+  country                String
+  phone                  String?
+  createdAt              DateTime          @default(now())
+  checkoutSessionsShipTo CheckoutSession[] @relation("CheckoutSessionShippingAddress")
+  checkoutSessionsBillTo CheckoutSession[] @relation("CheckoutSessionBillingAddress")
+  ordersShipTo           Order[]           @relation("OrderShippingAddress")
+  ordersBillTo           Order[]           @relation("OrderBillingAddress")
+
+  @@map("checkout_addresses")
+}
+
+/// Método de envío mínimo, propio de Checkout (018): tarifa plana editable en el admin, sin transportistas, zonas de cobertura ni motor de cálculo por peso/dimensiones — eso es 023-Shipping. `estimatedDaysMin/Max` alimenta el mensaje "llega en X-Y días" sin prometer una fecha exacta.
+model ShippingMethod {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  basePrice        Decimal           @db.Decimal(10, 2)
+  estimatedDaysMin Int
+  estimatedDaysMax Int
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  checkoutSessions CheckoutSession[]
+  orders           Order[]
+
+  @@map("shipping_methods")
+}
+
+/// Sesión de checkout (018): una por carrito activo (`cartId` único — "mantener una única sesión activa por carrito", spec §5). Igual que Cart, soporta invitados (`sessionId`) y clientes (`customerId`). No guarda totales: se recalculan en caliente contra el carrito vigente hasta el momento de `POST /checkout/confirm`, que los congela en `Order`.
+model CheckoutSession {
+  id                String           @id @default(uuid())
+  cartId            String           @unique
+  customerId        String?
+  sessionId         String
+  contactEmail      String?
+  shippingAddressId String?
+  shippingAddress   CheckoutAddress? @relation("CheckoutSessionShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String?
+  billingAddress    CheckoutAddress? @relation("CheckoutSessionBillingAddress", fields: [billingAddressId], references: [id])
+  shippingMethodId  String?
+  shippingMethod    ShippingMethod?  @relation(fields: [shippingMethodId], references: [id])
+  status            CheckoutStatus   @default(STARTED)
+  orderId           String?          @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([sessionId])
+  @@index([customerId])
+  @@map("checkout_sessions")
+}
+
+/// Modelo mínimo de 021-Orders, creado ahora porque el criterio de aceptación de 018-Checkout exige "generar una orden lista para pago" y su Definition of Done exige integrarse con 021 sin cambios estructurales. El ciclo de vida completo (máquina de estados con transiciones validadas, cancelaciones, reembolsos, devoluciones, timeline, endpoints de historial/reorden) es responsabilidad de 021; esta tabla ya tiene la forma exacta de su modelo mínimo. Los totales aquí sí son definitivos (a diferencia de Cart/CheckoutSession, que los recalculan en caliente) porque representan lo que se le va a cobrar al cliente.
+model Order {
+  id                String            @id @default(uuid())
+  orderNumber       String            @unique
+  customerId        String?
+  contactEmail      String
+  status            OrderStatus       @default(CONFIRMED)
+  paymentStatus     PaymentStatus     @default(PENDING)
+  fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)
+  currency          String
+  subtotal          Decimal           @db.Decimal(10, 2)
+  discountTotal     Decimal           @db.Decimal(10, 2)
+  shippingTotal     Decimal           @db.Decimal(10, 2)
+  taxTotal          Decimal           @db.Decimal(10, 2)
+  grandTotal        Decimal           @db.Decimal(10, 2)
+  couponCode        String?
+  shippingAddressId String?
+  shippingAddress   CheckoutAddress?  @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String?
+  billingAddress    CheckoutAddress?  @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  shippingMethodId  String?
+  shippingMethod    ShippingMethod?   @relation(fields: [shippingMethodId], references: [id])
+  items             OrderItem[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([customerId])
+  @@index([contactEmail])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  variantId String
+  sku       String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@map("order_items")
 }

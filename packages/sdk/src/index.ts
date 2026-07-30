@@ -85,6 +85,21 @@ export type {
   UpdateProductInput,
 } from './catalog.types.js';
 export type {
+  Checkout,
+  CheckoutAddress,
+  CheckoutAddressInput,
+  CheckoutStatus,
+  CreateShippingMethodInput,
+  FulfillmentStatus,
+  Order,
+  OrderItem,
+  OrderStatus,
+  PaymentStatus,
+  SetCheckoutAddressInput,
+  ShippingMethod,
+  UpdateShippingMethodInput,
+} from './checkout.types.js';
+export type {
   CreateHomeSectionInput,
   HomeSection,
   HomeSectionStatus,

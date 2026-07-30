@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { CartItemRow } from '../../components/cart/CartItemRow';
 import { CouponBox } from '../../components/cart/CouponBox';
 import { OrderSummary } from '../../components/cart/OrderSummary';
-import { ShippingEstimator } from '../../components/cart/ShippingEstimator';
 import { Breadcrumbs } from '../../components/plp/Breadcrumbs';
 import { useCart } from '../../providers/cart-provider';
 
@@ -44,16 +43,12 @@ export default function CartPage() {
           <div className="flex flex-col gap-4">
             <OrderSummary cart={cart} />
             <CouponBox coupon={cart.coupon} onApply={applyCoupon} onRemove={removeCoupon} />
-            <ShippingEstimator />
-            {/* Checkout llega con 018-Checkout: botón deshabilitado como stub visual. */}
-            <button
-              type="button"
-              disabled
-              title="Disponible cuando se implemente el checkout (018)"
-              className="rounded-md bg-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600"
+            <Link
+              href="/checkout"
+              className="bg-brand-600 hover:bg-brand-700 rounded-md px-4 py-2 text-center text-sm font-medium text-white"
             >
               Ir a pagar
-            </button>
+            </Link>
           </div>
         </div>
       )}

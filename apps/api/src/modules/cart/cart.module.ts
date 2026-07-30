@@ -53,5 +53,12 @@ import { OptionalAuthGuard } from './presentation/guards/optional-auth.guard';
     { provide: CART_PRODUCT_LOOKUP, useClass: PrismaCartProductLookupRepository },
     { provide: CART_INVENTORY_AVAILABILITY, useClass: PrismaCartInventoryAvailabilityRepository },
   ],
+  exports: [
+    GetOrCreateCartUseCase,
+    BuildCartViewUseCase,
+    OptionalAuthGuard,
+    CART_REPOSITORY,
+    COUPON_REPOSITORY,
+  ],
 })
 export class CartModule {}

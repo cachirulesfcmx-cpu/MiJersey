@@ -30,6 +30,8 @@ function getOrCreateCartSessionId(): string {
 
 interface CartContextValue {
   cart: Cart | null;
+  /** Mismo id de sesión que identifica "el" carrito del visitante — 018-Checkout lo reutiliza para que su `CheckoutSession` resuelva el mismo carrito. */
+  sessionId: string;
   isLoading: boolean;
   error: string | null;
   itemCount: number;
@@ -154,6 +156,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       cart,
+      sessionId,
       isLoading,
       error,
       itemCount,
@@ -166,6 +169,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }),
     [
       cart,
+      sessionId,
       isLoading,
       error,
       itemCount,
