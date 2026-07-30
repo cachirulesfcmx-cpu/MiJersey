@@ -825,3 +825,70 @@ model SearchSynonym {
 
   @@map("search_synonyms")
 }
+
+enum CartStatus {
+  ACTIVE
+  MERGED
+  ABANDONED
+  CONVERTED
+
+  @@map("cart_status")
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+
+  @@map("coupon_type")
+}
+
+/// Carrito (017) — uno por sesión anónima (`sessionId`, generado por el storefront) y opcionalmente ligado a un cliente (`customerId`) tras iniciar sesión/fusionar. `couponCode` referencia a `Coupon.code`; el descuento se recalcula en caliente contra el subtotal vigente, nunca se guarda un monto fijo.
+model Cart {
+  id         String     @id @default(uuid())
+  customerId String?
+  sessionId  String
+  currency   String     @default("MXN")
+  status     CartStatus @default(ACTIVE)
+  couponCode String?
+  items      CartItem[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([sessionId])
+  @@index([customerId])
+  @@index([status])
+  @@map("carts")
+}
+
+/// `unitPrice` es una foto del precio de la variante al momento de agregarla/actualizar cantidad — no se re-sincroniza silenciosamente en cada lectura (esa revalidación completa es responsabilidad de 018-Checkout antes de confirmar el pedido).
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  variantId String
+  sku       String
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+  subtotal  Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+/// Cupón mínimo, propio de Cart (017) — un motor de promociones completo (reglas, apilamiento, programación, límites de uso) es responsabilidad de 024-Coupons-Promotions. `value` se interpreta según `type`: porcentaje (0-100) o monto fijo en la moneda del carrito.
+model Coupon {
+  id        String     @id @default(uuid())
+  code      String     @unique
+  type      CouponType
+  value     Decimal    @db.Decimal(10, 2)
+  isActive  Boolean    @default(true)
+  expiresAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("coupons")
+}

@@ -1,13 +1,15 @@
 'use client';
 
 import type { ProductSearchSummary, PublicProduct } from '@mijersey/sdk';
-import { ApiClient } from '@mijersey/sdk';
+import { ApiClient, ApiClientError } from '@mijersey/sdk';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { BreadcrumbItem } from '../../../components/plp/Breadcrumbs';
 import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
 import { ProductGrid } from '../../../components/plp/ProductGrid';
 import { env } from '../../../config/env';
+import { useCart } from '../../../providers/cart-provider';
 
 function initialSelection(product: PublicProduct): Record<string, string> {
   const seedVariant = product.variants[0];
@@ -32,8 +34,9 @@ function findMatchingVariant(product: PublicProduct, selection: Record<string, s
   );
 }
 
-function formatPrice(cents: number): string {
-  return (cents / 100).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+function formatPrice(amount: number): string {
+  // `price` es Decimal(10,2) en la base de datos: ya es un monto completo (pesos.centavos), no centavos enteros.
+  return amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }
 
 export default function ProductDetailClient({
@@ -44,12 +47,16 @@ export default function ProductDetailClient({
   breadcrumbItems: BreadcrumbItem[];
 }) {
   const client = useMemo(() => new ApiClient({ baseUrl: env.NEXT_PUBLIC_API_URL }), []);
+  const router = useRouter();
+  const { addItem } = useCart();
   const [selection, setSelection] = useState<Record<string, string>>(() =>
     initialSelection(product),
   );
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [related, setRelated] = useState<ProductSearchSummary[]>([]);
+  const [cartError, setCartError] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const activeVariant = useMemo(
     () => findMatchingVariant(product, selection),
@@ -74,6 +81,22 @@ export default function ProductDetailClient({
   const mainImage = activeVariant?.imageUrl ?? images[activeImage] ?? images[0] ?? null;
 
   const maxQuantity = activeVariant?.availableQuantity ?? 0;
+
+  async function handleAddToCart(goToCart: boolean) {
+    if (!activeVariant) return;
+    setCartError(null);
+    setIsAddingToCart(true);
+    try {
+      await addItem({ variantId: activeVariant.id, quantity });
+      if (goToCart) router.push('/cart');
+    } catch (err) {
+      setCartError(
+        err instanceof ApiClientError ? err.message : 'No se pudo agregar el producto al carrito.',
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
+  }
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-10">
@@ -172,21 +195,22 @@ export default function ProductDetailClient({
             )}
           </div>
 
-          {/* Carrito llega con 017-Shopping-Cart: botones deshabilitados como stub visual. */}
+          {cartError && <p className="text-danger-600 text-sm">{cartError}</p>}
+
           <div className="flex gap-3">
             <button
               type="button"
-              disabled
-              title="Disponible cuando se implemente el carrito (017)"
-              className="flex-1 rounded-md bg-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600"
+              disabled={!activeVariant?.inStock || isAddingToCart}
+              onClick={() => void handleAddToCart(false)}
+              className="bg-brand-600 hover:bg-brand-700 flex-1 rounded-md px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-300 disabled:text-neutral-600"
             >
               Agregar al carrito
             </button>
             <button
               type="button"
-              disabled
-              title="Disponible cuando se implemente el carrito (017)"
-              className="flex-1 rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-500"
+              disabled={!activeVariant?.inStock || isAddingToCart}
+              onClick={() => void handleAddToCart(true)}
+              className="flex-1 rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 disabled:text-neutral-400"
             >
               Comprar ahora
             </button>

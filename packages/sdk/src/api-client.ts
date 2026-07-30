@@ -47,6 +47,13 @@ import type {
   UpdateBrandInput,
 } from './brand.types.js';
 import type {
+  AddCartItemInput,
+  Cart,
+  Coupon,
+  CreateCouponInput,
+  UpdateCouponInput,
+} from './cart.types.js';
+import type {
   CreateProductInput,
   ListProductsParams,
   ListPublicProductsParams,
@@ -1371,6 +1378,93 @@ export class ApiClient {
 
   getSearchAnalytics(accessToken: string): Promise<SearchAnalytics> {
     return this.request<SearchAnalytics>('/admin/search/analytics', { accessToken });
+  }
+
+  getCart(sessionId: string, accessToken?: string): Promise<Cart> {
+    return this.request<Cart>('/cart', {
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  addCartItem(sessionId: string, input: AddCartItemInput, accessToken?: string): Promise<Cart> {
+    return this.request<Cart>('/cart/items', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify(input),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  updateCartItem(
+    sessionId: string,
+    itemId: string,
+    quantity: number,
+    accessToken?: string,
+  ): Promise<Cart> {
+    return this.request<Cart>(`/cart/items/${itemId}`, {
+      method: 'PATCH',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify({ quantity }),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  removeCartItem(sessionId: string, itemId: string, accessToken?: string): Promise<Cart> {
+    return this.request<Cart>(`/cart/items/${itemId}`, {
+      method: 'DELETE',
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  applyCartCoupon(sessionId: string, code: string, accessToken?: string): Promise<Cart> {
+    return this.request<Cart>('/cart/coupon', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify({ code }),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  removeCartCoupon(sessionId: string, accessToken?: string): Promise<Cart> {
+    return this.request<Cart>('/cart/coupon', {
+      method: 'DELETE',
+      headers: { 'x-session-id': sessionId },
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  mergeCart(sessionId: string, accessToken: string): Promise<Cart> {
+    return this.request<Cart>('/cart/merge', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      accessToken,
+    });
+  }
+
+  listCoupons(accessToken: string): Promise<{ items: Coupon[] }> {
+    return this.request<{ items: Coupon[] }>('/admin/coupons', { accessToken });
+  }
+
+  createCoupon(accessToken: string, input: CreateCouponInput): Promise<Coupon> {
+    return this.request<Coupon>('/admin/coupons', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCoupon(accessToken: string, id: string, input: UpdateCouponInput): Promise<Coupon> {
+    return this.request<Coupon>(`/admin/coupons/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteCoupon(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/coupons/${id}`, { method: 'DELETE', accessToken });
   }
 
   getPublicHome(): Promise<{ sections: PublicHomeSection[] }> {

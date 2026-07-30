@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module';
 import { AdministrationModule } from './modules/administration/administration.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { BrandsModule } from './modules/brands/brands.module';
+import { CartModule } from './modules/cart/cart.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
@@ -58,6 +59,7 @@ import { RedisModule } from './redis/redis.module';
     HealthModule,
     IdentityModule,
     AttributesModule,
+    CartModule,
     CatalogModule,
     TaxonomyModule,
     InventoryModule,

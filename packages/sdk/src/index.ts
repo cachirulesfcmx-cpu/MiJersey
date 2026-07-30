@@ -56,6 +56,17 @@ export type {
   UpdateBrandInput,
 } from './brand.types.js';
 export type {
+  AddCartItemInput,
+  Cart,
+  CartCouponView,
+  CartItemView,
+  CartStatus,
+  Coupon,
+  CouponType,
+  CreateCouponInput,
+  UpdateCouponInput,
+} from './cart.types.js';
+export type {
   CreateProductInput,
   ListProductsParams,
   ListPublicProductsParams,
