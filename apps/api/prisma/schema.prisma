@@ -997,33 +997,51 @@ model CheckoutSession {
 
 /// Modelo mínimo de 021-Orders, creado ahora porque el criterio de aceptación de 018-Checkout exige "generar una orden lista para pago" y su Definition of Done exige integrarse con 021 sin cambios estructurales. El ciclo de vida completo (máquina de estados con transiciones validadas, cancelaciones, reembolsos, devoluciones, timeline, endpoints de historial/reorden) es responsabilidad de 021; esta tabla ya tiene la forma exacta de su modelo mínimo. Los totales aquí sí son definitivos (a diferencia de Cart/CheckoutSession, que los recalculan en caliente) porque representan lo que se le va a cobrar al cliente.
 model Order {
-  id                String            @id @default(uuid())
-  orderNumber       String            @unique
+  id                String               @id @default(uuid())
+  orderNumber       String               @unique
   customerId        String?
   contactEmail      String
-  status            OrderStatus       @default(CONFIRMED)
-  paymentStatus     PaymentStatus     @default(PENDING)
-  fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)
+  status            OrderStatus          @default(CONFIRMED)
+  paymentStatus     PaymentStatus        @default(PENDING)
+  fulfillmentStatus FulfillmentStatus    @default(UNFULFILLED)
   currency          String
-  subtotal          Decimal           @db.Decimal(10, 2)
-  discountTotal     Decimal           @db.Decimal(10, 2)
-  shippingTotal     Decimal           @db.Decimal(10, 2)
-  taxTotal          Decimal           @db.Decimal(10, 2)
-  grandTotal        Decimal           @db.Decimal(10, 2)
+  subtotal          Decimal              @db.Decimal(10, 2)
+  discountTotal     Decimal              @db.Decimal(10, 2)
+  shippingTotal     Decimal              @db.Decimal(10, 2)
+  taxTotal          Decimal              @db.Decimal(10, 2)
+  grandTotal        Decimal              @db.Decimal(10, 2)
   couponCode        String?
   shippingAddressId String?
-  shippingAddress   CheckoutAddress?  @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  shippingAddress   CheckoutAddress?     @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
   billingAddressId  String?
-  billingAddress    CheckoutAddress?  @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  billingAddress    CheckoutAddress?     @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   shippingMethodId  String?
-  shippingMethod    ShippingMethod?   @relation(fields: [shippingMethodId], references: [id])
+  shippingMethod    ShippingMethod?      @relation(fields: [shippingMethodId], references: [id])
   items             OrderItem[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  /// 021-Orders (§2 "Cancelaciones"). Null hasta que `CancelOrderUseCase` cancele el pedido — no hay reembolso automático aquí (spec lo marca "preparado para integración", depende de 022-Payments).
+  cancelledAt       DateTime?
+  cancelReason      String?
+  statusHistory     OrderStatusHistory[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   @@index([customerId])
   @@index([contactEmail])
   @@map("orders")
+}
+
+/// 021-Orders (§2 "línea de tiempo", §6 "Order Timeline"). Genérico a propósito: `field` identifica cuál de las tres dimensiones de estado cambió (`status`/`paymentStatus`/`fulfillmentStatus`) para que 022-Payments y 023-Shipping puedan escribir aquí sus propios eventos sin cambios estructurales, sin necesidad de que Orders dependa de esos módulos. El primer evento de la línea de tiempo ("Confirmado") no vive aquí — se deriva de `Order.createdAt`/`status` al construir la vista, evitando que Checkout (018) tenga que escribir en esta tabla.
+model OrderStatusHistory {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  field     String
+  value     String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_status_history")
 }
 
 model OrderItem {

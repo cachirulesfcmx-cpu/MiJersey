@@ -150,6 +150,12 @@ export type {
   UploadMediaInput,
 } from './media.types.js';
 export type {
+  CancelOrderInput,
+  OrderSummary,
+  OrderTimelineEvent,
+  ReorderResult,
+} from './orders.types.js';
+export type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,

@@ -1,8 +1,4 @@
-import type {
-  FulfillmentStatus,
-  OrderStatus,
-  PaymentStatus,
-} from '../value-objects/checkout-enums';
+import type { FulfillmentStatus, OrderStatus, PaymentStatus } from '../value-objects/order-enums';
 import type { OrderItemEntity } from './order-item.entity';
 
 export interface OrderProps {
@@ -30,7 +26,7 @@ export interface OrderProps {
   updatedAt: Date;
 }
 
-/** Modelo mínimo de 021-Orders — ver comentario en `schema.prisma` sobre por qué se creó ahora, desde Checkout (018). */
+/** Dueño definitivo de `orders`/`order_items` (018-Checkout solo alojaba el modelo mínimo mientras 021 no existía — ver comentario en `schema.prisma`). Checkout sigue escribiendo estas tablas al confirmar (`ConfirmCheckoutUseCase`, sin cambios); Orders construye su propia lectura/escritura encima, mismo patrón CQRS que Customer (019) ya aplicaba. */
 export class OrderEntity {
   constructor(private readonly props: OrderProps) {}
 
@@ -38,8 +34,20 @@ export class OrderEntity {
     return this.props.id;
   }
 
-  get orderNumber(): string {
-    return this.props.orderNumber;
+  get customerId(): string | null {
+    return this.props.customerId;
+  }
+
+  get status(): OrderStatus {
+    return this.props.status;
+  }
+
+  get fulfillmentStatus(): FulfillmentStatus {
+    return this.props.fulfillmentStatus;
+  }
+
+  get items(): OrderItemEntity[] {
+    return this.props.items;
   }
 
   toJSON(): Omit<OrderProps, 'items'> & { items: ReturnType<OrderItemEntity['toJSON']>[] } {

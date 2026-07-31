@@ -48,6 +48,8 @@ function toEntity(row: PrismaOrderWithItems): OrderEntity {
     shippingAddressId: row.shippingAddressId,
     billingAddressId: row.billingAddressId,
     shippingMethodId: row.shippingMethodId,
+    cancelledAt: row.cancelledAt,
+    cancelReason: row.cancelReason,
     items: row.items.map(toItemEntity),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

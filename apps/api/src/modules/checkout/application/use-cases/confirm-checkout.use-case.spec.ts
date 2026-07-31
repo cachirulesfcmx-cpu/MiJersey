@@ -166,6 +166,8 @@ function buildUseCase(options: {
           shippingAddressId: data.shippingAddressId,
           billingAddressId: data.billingAddressId,
           shippingMethodId: data.shippingMethodId,
+          cancelledAt: null,
+          cancelReason: null,
           items: [],
           createdAt: new Date(),
           updatedAt: new Date(),

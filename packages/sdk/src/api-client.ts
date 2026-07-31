@@ -114,6 +114,12 @@ import type {
   UploadMediaInput,
 } from './media.types.js';
 import type {
+  CancelOrderInput,
+  OrderSummary,
+  OrderTimelineEvent,
+  ReorderResult,
+} from './orders.types.js';
+import type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,
@@ -1666,5 +1672,49 @@ export class ApiClient {
 
   getSharedWishlist(token: string): Promise<Wishlist> {
     return this.request<Wishlist>(`/wishlist/shared/${token}`);
+  }
+
+  listOrders(
+    accessToken: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<OrderSummary>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<OrderSummary>>(`/orders${query}`, { accessToken });
+  }
+
+  getOrder(accessToken: string, id: string): Promise<Order> {
+    return this.request<Order>(`/orders/${id}`, { accessToken });
+  }
+
+  getOrderTimeline(accessToken: string, id: string): Promise<{ items: OrderTimelineEvent[] }> {
+    return this.request<{ items: OrderTimelineEvent[] }>(`/orders/${id}/timeline`, { accessToken });
+  }
+
+  cancelOrder(accessToken: string, id: string, input: CancelOrderInput = {}): Promise<Order> {
+    return this.request<Order>(`/orders/${id}/cancel`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  reorder(accessToken: string, id: string, sessionId: string): Promise<ReorderResult> {
+    return this.request<ReorderResult>(`/orders/${id}/reorder`, {
+      method: 'POST',
+      accessToken,
+      headers: { 'x-session-id': sessionId },
+    });
+  }
+
+  listAllOrders(
+    accessToken: string,
+    params: { page?: number; pageSize?: number; status?: string } = {},
+  ): Promise<PaginatedResult<OrderSummary>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<OrderSummary>>(`/admin/orders${query}`, { accessToken });
   }
 }

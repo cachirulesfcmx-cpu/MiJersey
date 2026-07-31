@@ -19,6 +19,7 @@ import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
@@ -75,6 +76,7 @@ import { RedisModule } from './redis/redis.module';
     SearchModule,
     AdministrationModule,
     WishlistModule,
+    OrdersModule,
   ],
 })
 export class AppModule {}

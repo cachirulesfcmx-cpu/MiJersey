@@ -117,6 +117,8 @@ export interface Order {
   shippingAddressId: string | null;
   billingAddressId: string | null;
   shippingMethodId: string | null;
+  cancelledAt: string | null;
+  cancelReason: string | null;
   items: OrderItem[];
   createdAt: string;
   updatedAt: string;
