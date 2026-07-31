@@ -188,6 +188,25 @@ export type {
   UpsertSeoMetadataInput,
 } from './seo.types.js';
 export type {
+  CalculateRatesInput,
+  Carrier,
+  CreateCarrierInput,
+  CreateRateInput,
+  CreateShipmentInput,
+  CreateZoneInput,
+  Shipment,
+  ShipmentEvent,
+  ShipmentStatus,
+  ShippingMethodListing,
+  ShippingQuote,
+  ShippingRate,
+  ShippingZone,
+  UpdateCarrierInput,
+  UpdateRateInput,
+  UpdateShipmentStatusInput,
+  UpdateZoneInput,
+} from './shipping.types.js';
+export type {
   Category,
   CategoryStatus,
   CategoryTreeNode,

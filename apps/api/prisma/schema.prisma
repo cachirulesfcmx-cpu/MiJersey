@@ -1183,3 +1183,97 @@ model PaymentEvent {
   @@index([paymentId])
   @@map("payment_events")
 }
+
+// Dominio Shipping — ver docs/prompts/023-Shipping.md.
+
+/// Transportista (§2 "Transportistas", §4 "Permitir múltiples transportistas"). No es una integración de API por transportista: es un registro configurable (nombre + código) al que se asocian tarifas por zona en `ShippingRate`. Un transportista "propio" (reparto local/mensajería contratada) es tan válido como uno externo — ver `ManualCarrierProvider`.
+model Carrier {
+  id        String         @id @default(uuid())
+  name      String
+  code      String         @unique
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  rates     ShippingRate[]
+  shipments Shipment[]
+
+  @@map("carriers")
+}
+
+/// Zona de cobertura (§2 "Zonas de envío"). Coincidencia simple por país + opcionalmente estado (`states` vacío = todo el país) — suficiente para el motor de tarifas sin construir un sistema de code postal/CP por rango, fuera de proporción para este sprint.
+model ShippingZone {
+  id        String         @id @default(uuid())
+  name      String
+  countries String[]
+  states    String[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  rates     ShippingRate[]
+
+  @@map("shipping_zones")
+}
+
+/// Tarifa por transportista + zona (§2 "Tarifas", §4 "Calcular tarifas según zona, peso, dimensiones y reglas configurables"). El motor de cálculo es `basePrice + pricePerKg * pesoTotalKg`, con envío gratis si `freeShippingThreshold` no es null y el subtotal del carrito lo alcanza. No modela dimensiones (largo/ancho/alto) — el peso es la única variable física disponible hoy en `ProductVariant.weight`; dimensiones volumétricas quedan fuera de alcance.
+model ShippingRate {
+  id                    String       @id @default(uuid())
+  carrierId             String
+  carrier               Carrier      @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  zoneId                String
+  zone                  ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  name                  String
+  basePrice             Decimal      @db.Decimal(10, 2)
+  pricePerKg            Decimal      @default(0) @db.Decimal(10, 2)
+  freeShippingThreshold Decimal?     @db.Decimal(10, 2)
+  estimatedDaysMin      Int
+  estimatedDaysMax      Int
+  isActive              Boolean      @default(true)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([zoneId])
+  @@index([carrierId])
+  @@map("shipping_rates")
+}
+
+enum ShipmentStatus {
+  LABEL_CREATED
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+
+  @@map("shipment_status")
+}
+
+/// `orderId` sin relación de Prisma a propósito — mismo criterio que `Payment.orderId`: Shipping no importa el módulo dueño de Order, solo referencia su id. Un pedido tiene como máximo un envío activo a la vez (validado en `CreateShipmentUseCase`, no a nivel de esquema, para permitir reintentos tras `FAILED`).
+model Shipment {
+  id             String          @id @default(uuid())
+  orderId        String
+  carrierId      String
+  carrier        Carrier         @relation(fields: [carrierId], references: [id])
+  service        String
+  trackingNumber String?         @unique
+  labelUrl       String?
+  status         ShipmentStatus  @default(LABEL_CREATED)
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  events         ShipmentEvent[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([orderId])
+  @@map("shipments")
+}
+
+/// Bitácora de eventos de seguimiento (§10 "cambios de estado... incidencias de transporte") — mismo patrón que `PaymentEvent`.
+model ShipmentEvent {
+  id         String   @id @default(uuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  eventType  String
+  payload    Json
+  createdAt  DateTime @default(now())
+
+  @@index([shipmentId])
+  @@map("shipment_events")
+}

@@ -103,6 +103,6 @@ import { PublicVariantsController } from './presentation/controllers/public-vari
     { provide: PRODUCT_DETAIL_LOOKUP, useClass: PrismaProductDetailLookupRepository },
     { provide: INVENTORY_AVAILABILITY, useClass: PrismaInventoryAvailabilityRepository },
   ],
-  exports: [GetProductStatsUseCase],
+  exports: [GetProductStatsUseCase, PRODUCT_VARIANT_REPOSITORY],
 })
 export class CatalogModule {}

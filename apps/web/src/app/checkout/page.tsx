@@ -11,6 +11,7 @@ import { CheckoutSummary } from '../../components/checkout/CheckoutSummary';
 import { ErrorRecovery } from '../../components/checkout/ErrorRecovery';
 import { PaymentMethodSelector } from '../../components/checkout/PaymentMethodSelector';
 import { PaymentStatus as PaymentStatusView } from '../../components/checkout/PaymentStatus';
+import { ShippingEstimator } from '../../components/checkout/ShippingEstimator';
 import { ShippingSelector } from '../../components/checkout/ShippingSelector';
 import { Breadcrumbs } from '../../components/plp/Breadcrumbs';
 import { env } from '../../config/env';
@@ -195,12 +196,22 @@ export default function CheckoutPage() {
           )}
 
           {step === 'shipping' && (
-            <ShippingSelector
-              methods={shippingMethods}
-              initialSelectedId={checkout.shippingMethod?.id}
-              isSubmitting={isSubmitting}
-              onSubmit={(shippingMethodId) => void handleShippingSubmit(shippingMethodId)}
-            />
+            <div className="flex flex-col gap-4">
+              {checkout.shippingAddress && (
+                <ShippingEstimator
+                  sessionId={sessionId}
+                  country={checkout.shippingAddress.country}
+                  state={checkout.shippingAddress.state}
+                  {...(accessToken ? { accessToken } : {})}
+                />
+              )}
+              <ShippingSelector
+                methods={shippingMethods}
+                initialSelectedId={checkout.shippingMethod?.id}
+                isSubmitting={isSubmitting}
+                onSubmit={(shippingMethodId) => void handleShippingSubmit(shippingMethodId)}
+              />
+            </div>
           )}
 
           {step === 'review' &&

@@ -147,6 +147,24 @@ import type {
   UpsertSeoMetadataInput,
 } from './seo.types.js';
 import type {
+  CalculateRatesInput,
+  Carrier,
+  CreateCarrierInput,
+  CreateRateInput,
+  CreateShipmentInput,
+  CreateZoneInput,
+  Shipment,
+  ShipmentEvent,
+  ShippingMethodListing,
+  ShippingQuote,
+  ShippingRate,
+  ShippingZone,
+  UpdateCarrierInput,
+  UpdateRateInput,
+  UpdateShipmentStatusInput,
+  UpdateZoneInput,
+} from './shipping.types.js';
+import type {
   Category,
   CategoryTreeNode,
   Collection,
@@ -1757,6 +1775,138 @@ export class ApiClient {
     const query = toQueryString({ page: params.page, pageSize: params.pageSize });
     return this.request<PaginatedResult<PaymentSummary>>(`/admin/payments/refunds${query}`, {
       accessToken,
+    });
+  }
+
+  getShippingMethodListing(): Promise<{ items: ShippingMethodListing[] }> {
+    return this.request<{ items: ShippingMethodListing[] }>('/shipping/methods');
+  }
+
+  calculateShippingRates(
+    sessionId: string,
+    input: CalculateRatesInput,
+    accessToken?: string,
+  ): Promise<{ items: ShippingQuote[] }> {
+    return this.request<{ items: ShippingQuote[] }>('/shipping/rates', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify(input),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  trackShipment(trackingNumber: string): Promise<{ shipment: Shipment; events: ShipmentEvent[] }> {
+    return this.request<{ shipment: Shipment; events: ShipmentEvent[] }>(
+      `/shipping/track/${trackingNumber}`,
+    );
+  }
+
+  getShipmentForOrder(
+    accessToken: string,
+    orderId: string,
+  ): Promise<{ shipment: Shipment | null }> {
+    return this.request<{ shipment: Shipment | null }>(`/shipping/orders/${orderId}`, {
+      accessToken,
+    });
+  }
+
+  listCarriers(accessToken: string): Promise<{ items: Carrier[] }> {
+    return this.request<{ items: Carrier[] }>('/admin/shipping/carriers', { accessToken });
+  }
+
+  createCarrier(accessToken: string, input: CreateCarrierInput): Promise<Carrier> {
+    return this.request<Carrier>('/admin/shipping/carriers', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCarrier(accessToken: string, id: string, input: UpdateCarrierInput): Promise<Carrier> {
+    return this.request<Carrier>(`/admin/shipping/carriers/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteCarrier(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/shipping/carriers/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listShippingZones(accessToken: string): Promise<{ items: ShippingZone[] }> {
+    return this.request<{ items: ShippingZone[] }>('/admin/shipping/zones', { accessToken });
+  }
+
+  createShippingZone(accessToken: string, input: CreateZoneInput): Promise<ShippingZone> {
+    return this.request<ShippingZone>('/admin/shipping/zones', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateShippingZone(
+    accessToken: string,
+    id: string,
+    input: UpdateZoneInput,
+  ): Promise<ShippingZone> {
+    return this.request<ShippingZone>(`/admin/shipping/zones/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteShippingZone(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/shipping/zones/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listShippingRates(accessToken: string): Promise<{ items: ShippingRate[] }> {
+    return this.request<{ items: ShippingRate[] }>('/admin/shipping/rates', { accessToken });
+  }
+
+  createShippingRate(accessToken: string, input: CreateRateInput): Promise<ShippingRate> {
+    return this.request<ShippingRate>('/admin/shipping/rates', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateShippingRate(
+    accessToken: string,
+    id: string,
+    input: UpdateRateInput,
+  ): Promise<ShippingRate> {
+    return this.request<ShippingRate>(`/admin/shipping/rates/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteShippingRate(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/shipping/rates/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  createShipment(accessToken: string, input: CreateShipmentInput): Promise<Shipment> {
+    return this.request<Shipment>('/admin/shipments', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateShipmentStatus(
+    accessToken: string,
+    id: string,
+    input: UpdateShipmentStatusInput,
+  ): Promise<Shipment> {
+    return this.request<Shipment>(`/admin/shipments/${id}/status`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
     });
   }
 }

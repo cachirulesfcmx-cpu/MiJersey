@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { OrderTimeline } from '../../../../components/account/OrderTimeline';
+import { ShipmentStatus } from '../../../../components/account/ShipmentStatus';
 import { Breadcrumbs } from '../../../../components/plp/Breadcrumbs';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
@@ -167,6 +168,8 @@ export default function OrderDetailPage() {
         <h2 className="text-lg font-medium text-neutral-900">Seguimiento</h2>
         <OrderTimeline events={timeline} />
       </section>
+
+      {accessToken && <ShipmentStatus orderId={order.id} accessToken={accessToken} />}
 
       {reorderMessage && <p className="text-sm text-neutral-600">{reorderMessage}</p>}
 

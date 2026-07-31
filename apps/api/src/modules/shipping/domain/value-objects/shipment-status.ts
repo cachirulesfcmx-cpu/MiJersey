@@ -1,0 +1,7 @@
+export enum ShipmentStatus {
+  LABEL_CREATED = 'LABEL_CREATED',
+  IN_TRANSIT = 'IN_TRANSIT',
+  DELIVERED = 'DELIVERED',
+  FAILED = 'FAILED',
+  RETURNED = 'RETURNED',
+}
