@@ -78,6 +78,7 @@ model User {
   /// 019-Customer-Account: datos propios del área de cliente (teléfono, preferencias) — no duplica firstName/lastName, que siguen viviendo aquí y se editan vía PATCH /auth/profile (003), reutilizado por 019.
   customerProfile    CustomerProfile?
   addresses          Address[]
+  wishlists          Wishlist[]
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
 
@@ -1084,4 +1085,35 @@ model Address {
 
   @@index([customerId])
   @@map("addresses")
+}
+
+/// 020-Wishlist (§4): "cada cliente tendrá al menos una Wishlist predeterminada". Se crea de forma perezosa (igual que `CustomerProfile` en 019) en el primer `GET /wishlist`, no en el registro. La spec solo pide endpoints a nivel de item (§7) — administrar varias listas nombradas (crear/renombrar/borrar) queda fuera de alcance por ahora; `name`/`isDefault` ya dejan el modelo listo para eso sin cambios estructurales.
+model Wishlist {
+  id         String         @id @default(uuid())
+  customerId String
+  customer   User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name       String         @default("Mi lista de deseos")
+  isDefault  Boolean        @default(true)
+  /// Token del enlace compartido (spec §2 "compartir listas mediante enlace") — null hasta el primer `POST /wishlist/share`. Único para poder resolverlo en `GET /wishlist/shared/:token` sin exponer el id real de la lista.
+  shareToken String?        @unique
+  items      WishlistItem[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([customerId])
+  @@map("wishlists")
+}
+
+/// "No permitir elementos duplicados en la misma lista" (spec §4) se aplica vía `@@unique([wishlistId, variantId])` — la unicidad es a nivel de variante, no de producto, porque dos variantes del mismo producto son artículos distintos para efectos de "mover al carrito".
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  variantId  String
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, variantId])
+  @@index([wishlistId])
+  @@map("wishlist_items")
 }

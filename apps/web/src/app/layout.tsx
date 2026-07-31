@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { CartLauncher } from '../components/cart/CartLauncher';
 import { AuthProvider } from '../providers/auth-provider';
 import { CartProvider } from '../providers/cart-provider';
+import { WishlistProvider } from '../providers/wishlist-provider';
 
 export const metadata: Metadata = {
   title: 'MiJersey',
@@ -19,8 +20,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="bg-white text-neutral-900 antialiased">
         <AuthProvider>
           <CartProvider>
-            {children}
-            <CartLauncher />
+            <WishlistProvider>
+              {children}
+              <CartLauncher />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

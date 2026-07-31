@@ -161,6 +161,7 @@ import type {
   UpdateProductOptionInput,
   UpdateProductVariantInput,
 } from './variant.types.js';
+import type { AddWishlistItemInput, Wishlist } from './wishlist.types.js';
 
 const HTTP_NO_CONTENT = 204;
 
@@ -1623,5 +1624,47 @@ export class ApiClient {
 
   getMyOrder(accessToken: string, id: string): Promise<CustomerOrderDetail> {
     return this.request<CustomerOrderDetail>(`/me/orders/${id}`, { accessToken });
+  }
+
+  getWishlist(accessToken: string): Promise<Wishlist> {
+    return this.request<Wishlist>('/wishlist', { accessToken });
+  }
+
+  addWishlistItem(accessToken: string, input: AddWishlistItemInput): Promise<Wishlist> {
+    return this.request<Wishlist>('/wishlist/items', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  removeWishlistItem(accessToken: string, itemId: string): Promise<Wishlist> {
+    return this.request<Wishlist>(`/wishlist/items/${itemId}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  moveWishlistItemToCart(
+    accessToken: string,
+    itemId: string,
+    sessionId: string,
+  ): Promise<Wishlist> {
+    return this.request<Wishlist>(`/wishlist/items/${itemId}/move-to-cart`, {
+      method: 'POST',
+      accessToken,
+      headers: { 'x-session-id': sessionId },
+    });
+  }
+
+  shareWishlist(accessToken: string): Promise<{ shareToken: string }> {
+    return this.request<{ shareToken: string }>('/wishlist/share', {
+      method: 'POST',
+      accessToken,
+    });
+  }
+
+  getSharedWishlist(token: string): Promise<Wishlist> {
+    return this.request<Wishlist>(`/wishlist/shared/${token}`);
   }
 }

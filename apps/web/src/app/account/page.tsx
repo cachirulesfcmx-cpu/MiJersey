@@ -9,6 +9,7 @@ import type {
 } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { Button, Skeleton } from '@mijersey/ui';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -211,9 +212,14 @@ export default function AccountPage() {
             <p className="text-warning-600 mt-1 text-xs">Tu correo aún no está verificado.</p>
           )}
         </div>
-        <Button variant="secondary" onClick={handleLogout}>
-          Cerrar sesión
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link href="/wishlist" className="text-brand-600 text-sm hover:underline">
+            Mi lista de deseos
+          </Link>
+          <Button variant="secondary" onClick={handleLogout}>
+            Cerrar sesión
+          </Button>
+        </div>
       </header>
 
       <section className="flex flex-col gap-4">

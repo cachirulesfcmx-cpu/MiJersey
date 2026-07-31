@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { BreadcrumbItem } from '../../../components/plp/Breadcrumbs';
 import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
 import { ProductGrid } from '../../../components/plp/ProductGrid';
+import { WishlistButton } from '../../../components/wishlist/WishlistButton';
 import { env } from '../../../config/env';
 import { useCart } from '../../../providers/cart-provider';
 
@@ -214,6 +215,9 @@ export default function ProductDetailClient({
             >
               Comprar ahora
             </button>
+            {activeVariant && (
+              <WishlistButton productId={product.id} variantId={activeVariant.id} />
+            )}
           </div>
 
           {product.specifications.length > 0 && (

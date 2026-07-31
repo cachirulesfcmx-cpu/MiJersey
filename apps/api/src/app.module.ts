@@ -22,6 +22,7 @@ import { MediaModule } from './modules/media/media.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 
@@ -73,6 +74,7 @@ import { RedisModule } from './redis/redis.module';
     HomeModule,
     SearchModule,
     AdministrationModule,
+    WishlistModule,
   ],
 })
 export class AppModule {}

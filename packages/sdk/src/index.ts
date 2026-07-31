@@ -211,3 +211,4 @@ export type {
   UpdateProductOptionInput,
   UpdateProductVariantInput,
 } from './variant.types.js';
+export type { AddWishlistItemInput, Wishlist, WishlistItemView } from './wishlist.types.js';

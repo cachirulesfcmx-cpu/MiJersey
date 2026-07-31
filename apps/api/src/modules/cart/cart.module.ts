@@ -55,6 +55,7 @@ import { OptionalAuthGuard } from './presentation/guards/optional-auth.guard';
   ],
   exports: [
     GetOrCreateCartUseCase,
+    AddCartItemUseCase,
     BuildCartViewUseCase,
     OptionalAuthGuard,
     CART_REPOSITORY,
