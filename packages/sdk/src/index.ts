@@ -222,6 +222,23 @@ export type {
   UpdateZoneInput,
 } from './shipping.types.js';
 export type {
+  CreateRmaInput,
+  CreateTicketInput,
+  ListRmaParams,
+  ListTicketsParams,
+  ReplyTicketInput,
+  RmaRequest,
+  RmaStatus,
+  Ticket,
+  TicketCategory,
+  TicketMessage,
+  TicketMessageAuthorType,
+  TicketPriority,
+  TicketStatus,
+  UpdateRmaStatusInput,
+  UpdateTicketInput,
+} from './support.types.js';
+export type {
   Category,
   CategoryStatus,
   CategoryTreeNode,

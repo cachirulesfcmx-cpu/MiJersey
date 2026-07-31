@@ -173,6 +173,18 @@ import type {
   UpdateZoneInput,
 } from './shipping.types.js';
 import type {
+  CreateRmaInput,
+  CreateTicketInput,
+  ListRmaParams,
+  ListTicketsParams,
+  ReplyTicketInput,
+  RmaRequest,
+  Ticket,
+  TicketMessage,
+  UpdateRmaStatusInput,
+  UpdateTicketInput,
+} from './support.types.js';
+import type {
   Category,
   CategoryTreeNode,
   Collection,
@@ -1989,6 +2001,129 @@ export class ApiClient {
     const query = toQueryString({ page: params.page, pageSize: params.pageSize });
     return this.request<PaginatedResult<PromotionUsageSummary>>(`/admin/promotions/usage${query}`, {
       accessToken,
+    });
+  }
+
+  listMyTickets(
+    accessToken: string,
+    params: ListTicketsParams = {},
+  ): Promise<PaginatedResult<Ticket>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+      priority: params.priority,
+    });
+    return this.request<PaginatedResult<Ticket>>(`/support/tickets${query}`, { accessToken });
+  }
+
+  createTicket(accessToken: string, input: CreateTicketInput): Promise<Ticket> {
+    return this.request<Ticket>('/support/tickets', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  getMyTicket(accessToken: string, id: string): Promise<Ticket> {
+    return this.request<Ticket>(`/support/tickets/${id}`, { accessToken });
+  }
+
+  listMyTicketMessages(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<TicketMessage>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<TicketMessage>>(`/support/tickets/${id}/messages${query}`, {
+      accessToken,
+    });
+  }
+
+  replyToMyTicket(
+    accessToken: string,
+    id: string,
+    input: ReplyTicketInput,
+  ): Promise<TicketMessage> {
+    return this.request<TicketMessage>(`/support/tickets/${id}/reply`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  requestRma(accessToken: string, input: CreateRmaInput): Promise<RmaRequest> {
+    return this.request<RmaRequest>('/support/rma', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listAllTickets(
+    accessToken: string,
+    params: ListTicketsParams = {},
+  ): Promise<PaginatedResult<Ticket>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+      priority: params.priority,
+      assignedAgentId: params.assignedAgentId,
+    });
+    return this.request<PaginatedResult<Ticket>>(`/admin/support/tickets${query}`, { accessToken });
+  }
+
+  getTicket(accessToken: string, id: string): Promise<Ticket> {
+    return this.request<Ticket>(`/admin/support/tickets/${id}`, { accessToken });
+  }
+
+  listTicketMessages(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<TicketMessage>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<TicketMessage>>(
+      `/admin/support/tickets/${id}/messages${query}`,
+      { accessToken },
+    );
+  }
+
+  replyToTicket(accessToken: string, id: string, input: ReplyTicketInput): Promise<TicketMessage> {
+    return this.request<TicketMessage>(`/admin/support/tickets/${id}/reply`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateTicket(accessToken: string, id: string, input: UpdateTicketInput): Promise<Ticket> {
+    return this.request<Ticket>(`/admin/support/tickets/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listRma(accessToken: string, params: ListRmaParams = {}): Promise<PaginatedResult<RmaRequest>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<RmaRequest>>(`/admin/support/rma${query}`, { accessToken });
+  }
+
+  updateRmaStatus(
+    accessToken: string,
+    id: string,
+    input: UpdateRmaStatusInput,
+  ): Promise<RmaRequest> {
+    return this.request<RmaRequest>(`/admin/support/rma/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
     });
   }
 }

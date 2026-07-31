@@ -25,6 +25,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
+import { SupportModule } from './modules/support/support.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -83,6 +84,7 @@ import { RedisModule } from './redis/redis.module';
     PaymentsModule,
     PromotionsModule,
     ShippingModule,
+    SupportModule,
   ],
 })
 export class AppModule {}

@@ -1370,3 +1370,112 @@ model PromotionUsage {
   @@index([promotionId])
   @@map("promotion_usages")
 }
+
+enum TicketCategory {
+  GENERAL
+  ORDER_ISSUE
+  RETURN_REFUND
+  SHIPPING
+  PRODUCT
+  BILLING
+
+  @@map("ticket_category")
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@map("ticket_priority")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+
+  @@map("ticket_status")
+}
+
+enum TicketMessageAuthorType {
+  CUSTOMER
+  AGENT
+  SYSTEM
+
+  @@map("ticket_message_author_type")
+}
+
+enum RmaStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  COMPLETED
+
+  @@map("rma_status")
+}
+
+/// Ticket de soporte (025 §3). `orderId` es un id de `Order` (021) sin relación de Prisma a propósito, mismo criterio que `Payment.orderId`/`Shipment.orderId`: Customer Service no importa el módulo dueño de Order. `customerId` sigue el mismo desacoplamiento (a diferencia de `Address`/`Wishlist`, que sí tienen FK a `User` por pertenecer al mismo contexto de Identity/Customer) — es el patrón ya establecido por Orders/Payments/Shipping/Promotions para módulos periféricos que solo referencian el id. `firstResponseDueAt`/`resolutionDueAt` se calculan al crear el ticket según `priority` (`sla.util.ts`) para que el SLA sea medible (spec §8, §12) sin un job en segundo plano: el incumplimiento se deriva comparando esas fechas contra `now()` en el momento de lectura.
+model Ticket {
+  id                 String                  @id @default(uuid())
+  ticketNumber       String                  @unique
+  customerId         String
+  orderId            String?
+  subject            String
+  category           TicketCategory          @default(GENERAL)
+  priority           TicketPriority          @default(MEDIUM)
+  status             TicketStatus            @default(OPEN)
+  assignedAgentId    String?
+  firstResponseDueAt DateTime
+  resolutionDueAt    DateTime
+  firstRespondedAt   DateTime?
+  closedAt           DateTime?
+  messages           TicketMessage[]
+  rmaRequests        RmaRequest[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([assignedAgentId])
+  @@map("tickets")
+}
+
+/// Mensaje de la conversación de un ticket (025 §3). `attachments` guarda URLs (no binarios) — "almacenamiento eficiente de adjuntos" (spec §8) se resuelve reutilizando activos ya subidos a Media Library (010) o cualquier URL válida, sin duplicar un pipeline de subida de archivos dentro de este módulo. `isInternal` marca notas visibles solo para agentes (spec §4 "Solo usuarios autorizados podrán ver notas internas"); el endpoint público de mensajes las filtra para clientes.
+model TicketMessage {
+  id          String                  @id @default(uuid())
+  ticketId    String
+  ticket      Ticket                  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorType  TicketMessageAuthorType
+  authorId    String?
+  message     String
+  attachments String[]                @default([])
+  isInternal  Boolean                 @default(false)
+  createdAt   DateTime                @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_messages")
+}
+
+/// Devolución (RMA) preparada (spec §2 "Devoluciones (RMA) preparadas", §4 "Preparar integración con devoluciones"): captura la solicitud y su estado administrativo sin generar automáticamente un envío de retorno real en Shipping (023) — ese paso operativo queda fuera de alcance de este sprint, igual que Shipping dejó "preparados para integración" a los transportistas reales sin credenciales. `ticketId` es opcional y nullable porque una RMA puede crearse de forma independiente; cuando no se referencia un ticket existente, `CreateRmaUseCase` crea uno de categoría `RETURN_REFUND` para mantener la trazabilidad exigida por la spec (§4 "Cada ticket tendrá un historial completo").
+model RmaRequest {
+  id               String    @id @default(uuid())
+  rmaNumber        String    @unique
+  ticketId         String?
+  ticket           Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  orderId          String
+  customerId       String
+  reason           String
+  itemsDescription String
+  status           RmaStatus @default(REQUESTED)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([status])
+  @@map("rma_requests")
+}

@@ -3,6 +3,7 @@
 import type { Order, OrderTimelineEvent } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { Button } from '@mijersey/ui';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -170,6 +171,13 @@ export default function OrderDetailPage() {
       </section>
 
       {accessToken && <ShipmentStatus orderId={order.id} accessToken={accessToken} />}
+
+      <Link
+        href={`/account/support/new?orderId=${order.id}`}
+        className="text-brand-600 text-sm hover:underline"
+      >
+        ¿Necesitas ayuda con este pedido?
+      </Link>
 
       {reorderMessage && <p className="text-sm text-neutral-600">{reorderMessage}</p>}
 

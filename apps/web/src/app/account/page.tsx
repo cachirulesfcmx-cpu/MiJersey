@@ -216,6 +216,9 @@ export default function AccountPage() {
           <Link href="/wishlist" className="text-brand-600 text-sm hover:underline">
             Mi lista de deseos
           </Link>
+          <Link href="/account/support" className="text-brand-600 text-sm hover:underline">
+            Mis tickets
+          </Link>
           <Button variant="secondary" onClick={handleLogout}>
             Cerrar sesión
           </Button>
