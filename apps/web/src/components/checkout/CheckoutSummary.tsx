@@ -75,8 +75,7 @@ export function CheckoutSummary({
       </div>
 
       <p className="text-xs text-neutral-400">
-        El pago se procesará en un paso posterior (022-Payments). Al confirmar, se genera tu pedido
-        con este total.
+        Al confirmar, se genera tu pedido con este total y podrás elegir cómo pagarlo.
       </p>
 
       <Button onClick={onConfirm} isLoading={isConfirming} className="self-start">

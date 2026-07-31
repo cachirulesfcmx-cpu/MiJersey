@@ -16,6 +16,8 @@ export const appEnvSchema = z.object({
   PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
   /** Carpeta (relativa al cwd del proceso, o absoluta) donde `LocalDiskStorageAdapter` guarda los archivos subidos. */
   MEDIA_UPLOADS_DIR: z.string().min(1).default('uploads'),
+  /** Secreto compartido para verificar la firma HMAC de los webhooks del proveedor de pago "manual" (022) — mismo mecanismo que usaría un proveedor real (Stripe/MercadoPago firman así sus webhooks). Cambiar en producción. */
+  PAYMENTS_MANUAL_WEBHOOK_SECRET: z.string().min(16).default('dev-manual-webhook-secret-change-me'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -34,5 +36,6 @@ export interface AppConfig {
   publicAdminUrl: string;
   publicApiUrl: string;
   mediaUploadsDir: string;
+  paymentsManualWebhookSecret: string;
   isProduction: boolean;
 }

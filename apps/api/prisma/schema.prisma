@@ -1135,3 +1135,51 @@ model WishlistItem {
   @@index([wishlistId])
   @@map("wishlist_items")
 }
+
+// Dominio Payments — ver docs/prompts/022-Payments.md.
+
+enum PaymentTransactionStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+
+  @@map("payment_transaction_status")
+}
+
+/// `orderId` es un id de `Order` (021) sin relación de Prisma a propósito — mismo criterio que `WishlistItem.productId`/`CartItem.variantId`: Payments no importa el módulo dueño, solo referencia su id. Un pedido puede tener más de un `Payment` (reintentos tras un `FAILED`), por eso no es `@unique`. "No incluye almacenamiento de datos sensibles de tarjetas" (spec §2) — no hay ningún campo de tarjeta aquí; `transactionId` es la referencia opaca que devuelve el proveedor.
+model Payment {
+  id            String                   @id @default(uuid())
+  orderId       String
+  provider      String
+  transactionId String
+  amount        Decimal                  @db.Decimal(10, 2)
+  currency      String
+  status        PaymentTransactionStatus @default(PENDING)
+  authorizedAt  DateTime?
+  capturedAt    DateTime?
+  refundedAt    DateTime?
+  events        PaymentEvent[]
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@unique([provider, transactionId])
+  @@index([orderId])
+  @@map("payments")
+}
+
+/// Bitácora de eventos crudos por pago (autorizaciones, capturas, reembolsos, webhooks recibidos) — spec §10 "registrar... recepción de webhooks". `payload` guarda el cuerpo tal como llegó del proveedor (o se generó localmente) para trazabilidad/depuración, sin interpretarlo.
+model PaymentEvent {
+  id          String   @id @default(uuid())
+  paymentId   String
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventType   String
+  payload     Json
+  processedAt DateTime @default(now())
+
+  @@index([paymentId])
+  @@map("payment_events")
+}

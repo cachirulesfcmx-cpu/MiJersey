@@ -23,6 +23,7 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     publicAdminUrl: env.PUBLIC_ADMIN_URL,
     publicApiUrl: env.PUBLIC_API_URL,
     mediaUploadsDir: env.MEDIA_UPLOADS_DIR,
+    paymentsManualWebhookSecret: env.PAYMENTS_MANUAL_WEBHOOK_SECRET,
     isProduction: env.NODE_ENV === 'production',
   };
 }

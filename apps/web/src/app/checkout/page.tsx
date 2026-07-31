@@ -1,6 +1,6 @@
 'use client';
 
-import type { Checkout, CheckoutAddressInput, Order, ShippingMethod } from '@mijersey/sdk';
+import type { Checkout, CheckoutAddressInput, Order, Payment, ShippingMethod } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,6 +9,8 @@ import { AddressForm, type AddressFormValue } from '../../components/checkout/Ad
 import { CheckoutProgress, type CheckoutStep } from '../../components/checkout/CheckoutProgress';
 import { CheckoutSummary } from '../../components/checkout/CheckoutSummary';
 import { ErrorRecovery } from '../../components/checkout/ErrorRecovery';
+import { PaymentMethodSelector } from '../../components/checkout/PaymentMethodSelector';
+import { PaymentStatus as PaymentStatusView } from '../../components/checkout/PaymentStatus';
 import { ShippingSelector } from '../../components/checkout/ShippingSelector';
 import { Breadcrumbs } from '../../components/plp/Breadcrumbs';
 import { env } from '../../config/env';
@@ -50,6 +52,9 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [payment, setPayment] = useState<Payment | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -137,6 +142,30 @@ export default function CheckoutPage() {
     }
   }
 
+  /** Autorizar + capturar en un solo clic (022) — el proveedor "manual" resuelve ambos pasos de forma síncrona, como confirmar en el momento que el pago (efectivo/transferencia) ya se recibió. Reintentable: `AuthorizePaymentUseCase` es idempotente si ya existe una autorización vigente. */
+  async function handlePay() {
+    if (!order) return;
+    setIsPaying(true);
+    setPaymentError(null);
+    try {
+      const authorized = await client.authorizePayment({ orderId: order.id });
+      if (authorized.status === 'FAILED') {
+        setPayment(authorized);
+        setPaymentError('El pago no pudo autorizarse.');
+        return;
+      }
+      const captured = await client.capturePayment(authorized.id);
+      setPayment(captured);
+      if (captured.status === 'FAILED') {
+        setPaymentError('El pago no pudo capturarse.');
+      }
+    } catch (err) {
+      setPaymentError(err instanceof ApiClientError ? err.message : 'No se pudo procesar el pago.');
+    } finally {
+      setIsPaying(false);
+    }
+  }
+
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Checkout' }]} />
@@ -186,19 +215,35 @@ export default function CheckoutPage() {
             ))}
 
           {step === 'confirmed' && order && (
-            <div className="flex flex-col gap-3 rounded-md border border-neutral-200 p-6">
-              <h2 className="text-lg font-semibold text-neutral-900">¡Pedido registrado!</h2>
-              <p className="text-sm text-neutral-600">
-                Tu número de pedido es <strong>{order.orderNumber}</strong>. El pago se procesará en
-                un paso posterior (022-Payments).
-              </p>
-              <p className="text-sm text-neutral-600">
-                Total:{' '}
-                {order.grandTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
-              </p>
-              <Link href="/" className="text-brand-600 text-sm hover:underline">
-                Volver al inicio
-              </Link>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 rounded-md border border-neutral-200 p-6">
+                <h2 className="text-lg font-semibold text-neutral-900">¡Pedido registrado!</h2>
+                <p className="text-sm text-neutral-600">
+                  Tu número de pedido es <strong>{order.orderNumber}</strong>.
+                </p>
+                <p className="text-sm text-neutral-600">
+                  Total:{' '}
+                  {order.grandTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
+                </p>
+              </div>
+
+              {paymentError ? (
+                <ErrorRecovery
+                  message={paymentError}
+                  retryLabel="Reintentar pago"
+                  onRetry={() => void handlePay()}
+                />
+              ) : payment && payment.status === 'CAPTURED' ? (
+                <PaymentStatusView payment={payment} />
+              ) : (
+                <PaymentMethodSelector isSubmitting={isPaying} onPay={() => void handlePay()} />
+              )}
+
+              {payment && payment.status === 'CAPTURED' && (
+                <Link href="/" className="text-brand-600 text-sm hover:underline">
+                  Volver al inicio
+                </Link>
+              )}
             </div>
           )}
         </>

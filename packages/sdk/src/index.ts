@@ -156,6 +156,13 @@ export type {
   ReorderResult,
 } from './orders.types.js';
 export type {
+  AuthorizePaymentInput,
+  Payment,
+  PaymentSummary,
+  PaymentTransactionStatus,
+  RefundPaymentInput,
+} from './payments.types.js';
+export type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,

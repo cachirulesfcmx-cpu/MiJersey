@@ -120,6 +120,12 @@ import type {
   ReorderResult,
 } from './orders.types.js';
 import type {
+  AuthorizePaymentInput,
+  Payment,
+  PaymentSummary,
+  RefundPaymentInput,
+} from './payments.types.js';
+import type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,
@@ -1716,5 +1722,41 @@ export class ApiClient {
       status: params.status,
     });
     return this.request<PaginatedResult<OrderSummary>>(`/admin/orders${query}`, { accessToken });
+  }
+
+  authorizePayment(input: AuthorizePaymentInput): Promise<Payment> {
+    return this.request<Payment>('/payments/authorize', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  capturePayment(paymentId: string): Promise<Payment> {
+    return this.request<Payment>('/payments/capture', {
+      method: 'POST',
+      body: JSON.stringify({ paymentId }),
+    });
+  }
+
+  getPayment(accessToken: string, id: string): Promise<Payment> {
+    return this.request<Payment>(`/payments/${id}`, { accessToken });
+  }
+
+  refundPayment(accessToken: string, input: RefundPaymentInput): Promise<Payment> {
+    return this.request<Payment>('/admin/payments/refund', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listRefunds(
+    accessToken: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<PaymentSummary>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<PaymentSummary>>(`/admin/payments/refunds${query}`, {
+      accessToken,
+    });
   }
 }
