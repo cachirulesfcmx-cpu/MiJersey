@@ -126,6 +126,14 @@ import type {
   RefundPaymentInput,
 } from './payments.types.js';
 import type {
+  CreatePromotionInput,
+  Promotion,
+  PromotionUsageSummary,
+  RecordedPromotionUsage,
+  UpdatePromotionInput,
+  ValidatePromotionResult,
+} from './promotions.types.js';
+import type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,
@@ -1907,6 +1915,80 @@ export class ApiClient {
       method: 'PATCH',
       accessToken,
       body: JSON.stringify(input),
+    });
+  }
+
+  listActivePromotions(): Promise<{ items: Promotion[] }> {
+    return this.request<{ items: Promotion[] }>('/promotions');
+  }
+
+  validatePromotion(
+    sessionId: string,
+    input: { code?: string },
+    accessToken?: string,
+  ): Promise<ValidatePromotionResult> {
+    return this.request<ValidatePromotionResult>('/promotions/validate', {
+      method: 'POST',
+      headers: { 'x-session-id': sessionId },
+      body: JSON.stringify(input),
+      ...(accessToken ? { accessToken } : {}),
+    });
+  }
+
+  recordPromotionUsage(orderId: string): Promise<{ usage: RecordedPromotionUsage | null }> {
+    return this.request<{ usage: RecordedPromotionUsage | null }>('/promotions/record-usage', {
+      method: 'POST',
+      body: JSON.stringify({ orderId }),
+    });
+  }
+
+  listPromotions(
+    accessToken: string,
+    params: { page?: number; pageSize?: number; status?: string } = {},
+  ): Promise<PaginatedResult<Promotion>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<Promotion>>(`/admin/promotions${query}`, { accessToken });
+  }
+
+  getPromotion(accessToken: string, id: string): Promise<Promotion> {
+    return this.request<Promotion>(`/admin/promotions/${id}`, { accessToken });
+  }
+
+  createPromotion(accessToken: string, input: CreatePromotionInput): Promise<Promotion> {
+    return this.request<Promotion>('/admin/promotions', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updatePromotion(
+    accessToken: string,
+    id: string,
+    input: UpdatePromotionInput,
+  ): Promise<Promotion> {
+    return this.request<Promotion>(`/admin/promotions/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deletePromotion(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/promotions/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listPromotionUsage(
+    accessToken: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<PromotionUsageSummary>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<PromotionUsageSummary>>(`/admin/promotions/usage${query}`, {
+      accessToken,
     });
   }
 }

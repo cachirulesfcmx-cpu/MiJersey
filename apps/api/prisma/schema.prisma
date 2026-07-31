@@ -1277,3 +1277,96 @@ model ShipmentEvent {
   @@index([shipmentId])
   @@map("shipment_events")
 }
+
+// Dominio Coupons & Promotions — ver docs/prompts/024-Coupons-Promotions.md.
+
+enum PromotionType {
+  MANUAL_COUPON
+  AUTOMATIC
+
+  @@map("promotion_type")
+}
+
+enum PromotionDiscountType {
+  PERCENTAGE
+  FIXED
+
+  @@map("promotion_discount_type")
+}
+
+enum PromotionStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("promotion_status")
+}
+
+enum PromotionRuleType {
+  MIN_CART_AMOUNT
+  PRODUCT
+  CATEGORY
+  BRAND
+  CUSTOMER
+
+  @@map("promotion_rule_type")
+}
+
+enum PromotionRuleOperator {
+  GTE
+  IN
+
+  @@map("promotion_rule_operator")
+}
+
+/// Motor de promociones completo (024) sobre el `Coupon` mínimo de Cart (017, "un motor de promociones completo... es responsabilidad de 024-Coupons-Promotions"). `code` es único y nulo para promociones `AUTOMATIC` (sin código, evaluadas solo por reglas). Sin reglas propias (`rules` vacío), un `MANUAL_COUPON` se replica 1:1 en `Coupon` (017) vía `COUPON_REPOSITORY` — así el carrito lo aplica a su total sin ningún cambio estructural en Cart/Checkout. Con reglas (mínimo de compra, producto, categoría, marca, cliente), el código no se replica: Cart no tiene forma de evaluarlas, así que ese cupón vive solo en el motor de 024, validable vía `POST /promotions/validate` pero no deducido automáticamente del total del carrito — límite de alcance documentado, coherente con la Definition of Done ("sin cambios estructurales").
+model Promotion {
+  id            String                @id @default(uuid())
+  name          String
+  code          String?               @unique
+  type          PromotionType
+  discountType  PromotionDiscountType
+  discountValue Decimal               @db.Decimal(10, 2)
+  status        PromotionStatus       @default(ACTIVE)
+  priority      Int                   @default(0)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  usageLimit    Int?
+  usageCount    Int                   @default(0)
+  stackable     Boolean               @default(false)
+  rules         PromotionRule[]
+  usages        PromotionUsage[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@map("promotions")
+}
+
+/// Regla genérica de elegibilidad (§3, §4). `value` guarda un número (para `MIN_CART_AMOUNT` + `GTE`) o una lista separada por comas de ids (para `PRODUCT`/`CATEGORY`/`BRAND`/`CUSTOMER` + `IN`) — mismo criterio de "campo genérico interpretado según su tipo" que `OrderStatusHistory.field/value` (021).
+model PromotionRule {
+  id          String                @id @default(uuid())
+  promotionId String
+  promotion   Promotion             @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  ruleType    PromotionRuleType
+  operator    PromotionRuleOperator
+  value       String
+  createdAt   DateTime              @default(now())
+
+  @@index([promotionId])
+  @@map("promotion_rules")
+}
+
+/// Registro de cada uso real de una promoción (§4 "Registrar cada uso de un cupón", §10). `orderId` es un id de `Order` (021) sin relación de Prisma a propósito — mismo criterio que `Payment.orderId`/`Shipment.orderId`: Promotions no importa el módulo dueño de Order, solo referencia su id. `@@unique([orderId])` hace idempotente `RecordPromotionUsageUseCase` frente a reintentos del cliente tras confirmar el checkout.
+model PromotionUsage {
+  id             String    @id @default(uuid())
+  promotionId    String
+  promotion      Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  orderId        String    @unique
+  customerId     String?
+  discountAmount Decimal   @db.Decimal(10, 2)
+  createdAt      DateTime  @default(now())
+
+  @@index([promotionId])
+  @@map("promotion_usages")
+}

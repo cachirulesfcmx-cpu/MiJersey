@@ -136,6 +136,8 @@ export default function CheckoutPage() {
       );
       setOrder(createdOrder);
       setStep('confirmed');
+      /** Registra el uso de la promoción (024) si el pedido llevaba cupón — no bloquea la confirmación si falla. */
+      void client.recordPromotionUsage(createdOrder.id).catch(() => undefined);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'No se pudo confirmar el pedido.');
     } finally {

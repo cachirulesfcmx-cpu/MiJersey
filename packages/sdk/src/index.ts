@@ -163,6 +163,21 @@ export type {
   RefundPaymentInput,
 } from './payments.types.js';
 export type {
+  CreatePromotionInput,
+  CreatePromotionRuleInput,
+  Promotion,
+  PromotionDiscountType,
+  PromotionRule,
+  PromotionRuleOperator,
+  PromotionRuleType,
+  PromotionStatus,
+  PromotionType,
+  PromotionUsageSummary,
+  RecordedPromotionUsage,
+  UpdatePromotionInput,
+  ValidatePromotionResult,
+} from './promotions.types.js';
+export type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,
