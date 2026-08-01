@@ -1479,3 +1479,59 @@ model RmaRequest {
   @@index([status])
   @@map("rma_requests")
 }
+
+enum PageStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+
+  @@map("page_status")
+}
+
+/// Página CMS (026 §3). `seoTitle`/`seoDescription` viven como columnas propias (no en el `SeoMetadata` polimórfico de 012) — la spec lista esos dos campos como "mínimos" de `Page` directamente, y son solo 2 campos, no el conjunto completo (canonical/OG/Twitter/JSON-LD) que justifica la tabla polimórfica de SEO. `publishedAt` sirve tanto para "ya publicado" (`PUBLISHED`, fecha pasada) como para "publicación programada" (`SCHEDULED`, fecha futura) — no hay una columna `scheduledAt` separada porque es el mismo dato con distinto significado según `status`. No hay job en segundo plano que promueva `SCHEDULED → PUBLISHED`: `GetPublishedPageUseCase` lo deriva al leer, comparando `publishedAt` contra `now()`, mismo criterio que el motor de SLA de Support (025).
+model Page {
+  id             String        @id @default(uuid())
+  title          String
+  slug           String        @unique
+  status         PageStatus    @default(DRAFT)
+  template       String        @default("default")
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime?
+  blocks         PageBlock[]
+  versions       PageVersion[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@map("cms_pages")
+}
+
+/// Bloque de contenido de una página (026 §3). `type` es un string libre validado en el dominio (`validatePageBlockConfig`), no un enum de Prisma — mismo motivo que `Ticket.category` en 025 no necesita ser exhaustivo desde el esquema. `config` guarda la forma específica de cada tipo de bloque.
+model PageBlock {
+  id        String   @id @default(uuid())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  type      String
+  position  Int      @default(0)
+  config    Json
+  createdAt DateTime @default(now())
+
+  @@index([pageId])
+  @@map("cms_page_blocks")
+}
+
+/// Historial de versiones (026 §4 "Mantener historial de versiones"). A diferencia de `OrderStatusHistory` (021, campo/valor genérico), una versión de página necesita reconstruir el árbol completo de bloques para poder restaurarlo — por eso `snapshot` es un JSON completo (título, slug, status, template, SEO y bloques) en vez de un registro campo/valor. `versionNumber` es un contador incremental por página, no un timestamp, para que el historial se lea en orden natural.
+model PageVersion {
+  id            String   @id @default(uuid())
+  pageId        String
+  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  snapshot      Json
+  createdAt     DateTime @default(now())
+
+  @@unique([pageId, versionNumber])
+  @@index([pageId])
+  @@map("cms_page_versions")
+}

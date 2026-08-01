@@ -74,6 +74,14 @@ import type {
   UpdateShippingMethodInput,
 } from './checkout.types.js';
 import type {
+  CreatePageInput,
+  ListPagesParams,
+  Page,
+  PageVersion,
+  PublishPageInput,
+  UpdatePageInput,
+} from './cms.types.js';
+import type {
   Address,
   CreateAddressInput,
   CustomerOrderDetail,
@@ -2124,6 +2132,69 @@ export class ApiClient {
       method: 'PATCH',
       accessToken,
       body: JSON.stringify(input),
+    });
+  }
+
+  getPublishedPage(slug: string): Promise<Page> {
+    return this.request<Page>(`/pages/${slug}`);
+  }
+
+  listPages(accessToken: string, params: ListPagesParams = {}): Promise<PaginatedResult<Page>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<Page>>(`/admin/cms/pages${query}`, { accessToken });
+  }
+
+  getPage(accessToken: string, id: string): Promise<Page> {
+    return this.request<Page>(`/admin/cms/pages/${id}`, { accessToken });
+  }
+
+  createPage(accessToken: string, input: CreatePageInput): Promise<Page> {
+    return this.request<Page>('/admin/cms/pages', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updatePage(accessToken: string, id: string, input: UpdatePageInput): Promise<Page> {
+    return this.request<Page>(`/admin/cms/pages/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deletePage(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/cms/pages/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  publishPage(accessToken: string, id: string, input: PublishPageInput = {}): Promise<Page> {
+    return this.request<Page>(`/admin/cms/pages/${id}/publish`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listPageVersions(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<PageVersion>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<PageVersion>>(`/admin/cms/pages/${id}/versions${query}`, {
+      accessToken,
+    });
+  }
+
+  restorePageVersion(accessToken: string, id: string, versionNumber: number): Promise<Page> {
+    return this.request<Page>(`/admin/cms/pages/${id}/versions/${versionNumber}/restore`, {
+      method: 'POST',
+      accessToken,
     });
   }
 }

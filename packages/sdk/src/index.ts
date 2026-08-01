@@ -100,6 +100,17 @@ export type {
   UpdateShippingMethodInput,
 } from './checkout.types.js';
 export type {
+  CreatePageInput,
+  ListPagesParams,
+  Page,
+  PageBlock,
+  PageBlockInput,
+  PageStatus,
+  PageVersion,
+  PublishPageInput,
+  UpdatePageInput,
+} from './cms.types.js';
+export type {
   Address,
   AddressType,
   CreateAddressInput,
