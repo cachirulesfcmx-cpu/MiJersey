@@ -11,8 +11,8 @@ function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function toUrlEntry(baseUrl: string, entityType: SeoEntityType, entry: SitemapEntry): string {
-  const loc = escapeXml(`${baseUrl}${buildEntityPath(entityType, entry.slug)}`);
+function toUrlEntry(baseUrl: string, path: string, entry: SitemapEntry): string {
+  const loc = escapeXml(`${baseUrl}${path}`);
   const lastmod = entry.updatedAt.toISOString();
   return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
 }
@@ -31,19 +31,30 @@ export class GenerateSitemapUseCase {
       return cached;
     }
 
-    const [products, categories, collections, brands] = await Promise.all([
+    const [products, categories, collections, brands, blogPosts] = await Promise.all([
       this.source.listPublicProducts(),
       this.source.listPublicCategories(),
       this.source.listPublicCollections(),
       this.source.listPublicBrands(),
+      this.source.listPublicBlogPosts(),
     ]);
 
     const baseUrl = this.config.publicWebUrl.replace(/\/$/, '');
     const urls = [
-      ...products.map((entry) => toUrlEntry(baseUrl, SeoEntityType.PRODUCT, entry)),
-      ...categories.map((entry) => toUrlEntry(baseUrl, SeoEntityType.CATEGORY, entry)),
-      ...collections.map((entry) => toUrlEntry(baseUrl, SeoEntityType.COLLECTION, entry)),
-      ...brands.map((entry) => toUrlEntry(baseUrl, SeoEntityType.BRAND, entry)),
+      ...products.map((entry) =>
+        toUrlEntry(baseUrl, buildEntityPath(SeoEntityType.PRODUCT, entry.slug), entry),
+      ),
+      ...categories.map((entry) =>
+        toUrlEntry(baseUrl, buildEntityPath(SeoEntityType.CATEGORY, entry.slug), entry),
+      ),
+      ...collections.map((entry) =>
+        toUrlEntry(baseUrl, buildEntityPath(SeoEntityType.COLLECTION, entry.slug), entry),
+      ),
+      ...brands.map((entry) =>
+        toUrlEntry(baseUrl, buildEntityPath(SeoEntityType.BRAND, entry.slug), entry),
+      ),
+      // 027-Blog: no tiene registro en SeoEntityType (esa tabla es exclusiva de entidades con SeoMetadata polimórfico; Blog usa columnas propias, igual que CMS Pages) — se arma la ruta directamente.
+      ...blogPosts.map((entry) => toUrlEntry(baseUrl, `/blog/${entry.slug}`, entry)),
     ];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;

@@ -79,6 +79,8 @@ model User {
   customerProfile    CustomerProfile?
   addresses          Address[]
   wishlists          Wishlist[]
+  /// 027-Blog: autores de artículos son usuarios internos (Admin/Editor) del mismo dominio Identity — a diferencia de `Ticket.customerId`/`Payment.orderId` (ids desacoplados de contextos periféricos), aquí sí conviene una FK real porque el Author Profile del storefront necesita nombre/apellido reales, igual que `Address`/`Wishlist`.
+  posts              Post[]
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
 
@@ -1420,14 +1422,14 @@ enum RmaStatus {
 
 /// Ticket de soporte (025 §3). `orderId` es un id de `Order` (021) sin relación de Prisma a propósito, mismo criterio que `Payment.orderId`/`Shipment.orderId`: Customer Service no importa el módulo dueño de Order. `customerId` sigue el mismo desacoplamiento (a diferencia de `Address`/`Wishlist`, que sí tienen FK a `User` por pertenecer al mismo contexto de Identity/Customer) — es el patrón ya establecido por Orders/Payments/Shipping/Promotions para módulos periféricos que solo referencian el id. `firstResponseDueAt`/`resolutionDueAt` se calculan al crear el ticket según `priority` (`sla.util.ts`) para que el SLA sea medible (spec §8, §12) sin un job en segundo plano: el incumplimiento se deriva comparando esas fechas contra `now()` en el momento de lectura.
 model Ticket {
-  id                 String                  @id @default(uuid())
-  ticketNumber       String                  @unique
+  id                 String          @id @default(uuid())
+  ticketNumber       String          @unique
   customerId         String
   orderId            String?
   subject            String
-  category           TicketCategory          @default(GENERAL)
-  priority           TicketPriority          @default(MEDIUM)
-  status             TicketStatus            @default(OPEN)
+  category           TicketCategory  @default(GENERAL)
+  priority           TicketPriority  @default(MEDIUM)
+  status             TicketStatus    @default(OPEN)
   assignedAgentId    String?
   firstResponseDueAt DateTime
   resolutionDueAt    DateTime
@@ -1435,8 +1437,8 @@ model Ticket {
   closedAt           DateTime?
   messages           TicketMessage[]
   rmaRequests        RmaRequest[]
-  createdAt          DateTime                @default(now())
-  updatedAt          DateTime                @updatedAt
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 
   @@index([customerId])
   @@index([status])
@@ -1534,4 +1536,99 @@ model PageVersion {
   @@unique([pageId, versionNumber])
   @@index([pageId])
   @@map("cms_page_versions")
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+
+  @@map("post_status")
+}
+
+/// Artículo de blog (027 §3). `seoTitle`/`seoDescription` son columnas propias, mismo criterio que `Page.seoTitle`/`seoDescription` (026) frente al `SeoMetadata` polimórfico de 012. `status`/`publishedAt` siguen exactamente el mismo patrón "derivar y persistir en la lectura" para `SCHEDULED → PUBLISHED` que `Page` — ver `GetPublishedPostUseCase`. `authorId` sí tiene FK real a `User` (ver comentario en `User.posts`).
+model Post {
+  id             String         @id @default(uuid())
+  title          String
+  slug           String         @unique
+  excerpt        String?
+  content        String
+  featuredImage  String?
+  authorId       String
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  status         PostStatus     @default(DRAFT)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  categories     PostCategory[]
+  tags           PostTag[]
+  versions       PostVersion[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+  @@index([authorId])
+  @@map("blog_posts")
+}
+
+/// Nombrado `BlogCategory` (no `Category`) para no colisionar con la taxonomía de Catalog (006) — son conceptos independientes, un artículo de blog no pertenece a una categoría de producto.
+model BlogCategory {
+  id        String         @id @default(uuid())
+  name      String
+  slug      String         @unique
+  posts     PostCategory[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("blog_categories")
+}
+
+/// Nombrado `BlogTag` (no `Tag`) para no colisionar con `AssetTag` de Media Library (010).
+model BlogTag {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  posts     PostTag[]
+  createdAt DateTime  @default(now())
+
+  @@map("blog_tags")
+}
+
+model PostCategory {
+  postId     String
+  categoryId String
+  post       Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   BlogCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@id([postId, categoryId])
+  @@index([categoryId])
+  @@map("blog_post_categories")
+}
+
+model PostTag {
+  postId    String
+  tagId     String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("blog_post_tags")
+}
+
+/// Historial de versiones — mismo patrón de snapshot completo que `PageVersion` (026): reconstruir el artículo completo (título, slug, excerpt, contenido, SEO, categorías, etiquetas) para poder restaurarlo.
+model PostVersion {
+  id            String   @id @default(uuid())
+  postId        String
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  snapshot      Json
+  createdAt     DateTime @default(now())
+
+  @@unique([postId, versionNumber])
+  @@index([postId])
+  @@map("blog_post_versions")
 }

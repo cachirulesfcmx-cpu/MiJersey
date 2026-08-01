@@ -38,6 +38,21 @@ import type {
   UserProfile,
 } from './auth.types.js';
 import type {
+  BlogCategory,
+  BlogTag,
+  CreateBlogCategoryInput,
+  CreateBlogTagInput,
+  CreatePostInput,
+  ListPostsParams,
+  ListPublishedPostsParams,
+  Post,
+  PostVersion,
+  PublishPostInput,
+  UpdateBlogCategoryInput,
+  UpdateBlogTagInput,
+  UpdatePostInput,
+} from './blog.types.js';
+import type {
   Brand,
   BrandProductSummary,
   CreateBrandInput,
@@ -2196,5 +2211,142 @@ export class ApiClient {
       method: 'POST',
       accessToken,
     });
+  }
+
+  listPublishedPosts(params: ListPublishedPostsParams = {}): Promise<PaginatedResult<Post>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      category: params.category,
+      tag: params.tag,
+    });
+    return this.request<PaginatedResult<Post>>(`/blog/posts${query}`);
+  }
+
+  getPublishedPost(slug: string): Promise<Post> {
+    return this.request<Post>(`/blog/posts/${slug}`);
+  }
+
+  getRelatedPosts(slug: string): Promise<Post[]> {
+    return this.request<Post[]>(`/blog/posts/${slug}/related`);
+  }
+
+  listPublicBlogCategories(): Promise<BlogCategory[]> {
+    return this.request<BlogCategory[]>('/blog/categories');
+  }
+
+  listPublicBlogTags(): Promise<BlogTag[]> {
+    return this.request<BlogTag[]>('/blog/tags');
+  }
+
+  listPosts(accessToken: string, params: ListPostsParams = {}): Promise<PaginatedResult<Post>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<Post>>(`/admin/blog/posts${query}`, { accessToken });
+  }
+
+  getPost(accessToken: string, id: string): Promise<Post> {
+    return this.request<Post>(`/admin/blog/posts/${id}`, { accessToken });
+  }
+
+  createPost(accessToken: string, input: CreatePostInput): Promise<Post> {
+    return this.request<Post>('/admin/blog/posts', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updatePost(accessToken: string, id: string, input: UpdatePostInput): Promise<Post> {
+    return this.request<Post>(`/admin/blog/posts/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deletePost(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/blog/posts/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  publishPost(accessToken: string, id: string, input: PublishPostInput = {}): Promise<Post> {
+    return this.request<Post>(`/admin/blog/posts/${id}/publish`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listPostVersions(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<PostVersion>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<PostVersion>>(`/admin/blog/posts/${id}/versions${query}`, {
+      accessToken,
+    });
+  }
+
+  restorePostVersion(accessToken: string, id: string, versionNumber: number): Promise<Post> {
+    return this.request<Post>(`/admin/blog/posts/${id}/versions/${versionNumber}/restore`, {
+      method: 'POST',
+      accessToken,
+    });
+  }
+
+  listBlogCategories(accessToken: string): Promise<BlogCategory[]> {
+    return this.request<BlogCategory[]>('/admin/blog/categories', { accessToken });
+  }
+
+  createBlogCategory(accessToken: string, input: CreateBlogCategoryInput): Promise<BlogCategory> {
+    return this.request<BlogCategory>('/admin/blog/categories', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateBlogCategory(
+    accessToken: string,
+    id: string,
+    input: UpdateBlogCategoryInput,
+  ): Promise<BlogCategory> {
+    return this.request<BlogCategory>(`/admin/blog/categories/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteBlogCategory(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/blog/categories/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listBlogTags(accessToken: string): Promise<BlogTag[]> {
+    return this.request<BlogTag[]>('/admin/blog/tags', { accessToken });
+  }
+
+  createBlogTag(accessToken: string, input: CreateBlogTagInput): Promise<BlogTag> {
+    return this.request<BlogTag>('/admin/blog/tags', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateBlogTag(accessToken: string, id: string, input: UpdateBlogTagInput): Promise<BlogTag> {
+    return this.request<BlogTag>(`/admin/blog/tags/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteBlogTag(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/blog/tags/${id}`, { method: 'DELETE', accessToken });
   }
 }

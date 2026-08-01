@@ -26,10 +26,11 @@ arranca y muestra el detalle del error.
 
 ## `apps/web` y `apps/admin`
 
-| Variable              | Requerida | Default                 | Descripción                                      |
-| --------------------- | --------- | ----------------------- | ------------------------------------------------ |
-| `NODE_ENV`            | No        | `development`           | Definida automáticamente por Next.js             |
-| `NEXT_PUBLIC_API_URL` | No        | `http://localhost:4000` | URL base de la API consumida por `@mijersey/sdk` |
+| Variable              | Requerida | Default                 | Descripción                                                                                                                                                      |
+| --------------------- | --------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`            | No        | `development`           | Definida automáticamente por Next.js                                                                                                                             |
+| `NEXT_PUBLIC_API_URL` | No        | `http://localhost:4000` | URL base de la API consumida por `@mijersey/sdk`                                                                                                                 |
+| `NEXT_PUBLIC_WEB_URL` | No        | `http://localhost:3000` | Origen público de `apps/web` (solo esa app) — usado como `metadataBase` y para construir URLs absolutas en el SEO del Blog (027: canonical, Open Graph, JSON-LD) |
 
 ## Plantillas
 

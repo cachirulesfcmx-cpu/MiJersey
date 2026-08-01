@@ -1,0 +1,82 @@
+import { ApiClient } from '@mijersey/sdk';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+
+import { PostCard } from '../../../../components/blog/PostCard';
+import { env } from '../../../../config/env';
+
+function getClient() {
+  return new ApiClient({ baseUrl: env.NEXT_PUBLIC_API_URL });
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  return {
+    title: `Blog — ${params.slug} | MiJersey`,
+    alternates: { canonical: `/blog/category/${params.slug}` },
+  };
+}
+
+/** Category Archive (spec 027 §6): mismo endpoint público de listado, filtrado por categoría. */
+export default async function BlogCategoryArchivePage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { page?: string };
+}) {
+  const page = Number(searchParams.page ?? '1') || 1;
+  const pageSize = 12;
+  const result = await getClient().listPublishedPosts({
+    page,
+    pageSize,
+    category: params.slug,
+  });
+  const totalPages = Math.max(1, Math.ceil(result.total / pageSize));
+  const categoryName = result.items[0]?.categories.find((c) => c.slug === params.slug)?.name;
+
+  return (
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+      <div>
+        <Link href="/blog" className="text-brand-600 text-sm hover:underline">
+          ← Blog
+        </Link>
+        <h1 className="text-3xl font-semibold text-neutral-900">
+          Categoría: {categoryName ?? params.slug}
+        </h1>
+      </div>
+
+      {result.items.length === 0 && (
+        <p className="text-sm text-neutral-500">No hay artículos en esta categoría.</p>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {result.items.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+
+      <div className="flex justify-center gap-4 text-sm">
+        {page > 1 && (
+          <Link
+            href={`/blog/category/${params.slug}?page=${page - 1}`}
+            className="text-brand-600 hover:underline"
+          >
+            Anterior
+          </Link>
+        )}
+        {page < totalPages && (
+          <Link
+            href={`/blog/category/${params.slug}?page=${page + 1}`}
+            className="text-brand-600 hover:underline"
+          >
+            Siguiente
+          </Link>
+        )}
+      </div>
+    </main>
+  );
+}

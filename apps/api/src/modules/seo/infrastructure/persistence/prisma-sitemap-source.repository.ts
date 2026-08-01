@@ -38,4 +38,12 @@ export class PrismaSitemapSourceRepository implements SitemapSourcePort {
     });
     return rows;
   }
+
+  async listPublicBlogPosts(): Promise<SitemapEntry[]> {
+    const rows = await this.prisma.post.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { slug: true, updatedAt: true },
+    });
+    return rows;
+  }
 }

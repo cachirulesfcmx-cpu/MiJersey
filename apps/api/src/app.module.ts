@@ -10,6 +10,7 @@ import type { AppConfig } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AdministrationModule } from './modules/administration/administration.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
+import { BlogModule } from './modules/blog/blog.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
@@ -87,6 +88,7 @@ import { RedisModule } from './redis/redis.module';
     ShippingModule,
     SupportModule,
     CmsModule,
+    BlogModule,
   ],
 })
 export class AppModule {}

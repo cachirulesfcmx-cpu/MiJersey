@@ -44,6 +44,24 @@ export type {
   UserProfile,
 } from './auth.types.js';
 export type {
+  BlogAuthor,
+  BlogCategory,
+  BlogTag,
+  BlogTerm,
+  CreateBlogCategoryInput,
+  CreateBlogTagInput,
+  CreatePostInput,
+  ListPostsParams,
+  ListPublishedPostsParams,
+  Post,
+  PostStatus,
+  PostVersion,
+  PublishPostInput,
+  UpdateBlogCategoryInput,
+  UpdateBlogTagInput,
+  UpdatePostInput,
+} from './blog.types.js';
+export type {
   Brand,
   BrandProductSortBy,
   BrandProductSummary,

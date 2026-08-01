@@ -13,4 +13,6 @@ export interface SitemapSourcePort {
   listPublicCategories(): Promise<SitemapEntry[]>;
   listPublicCollections(): Promise<SitemapEntry[]>;
   listPublicBrands(): Promise<SitemapEntry[]>;
+  /** 027-Blog: artículos publicados, mismo patrón "SEO consulta la tabla ajena directamente vía Prisma" que el resto de fuentes — sin importar el módulo Blog. */
+  listPublicBlogPosts(): Promise<SitemapEntry[]>;
 }
