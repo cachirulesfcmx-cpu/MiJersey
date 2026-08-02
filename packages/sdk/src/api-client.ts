@@ -205,6 +205,13 @@ import type {
   UpdateZoneInput,
 } from './shipping.types.js';
 import type {
+  ListSystemSettingsParams,
+  SiteConfiguration,
+  SystemSetting,
+  UpdateSiteConfigurationInput,
+  UpdateSystemSettingsInput,
+} from './site-config.types.js';
+import type {
   CreateRmaInput,
   CreateTicketInput,
   ListRmaParams,
@@ -2471,6 +2478,40 @@ export class ApiClient {
     return this.request<ThemeState>(`/admin/theme/versions/${versionNumber}/restore`, {
       method: 'POST',
       accessToken,
+    });
+  }
+
+  getSiteConfiguration(accessToken: string): Promise<SiteConfiguration> {
+    return this.request<SiteConfiguration>('/admin/settings/site', { accessToken });
+  }
+
+  updateSiteConfiguration(
+    accessToken: string,
+    input: UpdateSiteConfigurationInput,
+  ): Promise<SiteConfiguration> {
+    return this.request<SiteConfiguration>('/admin/settings/site', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listSystemSettings(
+    accessToken: string,
+    params: ListSystemSettingsParams = {},
+  ): Promise<SystemSetting[]> {
+    const query = toQueryString({ category: params.category });
+    return this.request<SystemSetting[]>(`/admin/settings/system${query}`, { accessToken });
+  }
+
+  updateSystemSettings(
+    accessToken: string,
+    input: UpdateSystemSettingsInput,
+  ): Promise<SystemSetting[]> {
+    return this.request<SystemSetting[]>('/admin/settings/system', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
     });
   }
 }

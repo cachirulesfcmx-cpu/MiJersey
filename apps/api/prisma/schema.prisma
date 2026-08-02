@@ -1751,3 +1751,31 @@ model ThemeVersion {
 
   @@map("theme_versions")
 }
+
+/// Configuración operativa/regional del sitio (030 §3) — singleton real (nunca hay más de una fila, creado perezosamente con valores por defecto en el primer acceso, mismo criterio que `ThemeSettings`/`CustomerProfile`). A diferencia de `ThemeSettings`, no tiene tabla de versiones: la spec (§5/§7) no pide historial para esta configuración, solo lectura/escritura auditada — cada `PATCH` se registra en `AuditLogRepositoryPort`, no en una tabla propia.
+model SiteConfiguration {
+  id              String   @id @default(uuid())
+  siteName        String
+  defaultDomain   String
+  defaultLanguage String
+  defaultCurrency String
+  timezone        String
+  locale          String
+  supportEmail    String
+  supportPhone    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("site_configuration")
+}
+
+/// Ajustes de sistema como pares clave/valor agrupados por categoría (030 §3) — pensado para integraciones/políticas/impuestos que no ameritan un campo propio en `SiteConfiguration` (spec §2 "impuestos (configuración base)", "políticas legales", "integraciones globales"). `value` es `Json` porque cada `key` puede necesitar una forma distinta (texto, booleano, objeto de credenciales); `category` no es un enum porque la spec no cierra el conjunto de categorías, mismo criterio que `NavigationMenu.location`.
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  category  String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

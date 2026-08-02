@@ -265,6 +265,14 @@ export type {
   UpdateZoneInput,
 } from './shipping.types.js';
 export type {
+  ListSystemSettingsParams,
+  SiteConfiguration,
+  SystemSetting,
+  SystemSettingInput,
+  UpdateSiteConfigurationInput,
+  UpdateSystemSettingsInput,
+} from './site-config.types.js';
+export type {
   CreateRmaInput,
   CreateTicketInput,
   ListRmaParams,

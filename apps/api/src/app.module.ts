@@ -28,6 +28,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
+import { SiteConfigModule } from './modules/site-config/site-config.module';
 import { SupportModule } from './modules/support/support.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { ThemeModule } from './modules/theme/theme.module';
@@ -93,6 +94,7 @@ import { RedisModule } from './redis/redis.module';
     BlogModule,
     NavigationModule,
     ThemeModule,
+    SiteConfigModule,
   ],
 })
 export class AppModule {}
