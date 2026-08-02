@@ -5,6 +5,8 @@ import type {
   CreateAddressInput,
   CustomerOrderSummary,
   MyAccount,
+  NotificationChannel,
+  NotificationPreference,
   SessionSummary,
 } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
@@ -15,6 +17,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AddressBook } from '../../components/account/AddressBook';
 import { ChangePasswordForm } from '../../components/account/ChangePasswordForm';
+import { NotificationPreferences } from '../../components/account/NotificationPreferences';
 import { OrderHistory } from '../../components/account/OrderHistory';
 import { ProfileForm, type ProfileFormValue } from '../../components/account/ProfileForm';
 import { env } from '../../config/env';
@@ -40,6 +43,14 @@ export default function AccountPage() {
 
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
+
+  const [notificationPreferences, setNotificationPreferences] = useState<
+    NotificationPreference[] | null
+  >(null);
+  const [isSavingNotificationPreferences, setIsSavingNotificationPreferences] = useState(false);
+  const [notificationPreferencesError, setNotificationPreferencesError] = useState<string | null>(
+    null,
+  );
 
   const loadAccount = useCallback(async () => {
     if (!accessToken) return;
@@ -90,12 +101,26 @@ export default function AccountPage() {
     }
   }, [isLoading, user, router]);
 
+  const loadNotificationPreferences = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      setNotificationPreferences(await client.getMyNotificationPreferences(accessToken));
+    } catch (err) {
+      setNotificationPreferencesError(
+        err instanceof ApiClientError
+          ? err.message
+          : 'No se pudieron cargar tus preferencias de notificación.',
+      );
+    }
+  }, [client, accessToken]);
+
   useEffect(() => {
     void loadAccount();
     void loadAddresses();
     void loadOrders();
     void loadSessions();
-  }, [loadAccount, loadAddresses, loadOrders, loadSessions]);
+    void loadNotificationPreferences();
+  }, [loadAccount, loadAddresses, loadOrders, loadSessions, loadNotificationPreferences]);
 
   async function handleProfileSubmit(value: ProfileFormValue) {
     if (!accessToken) return;
@@ -186,6 +211,27 @@ export default function AccountPage() {
     await loadSessions();
   }
 
+  async function handleToggleNotificationPreference(
+    channel: NotificationChannel,
+    enabled: boolean,
+  ) {
+    if (!accessToken) return;
+    setIsSavingNotificationPreferences(true);
+    setNotificationPreferencesError(null);
+    try {
+      const updated = await client.updateMyNotificationPreferences(accessToken, {
+        updates: [{ channel, enabled }],
+      });
+      setNotificationPreferences(updated);
+    } catch (err) {
+      setNotificationPreferencesError(
+        err instanceof ApiClientError ? err.message : 'No se pudo actualizar la preferencia.',
+      );
+    } finally {
+      setIsSavingNotificationPreferences(false);
+    }
+  }
+
   async function handleLogout() {
     await logout();
     router.push('/login');
@@ -264,6 +310,18 @@ export default function AccountPage() {
         <h2 className="text-lg font-medium text-neutral-900">Seguridad</h2>
         {passwordError && <p className="text-danger-600 text-sm">{passwordError}</p>}
         <ChangePasswordForm isSubmitting={isChangingPassword} onSubmit={handleChangePassword} />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium text-neutral-900">Notificaciones</h2>
+        {notificationPreferencesError && (
+          <p className="text-danger-600 text-sm">{notificationPreferencesError}</p>
+        )}
+        <NotificationPreferences
+          preferences={notificationPreferences}
+          isSaving={isSavingNotificationPreferences}
+          onToggle={(channel, enabled) => void handleToggleNotificationPreference(channel, enabled)}
+        />
       </section>
 
       <section className="flex flex-col gap-4">

@@ -24,6 +24,7 @@ import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { MediaModule } from './modules/media/media.module';
 import { NavigationModule } from './modules/navigation/navigation.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
@@ -101,6 +102,7 @@ import { RedisModule } from './redis/redis.module';
     EmailTemplatesModule,
     AnalyticsModule,
     TrackingModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

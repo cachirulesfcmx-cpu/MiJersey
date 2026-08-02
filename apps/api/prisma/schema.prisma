@@ -1904,3 +1904,54 @@ model TrackingEvent {
   @@index([source])
   @@map("tracking_events")
 }
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+/// Ciclo de vida de un envío (034 §3/§10 "registrar todo el ciclo de vida"). `customerId`/`idempotencyKey`/`retryCount`/`lastError` extienden los campos mínimos literales del spec: `customerId` para poder aplicar `NotificationPreference` (§4) y para el self-service `/notifications`; `idempotencyKey` único para "evitar envíos duplicados mediante idempotencia" (§4); `retryCount`/`lastError` para que el Retry Manager (§6) y la trazabilidad de errores (§10) tengan algo que mostrar. Sin FK a `User`: mismo criterio "decoupled reference" que `AnalyticsEvent`/`TrackingEvent` — un `customerId` puede referenciar un usuario eliminado sin romper el histórico.
+model Notification {
+  id             String              @id @default(uuid())
+  channel        NotificationChannel
+  templateKey    String
+  recipient      String
+  customerId     String?
+  status         NotificationStatus  @default(QUEUED)
+  payload        Json
+  idempotencyKey String?             @unique
+  retryCount     Int                 @default(0)
+  lastError      String?
+  queuedAt       DateTime            @default(now())
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  failedAt       DateTime?
+  createdAt      DateTime            @default(now())
+
+  /// Soporta los filtros del Admin Dashboard/Delivery Status y las consultas indexadas del spec (034 §8).
+  @@index([channel, status])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/// Preferencia de un cliente por canal (034 §3) — sin fila para un canal significa "habilitado" por defecto (`GetNotificationPreferencesUseCase` sintetiza el valor por defecto); solo se persiste una fila cuando el cliente cambia explícitamente una preferencia.
+model NotificationPreference {
+  id         String              @id @default(uuid())
+  customerId String
+  channel    NotificationChannel
+  enabled    Boolean             @default(true)
+  updatedAt  DateTime            @updatedAt
+
+  @@unique([customerId, channel])
+  @@map("notification_preferences")
+}

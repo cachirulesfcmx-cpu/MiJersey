@@ -51,5 +51,8 @@ import { AdminEmailTemplateController } from './presentation/controllers/admin-e
     { provide: EMAIL_LAYOUT_REPOSITORY, useClass: PrismaEmailLayoutRepository },
     { provide: EMAIL_TRANSPORT, useClass: NodemailerEmailTransport },
   ],
+  // Necesario para 034-Notifications: EmailNotificationChannel resuelve la plantilla publicada
+  // y envía el correo reutilizando estas mismas piezas, sin duplicar el motor de render.
+  exports: [EMAIL_TEMPLATE_REPOSITORY, EMAIL_LAYOUT_REPOSITORY, EMAIL_TRANSPORT],
 })
 export class EmailTemplatesModule {}

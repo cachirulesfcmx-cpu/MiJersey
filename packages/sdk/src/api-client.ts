@@ -173,6 +173,14 @@ import type {
   UpdateMenuInput,
 } from './navigation.types.js';
 import type {
+  ListMyNotificationsParams,
+  ListNotificationsParams,
+  Notification,
+  NotificationPreference,
+  TestNotificationInput,
+  UpdateNotificationPreferencesInput,
+} from './notifications.types.js';
+import type {
   CancelOrderInput,
   OrderSummary,
   OrderTimelineEvent,
@@ -2865,5 +2873,62 @@ export class ApiClient {
 
   getTrackingConsentCategories(): Promise<TrackingConsentCategories> {
     return this.request<TrackingConsentCategories>('/tracking/consent');
+  }
+
+  listMyNotifications(
+    accessToken: string,
+    params: ListMyNotificationsParams = {},
+  ): Promise<PaginatedResult<Notification>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<Notification>>(`/notifications${query}`, { accessToken });
+  }
+
+  getMyNotificationPreferences(accessToken: string): Promise<NotificationPreference[]> {
+    return this.request<NotificationPreference[]>('/notifications/preferences', { accessToken });
+  }
+
+  updateMyNotificationPreferences(
+    accessToken: string,
+    input: UpdateNotificationPreferencesInput,
+  ): Promise<NotificationPreference[]> {
+    return this.request<NotificationPreference[]>('/notifications/preferences', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listNotifications(
+    accessToken: string,
+    params: ListNotificationsParams = {},
+  ): Promise<PaginatedResult<Notification>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      channel: params.channel,
+      status: params.status,
+      customerId: params.customerId,
+      templateKey: params.templateKey,
+      from: params.from,
+      to: params.to,
+    });
+    return this.request<PaginatedResult<Notification>>(`/admin/notifications${query}`, {
+      accessToken,
+    });
+  }
+
+  testNotification(accessToken: string, input: TestNotificationInput): Promise<Notification> {
+    return this.request<Notification>('/admin/notifications/test', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  retryNotification(accessToken: string, id: string): Promise<Notification> {
+    return this.request<Notification>(`/admin/notifications/${id}/retry`, {
+      method: 'POST',
+      accessToken,
+    });
   }
 }
