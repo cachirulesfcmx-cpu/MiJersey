@@ -17,6 +17,7 @@ import { CatalogModule } from './modules/catalog/catalog.module';
 import { CheckoutModule } from './modules/checkout/checkout.module';
 import { CmsModule } from './modules/cms/cms.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { EmailTemplatesModule } from './modules/email-templates/email-templates.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -95,6 +96,7 @@ import { RedisModule } from './redis/redis.module';
     NavigationModule,
     ThemeModule,
     SiteConfigModule,
+    EmailTemplatesModule,
   ],
 })
 export class AppModule {}

@@ -1779,3 +1779,60 @@ model SystemSetting {
 
   @@map("system_settings")
 }
+
+enum EmailTemplateStatus {
+  DRAFT
+  PUBLISHED
+
+  @@map("email_template_status")
+}
+
+/// Layout reutilizable (031 §2/§4 "permitir reutilizar layouts") — chrome de correo (header/footer, estilos) compartido entre plantillas. `html` debe incluir el placeholder `{{content}}` donde el renderer inserta el HTML ya resuelto de la plantilla; sin versionado propio (la spec no lo pide para este modelo, a diferencia de `EmailTemplate`).
+model EmailLayout {
+  id        String   @id @default(uuid())
+  name      String
+  html      String
+  css       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  templates EmailTemplate[]
+
+  @@map("email_layouts")
+}
+
+/// Plantilla transaccional (031 §3) — `key` identifica el tipo de correo (ej. "order.confirmation") y es única en combinación con `language` (spec §4 "cada plantilla tendrá una clave única" + "soportar múltiples idiomas": una clave puede tener una fila por idioma). `version` es un contador que avanza con cada `PATCH` (a diferencia de Page/Post/NavigationMenu, que solo versionan en una tabla aparte, esta spec pide el campo directamente en la entidad) — el historial completo vive en `EmailTemplateVersion`. Sin FK a `EmailLayout` obligatoria: una plantilla puede no usar layout (correo standalone).
+model EmailTemplate {
+  id        String              @id @default(uuid())
+  name      String
+  key       String
+  language  String
+  subject   String
+  html      String
+  text      String
+  status    EmailTemplateStatus @default(DRAFT)
+  version   Int                 @default(1)
+  layoutId  String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  layout   EmailLayout?          @relation(fields: [layoutId], references: [id], onDelete: SetNull)
+  versions EmailTemplateVersion[]
+
+  @@unique([key, language])
+  @@map("email_templates")
+}
+
+/// Historial de versiones de una plantilla — snapshot completo (mismo criterio que `PageVersion`/`PostVersion`/`NavigationVersion`), creado en cada `PATCH` y en cada publicación (mismo criterio que `ThemeVersion`, que versiona ambos eventos) para distinguir "guardé un borrador" de "esto fue lo que se publicó".
+model EmailTemplateVersion {
+  id            String   @id @default(uuid())
+  templateId    String
+  versionNumber Int
+  snapshot      Json
+  createdAt     DateTime @default(now())
+
+  template EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, versionNumber])
+  @@map("email_template_versions")
+}

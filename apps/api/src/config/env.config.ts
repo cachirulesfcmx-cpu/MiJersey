@@ -24,6 +24,11 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     publicApiUrl: env.PUBLIC_API_URL,
     mediaUploadsDir: env.MEDIA_UPLOADS_DIR,
     paymentsManualWebhookSecret: env.PAYMENTS_MANUAL_WEBHOOK_SECRET,
+    smtpHost: env.SMTP_HOST ?? null,
+    smtpPort: env.SMTP_PORT,
+    smtpUser: env.SMTP_USER ?? null,
+    smtpPassword: env.SMTP_PASSWORD ?? null,
+    smtpFrom: env.SMTP_FROM,
     isProduction: env.NODE_ENV === 'production',
   };
 }

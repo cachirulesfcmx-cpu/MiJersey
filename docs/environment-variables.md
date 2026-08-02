@@ -23,6 +23,11 @@ arranca y muestra el detalle del error.
 | `MEDIA_UPLOADS_DIR`         | No        | `uploads`                                     | Carpeta local donde `LocalDiskStorageAdapter` guarda los archivos subidos a la Media Library (010)                                              |
 | `SEED_SUPER_ADMIN_EMAIL`    | No        | —                                             | Si se define junto con `SEED_SUPER_ADMIN_PASSWORD`, `pnpm prisma:seed` crea un Super Admin                                                      |
 | `SEED_SUPER_ADMIN_PASSWORD` | No        | —                                             | Contraseña del Super Admin creado por el seed                                                                                                   |
+| `SMTP_HOST`                 | No        | —                                             | Host SMTP para el envío real de correos (031). Sin definir, `NodemailerEmailTransport` registra el correo en el log en vez de enviarlo          |
+| `SMTP_PORT`                 | No        | `587`                                         | Puerto SMTP                                                                                                                                     |
+| `SMTP_USER`                 | No        | —                                             | Usuario SMTP (si el proveedor requiere autenticación)                                                                                           |
+| `SMTP_PASSWORD`             | No        | —                                             | Contraseña SMTP                                                                                                                                 |
+| `SMTP_FROM`                 | No        | `MiJersey <no-reply@mijersey.com>`            | Remitente usado en los correos enviados vía plantillas (031)                                                                                    |
 
 ## `apps/web` y `apps/admin`
 

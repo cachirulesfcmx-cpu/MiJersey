@@ -141,6 +141,20 @@ export type {
   UpdateMyAccountInput,
 } from './customer.types.js';
 export type {
+  CreateEmailLayoutInput,
+  CreateEmailTemplateInput,
+  EmailLayout,
+  EmailTemplate,
+  EmailTemplateStatus,
+  EmailTemplateVersion,
+  EmailTemplateVersionSnapshot,
+  ListEmailTemplatesParams,
+  TestSendEmailTemplateInput,
+  TestSendEmailTemplateResult,
+  UpdateEmailLayoutInput,
+  UpdateEmailTemplateInput,
+} from './email-templates.types.js';
+export type {
   CreateHomeSectionInput,
   HomeSection,
   HomeSectionStatus,

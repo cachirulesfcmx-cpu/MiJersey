@@ -106,6 +106,18 @@ import type {
   UpdateMyAccountInput,
 } from './customer.types.js';
 import type {
+  CreateEmailLayoutInput,
+  CreateEmailTemplateInput,
+  EmailLayout,
+  EmailTemplate,
+  EmailTemplateVersion,
+  ListEmailTemplatesParams,
+  TestSendEmailTemplateInput,
+  TestSendEmailTemplateResult,
+  UpdateEmailLayoutInput,
+  UpdateEmailTemplateInput,
+} from './email-templates.types.js';
+import type {
   CreateHomeSectionInput,
   HomeSection,
   PublicHomeSection,
@@ -2513,5 +2525,125 @@ export class ApiClient {
       accessToken,
       body: JSON.stringify(input),
     });
+  }
+
+  listEmailTemplates(
+    accessToken: string,
+    params: ListEmailTemplatesParams = {},
+  ): Promise<PaginatedResult<EmailTemplate>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      key: params.key,
+      language: params.language,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<EmailTemplate>>(`/admin/email/templates${query}`, {
+      accessToken,
+    });
+  }
+
+  getEmailTemplate(accessToken: string, id: string): Promise<EmailTemplate> {
+    return this.request<EmailTemplate>(`/admin/email/templates/${id}`, { accessToken });
+  }
+
+  createEmailTemplate(
+    accessToken: string,
+    input: CreateEmailTemplateInput,
+  ): Promise<EmailTemplate> {
+    return this.request<EmailTemplate>('/admin/email/templates', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateEmailTemplate(
+    accessToken: string,
+    id: string,
+    input: UpdateEmailTemplateInput,
+  ): Promise<EmailTemplate> {
+    return this.request<EmailTemplate>(`/admin/email/templates/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteEmailTemplate(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/email/templates/${id}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  publishEmailTemplate(accessToken: string, id: string): Promise<EmailTemplate> {
+    return this.request<EmailTemplate>(`/admin/email/templates/${id}/publish`, {
+      method: 'POST',
+      accessToken,
+    });
+  }
+
+  testSendEmailTemplate(
+    accessToken: string,
+    id: string,
+    input: TestSendEmailTemplateInput,
+  ): Promise<TestSendEmailTemplateResult> {
+    return this.request<TestSendEmailTemplateResult>(`/admin/email/templates/${id}/test`, {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  listEmailTemplateVersions(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<EmailTemplateVersion>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<EmailTemplateVersion>>(
+      `/admin/email/templates/${id}/versions${query}`,
+      { accessToken },
+    );
+  }
+
+  restoreEmailTemplateVersion(
+    accessToken: string,
+    id: string,
+    versionNumber: number,
+  ): Promise<EmailTemplate> {
+    return this.request<EmailTemplate>(
+      `/admin/email/templates/${id}/versions/${versionNumber}/restore`,
+      { method: 'POST', accessToken },
+    );
+  }
+
+  listEmailLayouts(accessToken: string): Promise<EmailLayout[]> {
+    return this.request<EmailLayout[]>('/admin/email/layouts', { accessToken });
+  }
+
+  createEmailLayout(accessToken: string, input: CreateEmailLayoutInput): Promise<EmailLayout> {
+    return this.request<EmailLayout>('/admin/email/layouts', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateEmailLayout(
+    accessToken: string,
+    id: string,
+    input: UpdateEmailLayoutInput,
+  ): Promise<EmailLayout> {
+    return this.request<EmailLayout>(`/admin/email/layouts/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteEmailLayout(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/email/layouts/${id}`, { method: 'DELETE', accessToken });
   }
 }

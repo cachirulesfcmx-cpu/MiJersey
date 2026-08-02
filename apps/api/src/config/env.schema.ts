@@ -18,6 +18,12 @@ export const appEnvSchema = z.object({
   MEDIA_UPLOADS_DIR: z.string().min(1).default('uploads'),
   /** Secreto compartido para verificar la firma HMAC de los webhooks del proveedor de pago "manual" (022) — mismo mecanismo que usaría un proveedor real (Stripe/MercadoPago firman así sus webhooks). Cambiar en producción. */
   PAYMENTS_MANUAL_WEBHOOK_SECRET: z.string().min(16).default('dev-manual-webhook-secret-change-me'),
+  /** Configuración SMTP para el envío real de correos (031) — todas opcionales: sin `SMTP_HOST`, `NodemailerEmailTransport` registra el correo en el log en vez de enviarlo (mismo comportamiento de desarrollo que `ConsoleMailer`, 003). */
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASSWORD: z.string().min(1).optional(),
+  SMTP_FROM: z.string().min(1).default('MiJersey <no-reply@mijersey.com>'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -37,5 +43,10 @@ export interface AppConfig {
   publicApiUrl: string;
   mediaUploadsDir: string;
   paymentsManualWebhookSecret: string;
+  smtpHost: string | null;
+  smtpPort: number;
+  smtpUser: string | null;
+  smtpPassword: string | null;
+  smtpFrom: string;
   isProduction: boolean;
 }
