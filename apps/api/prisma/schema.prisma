@@ -1704,3 +1704,50 @@ model NavigationVersion {
   @@index([menuId])
   @@map("navigation_versions")
 }
+
+enum ThemeSectionKey {
+  HEADER
+  FOOTER
+  BANNER
+  LAYOUT
+
+  @@map("theme_section_key")
+}
+
+/// Configuración global del tema (029 §3) — singleton real: nunca hay más de una fila (spec §4 "mantener una configuración activa por sitio"), creada perezosamente con valores por defecto en el primer acceso, mismo criterio que `CustomerProfile`/`Wishlist` (019/020). Representa el borrador editable; `PATCH /admin/theme` escribe aquí directamente. Lo que ve el storefront público es un snapshot aparte en caché (`ThemeCacheService`), escrito solo por `PublishThemeUseCase` — así una edición a medias nunca llega al público sin un "Publicar" explícito (spec §4 "publicar cambios de forma controlada").
+model ThemeSettings {
+  id             String   @id @default(uuid())
+  siteName       String
+  logo           String?
+  favicon        String?
+  primaryColor   String
+  secondaryColor String
+  typography     String
+  borderRadius   String
+  spacingScale   String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("theme_settings")
+}
+
+/// Sección global configurable (029 §2/§3): Header, Footer, Banners globales y Layouts. `section` es un enum cerrado (a diferencia de `NavigationMenu.location`, libre) porque el alcance de la spec enumera un conjunto fijo y conocido de secciones. Una fila por `section` (singleton por sección) — `enabled` permite apagarla sin perder su `config`, mismo criterio que `HomeSection.isVisible` (013).
+model ThemeSection {
+  id        String          @id @default(uuid())
+  section   ThemeSectionKey @unique
+  config    Json
+  enabled   Boolean         @default(true)
+  updatedAt DateTime        @updatedAt
+
+  @@map("theme_sections")
+}
+
+/// Historial de versiones del tema — snapshot completo (`ThemeSettings` + todas las `ThemeSection`), sin FK a una entidad padre porque el tema es un singleton de sitio, no una colección de recursos. Se crea en cada `PATCH` y en cada publicación, mismo criterio que `PageVersion`/`PostVersion`/`NavigationVersion`.
+model ThemeVersion {
+  id            String   @id @default(uuid())
+  versionNumber Int      @unique
+  snapshot      Json
+  createdAt     DateTime @default(now())
+
+  @@map("theme_versions")
+}

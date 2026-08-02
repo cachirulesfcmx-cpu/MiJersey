@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { CartLauncher } from '../components/cart/CartLauncher';
 import { SiteNavigation } from '../components/navigation/SiteNavigation';
+import { SiteTheme } from '../components/theme/SiteTheme';
 import { env } from '../config/env';
 import { AuthProvider } from '../providers/auth-provider';
 import { CartProvider } from '../providers/cart-provider';
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
+              <SiteTheme />
               <SiteNavigation location="header" />
               {children}
               <SiteNavigation location="footer" />

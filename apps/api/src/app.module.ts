@@ -30,6 +30,7 @@ import { SeoModule } from './modules/seo/seo.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
 import { SupportModule } from './modules/support/support.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
+import { ThemeModule } from './modules/theme/theme.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
@@ -91,6 +92,7 @@ import { RedisModule } from './redis/redis.module';
     CmsModule,
     BlogModule,
     NavigationModule,
+    ThemeModule,
   ],
 })
 export class AppModule {}

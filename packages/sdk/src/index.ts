@@ -305,6 +305,17 @@ export type {
   UpdateCollectionInput,
 } from './taxonomy.types.js';
 export type {
+  ThemeSection,
+  ThemeSectionKey,
+  ThemeState,
+  ThemeVersion,
+  ThemeVersionSnapshot,
+  ThemeVersionSnapshotSection,
+  UpdateThemeInput,
+  UpdateThemeSectionInput,
+  UpdateThemeSettingsInput,
+} from './theme.types.js';
+export type {
   BulkUpdateVariantsInput,
   CreateProductOptionInput,
   CreateProductVariantInput,

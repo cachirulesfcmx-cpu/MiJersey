@@ -231,6 +231,7 @@ import type {
   UpdateCategoryInput,
   UpdateCollectionInput,
 } from './taxonomy.types.js';
+import type { ThemeState, ThemeVersion, UpdateThemeInput } from './theme.types.js';
 import type {
   BulkUpdateVariantsInput,
   CreateProductOptionInput,
@@ -2434,5 +2435,42 @@ export class ApiClient {
       `/admin/navigation/menus/${id}/versions/${versionNumber}/restore`,
       { method: 'POST', accessToken },
     );
+  }
+
+  getPublishedTheme(): Promise<ThemeState> {
+    return this.request<ThemeState>('/theme');
+  }
+
+  getAdminTheme(accessToken: string): Promise<ThemeState> {
+    return this.request<ThemeState>('/admin/theme', { accessToken });
+  }
+
+  updateTheme(accessToken: string, input: UpdateThemeInput): Promise<ThemeState> {
+    return this.request<ThemeState>('/admin/theme', {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  publishTheme(accessToken: string): Promise<ThemeState> {
+    return this.request<ThemeState>('/admin/theme/publish', { method: 'POST', accessToken });
+  }
+
+  listThemeVersions(
+    accessToken: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<ThemeVersion>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<ThemeVersion>>(`/admin/theme/versions${query}`, {
+      accessToken,
+    });
+  }
+
+  restoreThemeVersion(accessToken: string, versionNumber: number): Promise<ThemeState> {
+    return this.request<ThemeState>(`/admin/theme/versions/${versionNumber}/restore`, {
+      method: 'POST',
+      accessToken,
+    });
   }
 }
