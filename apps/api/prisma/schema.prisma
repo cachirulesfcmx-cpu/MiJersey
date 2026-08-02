@@ -1864,3 +1864,43 @@ model AnalyticsDashboard {
 
   @@map("analytics_dashboards")
 }
+
+enum TrackingProviderType {
+  GOOGLE_ANALYTICS_4
+  GOOGLE_TAG_MANAGER
+  META_PIXEL
+  TIKTOK_PIXEL
+  CONVERSION_API
+}
+
+enum TrackingProviderStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// Un slot de configuración por tipo de proveedor (033 §3/§4 "permitir múltiples proveedores simultáneamente" se refiere a distintos canales activos a la vez, no a múltiples cuentas del mismo canal) — `provider` es único. `configuration` guarda los campos propios de cada tipo (measurementId/containerId/pixelId/accessToken); solo `CONVERSION_API.accessToken` es secreto server-side, el resto (IDs de medición/píxel) es seguro de exponer públicamente porque así funcionan esos scripts en el navegador. `consentCategory` (null = no requiere consentimiento, ej. Conversion API server-side) determina qué categoría del Consent Banner debe estar aceptada antes de activar el proveedor en el cliente.
+model TrackingProvider {
+  id              String                 @id @default(uuid())
+  provider        TrackingProviderType   @unique
+  status          TrackingProviderStatus @default(INACTIVE)
+  configuration   Json
+  consentCategory String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@map("tracking_providers")
+}
+
+/// Bitácora de eventos despachados (033 §3/§5 "despachador de eventos") — se crea una fila tanto para pruebas manuales desde el admin (`source: "admin-test"`) como para eventos de negocio reales una vez que otros módulos (013/018/022) invoquen `RecordTrackingEventUseCase`. Sin FK a ninguna tabla (mismo criterio "decoupled reference" que `AnalyticsEvent`, 032).
+model TrackingEvent {
+  id              String   @id @default(uuid())
+  eventName       String
+  source          String
+  payload         Json
+  consentRequired Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([eventName, createdAt])
+  @@index([source])
+  @@map("tracking_events")
+}

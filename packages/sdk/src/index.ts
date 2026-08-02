@@ -360,6 +360,20 @@ export type {
   UpdateThemeSettingsInput,
 } from './theme.types.js';
 export type {
+  ConsentCategory,
+  CreateTrackingProviderInput,
+  ListTrackingEventsParams,
+  PublicTrackingProvider,
+  TestTrackingEventInput,
+  TestTrackingEventResult,
+  TrackingConsentCategories,
+  TrackingEvent,
+  TrackingProvider,
+  TrackingProviderStatus,
+  TrackingProviderType,
+  UpdateTrackingProviderInput,
+} from './tracking.types.js';
+export type {
   BulkUpdateVariantsInput,
   CreateProductOptionInput,
   CreateProductVariantInput,

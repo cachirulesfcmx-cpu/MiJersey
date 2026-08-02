@@ -267,6 +267,17 @@ import type {
 } from './taxonomy.types.js';
 import type { ThemeState, ThemeVersion, UpdateThemeInput } from './theme.types.js';
 import type {
+  CreateTrackingProviderInput,
+  ListTrackingEventsParams,
+  PublicTrackingProvider,
+  TestTrackingEventInput,
+  TestTrackingEventResult,
+  TrackingConsentCategories,
+  TrackingEvent,
+  TrackingProvider,
+  UpdateTrackingProviderInput,
+} from './tracking.types.js';
+import type {
   BulkUpdateVariantsInput,
   CreateProductOptionInput,
   CreateProductVariantInput,
@@ -2784,5 +2795,75 @@ export class ApiClient {
       method: 'DELETE',
       accessToken,
     });
+  }
+
+  listTrackingProviders(accessToken: string): Promise<TrackingProvider[]> {
+    return this.request<TrackingProvider[]>('/admin/tracking/providers', { accessToken });
+  }
+
+  createTrackingProvider(
+    accessToken: string,
+    input: CreateTrackingProviderInput,
+  ): Promise<TrackingProvider> {
+    return this.request<TrackingProvider>('/admin/tracking/providers', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateTrackingProvider(
+    accessToken: string,
+    id: string,
+    input: UpdateTrackingProviderInput,
+  ): Promise<TrackingProvider> {
+    return this.request<TrackingProvider>(`/admin/tracking/providers/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteTrackingProvider(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/tracking/providers/${id}`, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  listTrackingEvents(
+    accessToken: string,
+    params: ListTrackingEventsParams = {},
+  ): Promise<PaginatedResult<TrackingEvent>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      eventName: params.eventName,
+      source: params.source,
+      from: params.from,
+      to: params.to,
+    });
+    return this.request<PaginatedResult<TrackingEvent>>(`/admin/tracking/events${query}`, {
+      accessToken,
+    });
+  }
+
+  testTrackingEvent(
+    accessToken: string,
+    input: TestTrackingEventInput,
+  ): Promise<TestTrackingEventResult> {
+    return this.request<TestTrackingEventResult>('/admin/tracking/events/test', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  getPublicTrackingProviders(): Promise<PublicTrackingProvider[]> {
+    return this.request<PublicTrackingProvider[]>('/tracking/providers');
+  }
+
+  getTrackingConsentCategories(): Promise<TrackingConsentCategories> {
+    return this.request<TrackingConsentCategories>('/tracking/consent');
   }
 }

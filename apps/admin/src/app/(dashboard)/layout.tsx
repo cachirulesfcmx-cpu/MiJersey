@@ -17,6 +17,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', permission: 'admin:access' },
   { href: '/analytics', label: 'Analítica', permission: 'admin:access' },
+  { href: '/tracking-providers', label: 'Proveedores de tracking', permission: 'admin:access' },
+  { href: '/tracking-events', label: 'Eventos de tracking', permission: 'admin:access' },
   { href: '/home', label: 'Home', permission: 'admin:access' },
   { href: '/cms-pages', label: 'Páginas', permission: 'admin:access' },
   { href: '/blog-posts', label: 'Blog', permission: 'admin:access' },
@@ -54,6 +56,8 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   '/': 'Dashboard',
   '/analytics': 'Analítica',
   '/analytics/dashboards': 'Dashboards configurables',
+  '/tracking-providers': 'Proveedores de tracking',
+  '/tracking-events': 'Eventos de tracking',
   '/home': 'Home',
   '/cms-pages': 'Páginas',
   '/blog-posts': 'Blog',

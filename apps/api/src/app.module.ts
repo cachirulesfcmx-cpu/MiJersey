@@ -34,6 +34,7 @@ import { SiteConfigModule } from './modules/site-config/site-config.module';
 import { SupportModule } from './modules/support/support.module';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module';
 import { ThemeModule } from './modules/theme/theme.module';
+import { TrackingModule } from './modules/tracking/tracking.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
@@ -99,6 +100,7 @@ import { RedisModule } from './redis/redis.module';
     SiteConfigModule,
     EmailTemplatesModule,
     AnalyticsModule,
+    TrackingModule,
   ],
 })
 export class AppModule {}
