@@ -137,6 +137,15 @@ import type {
   UploadMediaInput,
 } from './media.types.js';
 import type {
+  CreateMenuInput,
+  ListMenusParams,
+  NavigationMenu,
+  NavigationVersion,
+  RenderedNavigationItem,
+  RenderMenuParams,
+  UpdateMenuInput,
+} from './navigation.types.js';
+import type {
   CancelOrderInput,
   OrderSummary,
   OrderTimelineEvent,
@@ -2348,5 +2357,82 @@ export class ApiClient {
 
   deleteBlogTag(accessToken: string, id: string): Promise<void> {
     return this.request<void>(`/admin/blog/tags/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  renderNavigationMenu(
+    location: string,
+    params: RenderMenuParams = {},
+  ): Promise<RenderedNavigationItem[]> {
+    const query = toQueryString({
+      authenticated: params.authenticated !== undefined ? String(params.authenticated) : undefined,
+      device: params.device,
+    });
+    return this.request<RenderedNavigationItem[]>(`/navigation/render/${location}${query}`);
+  }
+
+  listNavigationMenus(
+    accessToken: string,
+    params: ListMenusParams = {},
+  ): Promise<PaginatedResult<NavigationMenu>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      location: params.location,
+      status: params.status,
+    });
+    return this.request<PaginatedResult<NavigationMenu>>(`/admin/navigation/menus${query}`, {
+      accessToken,
+    });
+  }
+
+  getNavigationMenu(accessToken: string, id: string): Promise<NavigationMenu> {
+    return this.request<NavigationMenu>(`/admin/navigation/menus/${id}`, { accessToken });
+  }
+
+  createNavigationMenu(accessToken: string, input: CreateMenuInput): Promise<NavigationMenu> {
+    return this.request<NavigationMenu>('/admin/navigation/menus', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateNavigationMenu(
+    accessToken: string,
+    id: string,
+    input: UpdateMenuInput,
+  ): Promise<NavigationMenu> {
+    return this.request<NavigationMenu>(`/admin/navigation/menus/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteNavigationMenu(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/navigation/menus/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  listNavigationMenuVersions(
+    accessToken: string,
+    id: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<PaginatedResult<NavigationVersion>> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<PaginatedResult<NavigationVersion>>(
+      `/admin/navigation/menus/${id}/versions${query}`,
+      { accessToken },
+    );
+  }
+
+  restoreNavigationMenuVersion(
+    accessToken: string,
+    id: string,
+    versionNumber: number,
+  ): Promise<NavigationMenu> {
+    return this.request<NavigationMenu>(
+      `/admin/navigation/menus/${id}/versions/${versionNumber}/restore`,
+      { method: 'POST', accessToken },
+    );
   }
 }

@@ -1632,3 +1632,75 @@ model PostVersion {
   @@index([postId])
   @@map("blog_post_versions")
 }
+
+enum NavigationMenuStatus {
+  DRAFT
+  PUBLISHED
+
+  @@map("navigation_menu_status")
+}
+
+/// Tipo de destino de un ítem de navegación (028 §3/§4). Los tipos dinámicos (todo excepto `LINK`) guardan en `target` el id de la entidad referenciada (sin FK de Prisma — mismo criterio que `Payment.orderId`/`Brand.logoMediaId`: Navigation no importa Catalog/Taxonomy/Brands/CMS, solo valida su existencia vía `NavigationLookupPort` al guardar y resuelve su ruta al renderizar).
+enum NavigationItemType {
+  LINK
+  CATEGORY
+  COLLECTION
+  BRAND
+  PRODUCT
+  PAGE
+
+  @@map("navigation_item_type")
+}
+
+/// Menú de navegación (028 §3). `location` es un string libre (no un enum cerrado) para no limitar de antemano el conjunto de ubicaciones del sitio (spec §2 "múltiples ubicaciones") — mismo criterio que `Page.template`. Varios menús pueden compartir `location` en `PUBLISHED` a la vez (spec §4 "permitir múltiples menús activos por ubicación cuando exista segmentación"); `GetRenderedMenuUseCase` decide cuál renderizar cuando eso ocurre.
+model NavigationMenu {
+  id        String               @id @default(uuid())
+  name      String
+  location  String
+  status    NavigationMenuStatus @default(DRAFT)
+  items     NavigationItem[]
+  versions  NavigationVersion[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([location, status])
+  @@map("navigation_menus")
+}
+
+/// Ítem de navegación (028 §3), con jerarquía propia vía `parentId`. A diferencia de `Category`/`Folder` (Restrict: se borran de uno en uno), aquí el árbol completo de un menú se reemplaza entero en cada guardado (mismo patrón que `PageBlock` en 026) — por eso el self-relation usa `onDelete: Cascade`: borrar un nodo borra su subárbol de una sola vez, que es exactamente el comportamiento que el editor de árbol necesita.
+model NavigationItem {
+  id              String             @id @default(uuid())
+  menuId          String
+  menu            NavigationMenu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parentId        String?
+  parent          NavigationItem?    @relation("NavigationItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        NavigationItem[]   @relation("NavigationItemHierarchy")
+  label           String
+  type            NavigationItemType
+  target          String
+  icon            String?
+  sortOrder       Int                @default(0)
+  /// Reglas de visibilidad por contexto (spec §2/§4) — JSON libre mínimo: `{ authenticated?: boolean, devices?: string[] }`, evaluado por `evaluateVisibility` (dominio).
+  visibilityRules Json?
+  openInNewTab    Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([menuId])
+  @@index([parentId])
+  @@map("navigation_items")
+}
+
+/// Historial de versiones — mismo patrón de snapshot completo que `PageVersion`/`PostVersion`: el snapshot incluye el árbol completo de ítems, no solo metadatos del menú.
+model NavigationVersion {
+  id            String         @id @default(uuid())
+  menuId        String
+  menu          NavigationMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  snapshot      Json
+  createdAt     DateTime       @default(now())
+
+  @@unique([menuId, versionNumber])
+  @@index([menuId])
+  @@map("navigation_versions")
+}

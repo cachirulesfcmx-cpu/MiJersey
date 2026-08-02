@@ -179,6 +179,20 @@ export type {
   UploadMediaInput,
 } from './media.types.js';
 export type {
+  CreateMenuInput,
+  ListMenusParams,
+  NavigationItem,
+  NavigationItemInput,
+  NavigationItemType,
+  NavigationMenu,
+  NavigationMenuStatus,
+  NavigationVersion,
+  NavigationVisibilityRules,
+  RenderedNavigationItem,
+  RenderMenuParams,
+  UpdateMenuInput,
+} from './navigation.types.js';
+export type {
   CancelOrderInput,
   OrderSummary,
   OrderTimelineEvent,
