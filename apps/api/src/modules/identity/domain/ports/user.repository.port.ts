@@ -14,6 +14,12 @@ export interface UpdateProfileData {
   lastName: string;
 }
 
+export interface UpdateMfaData {
+  mfaSecret: string | null;
+  mfaEnabled: boolean;
+  mfaEnabledAt: Date | null;
+}
+
 export interface ListUsersFilter {
   roles?: RoleName[];
   search?: string;
@@ -39,5 +45,6 @@ export interface UserRepositoryPort {
   updateProfile(userId: string, data: UpdateProfileData): Promise<void>;
   updateRole(userId: string, role: RoleName): Promise<void>;
   setActive(userId: string, isActive: boolean): Promise<void>;
+  updateMfa(userId: string, data: UpdateMfaData): Promise<void>;
   findMany(params: ListUsersParams): Promise<ListUsersResult>;
 }

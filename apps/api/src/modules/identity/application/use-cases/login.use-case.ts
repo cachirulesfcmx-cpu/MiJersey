@@ -3,12 +3,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { UserEntity } from '../../domain/entities/user.entity';
 import { AccountInactiveError, InvalidCredentialsError } from '../../domain/errors/identity.errors';
 import type { AuditLogRepositoryPort } from '../../domain/ports/audit-log.repository.port';
+import type { MfaChallengeStorePort } from '../../domain/ports/mfa-challenge-store.port';
 import type { PasswordHasherPort } from '../../domain/ports/password-hasher.port';
 import type { UserRepositoryPort } from '../../domain/ports/user.repository.port';
 import { Email } from '../../domain/value-objects/email.vo';
 import {
   AUDIT_LOG_REPOSITORY,
   DUMMY_PASSWORD_HASH,
+  MFA_CHALLENGE_STORE,
   PASSWORD_HASHER,
   USER_REPOSITORY,
 } from '../../identity.constants';
@@ -21,11 +23,19 @@ export interface LoginInput {
   ipAddress: string | null;
 }
 
-export interface LoginResult {
+export interface LoginSuccessResult {
+  mfaRequired: false;
   user: UserEntity;
   accessToken: string;
   refreshToken: string;
 }
+
+export interface LoginMfaRequiredResult {
+  mfaRequired: true;
+  challengeToken: string;
+}
+
+export type LoginResult = LoginSuccessResult | LoginMfaRequiredResult;
 
 @Injectable()
 export class LoginUseCase {
@@ -33,6 +43,7 @@ export class LoginUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepositoryPort,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasherPort,
     @Inject(AUDIT_LOG_REPOSITORY) private readonly auditLog: AuditLogRepositoryPort,
+    @Inject(MFA_CHALLENGE_STORE) private readonly mfaChallenges: MfaChallengeStorePort,
     private readonly sessionIssuer: SessionIssuerService,
   ) {}
 
@@ -60,6 +71,11 @@ export class LoginUseCase {
       throw new AccountInactiveError();
     }
 
+    if (user.mfaEnabled) {
+      const challengeToken = await this.mfaChallenges.create(user.id);
+      return { mfaRequired: true, challengeToken };
+    }
+
     const issued = await this.sessionIssuer.issue(user, {
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
@@ -71,6 +87,11 @@ export class LoginUseCase {
       ipAddress: input.ipAddress,
     });
 
-    return { user, accessToken: issued.accessToken, refreshToken: issued.refreshToken };
+    return {
+      mfaRequired: false,
+      user,
+      accessToken: issued.accessToken,
+      refreshToken: issued.refreshToken,
+    };
   }
 }

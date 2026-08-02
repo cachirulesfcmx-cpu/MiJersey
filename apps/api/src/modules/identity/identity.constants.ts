@@ -9,6 +9,9 @@ export const USER_STATS_REPOSITORY = Symbol('USER_STATS_REPOSITORY');
 export const PASSWORD_HASHER = Symbol('PASSWORD_HASHER');
 export const TOKEN_SERVICE = Symbol('TOKEN_SERVICE');
 export const MAILER = Symbol('MAILER');
+export const TOTP_SERVICE = Symbol('TOTP_SERVICE');
+export const MFA_SECRET_CIPHER = Symbol('MFA_SECRET_CIPHER');
+export const MFA_CHALLENGE_STORE = Symbol('MFA_CHALLENGE_STORE');
 
 export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 export const REFRESH_TOKEN_TTL_DAYS = 30;
@@ -18,6 +21,8 @@ export const BCRYPT_SALT_ROUNDS = 12;
 export const REFRESH_TOKEN_COOKIE_NAME = 'mijersey_refresh_token';
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+/** Ventana para completar el segundo factor tras validar la contraseña (035). */
+export const MFA_CHALLENGE_TTL_SECONDS = 5 * 60;
 
 /**
  * Hash bcrypt de un valor arbitrario, usado únicamente para comparar contra

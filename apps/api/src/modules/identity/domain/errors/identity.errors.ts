@@ -64,3 +64,39 @@ export class CannotModifySelfError extends IdentityError {
     super('No puedes modificar tu propia cuenta desde este panel');
   }
 }
+
+export class MfaNotApplicableError extends IdentityError {
+  constructor() {
+    super('La autenticación de dos factores solo aplica a personal interno');
+  }
+}
+
+export class MfaNotEnrolledError extends IdentityError {
+  constructor() {
+    super('No hay un enrolamiento de MFA pendiente para confirmar');
+  }
+}
+
+export class MfaAlreadyEnabledError extends IdentityError {
+  constructor() {
+    super('La autenticación de dos factores ya está activada');
+  }
+}
+
+export class MfaNotEnabledError extends IdentityError {
+  constructor() {
+    super('La autenticación de dos factores no está activada');
+  }
+}
+
+export class InvalidMfaCodeError extends IdentityError {
+  constructor() {
+    super('El código de verificación es inválido o expiró');
+  }
+}
+
+export class MfaChallengeInvalidError extends IdentityError {
+  constructor() {
+    super('El desafío de MFA es inválido o expiró; inicia sesión de nuevo');
+  }
+}

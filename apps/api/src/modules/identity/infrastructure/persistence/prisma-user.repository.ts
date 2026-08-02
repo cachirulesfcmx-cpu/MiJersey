@@ -7,6 +7,7 @@ import type {
   CreateUserData,
   ListUsersParams,
   ListUsersResult,
+  UpdateMfaData,
   UpdateProfileData,
   UserRepositoryPort,
 } from '../../domain/ports/user.repository.port';
@@ -67,6 +68,17 @@ export class PrismaUserRepository implements UserRepositoryPort {
     await this.prisma.user.update({ where: { id: userId }, data: { isActive } });
   }
 
+  async updateMfa(userId: string, data: UpdateMfaData): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        mfaSecret: data.mfaSecret,
+        mfaEnabled: data.mfaEnabled,
+        mfaEnabledAt: data.mfaEnabledAt,
+      },
+    });
+  }
+
   async findMany(params: ListUsersParams): Promise<ListUsersResult> {
     const { filter, page, pageSize } = params;
 
@@ -107,6 +119,8 @@ export class PrismaUserRepository implements UserRepositoryPort {
       role: user.role.name as RoleName,
       emailVerifiedAt: user.emailVerifiedAt,
       isActive: user.isActive,
+      mfaSecret: user.mfaSecret,
+      mfaEnabled: user.mfaEnabled,
       createdAt: user.createdAt,
     });
   }

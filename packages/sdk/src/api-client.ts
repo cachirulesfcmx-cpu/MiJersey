@@ -45,12 +45,16 @@ import type {
 import type {
   AuthenticatedUser,
   AuthSession,
+  EnrollMfaResult,
   LoginInput,
+  LoginResult,
+  MfaCodeInput,
   RegisterInput,
   ResetPasswordInput,
   RoleName,
   SessionSummary,
   UserProfile,
+  VerifyMfaChallengeInput,
 } from './auth.types.js';
 import type {
   BlogCategory,
@@ -396,9 +400,36 @@ export class ApiClient {
     });
   }
 
-  login(input: LoginInput): Promise<AuthSession> {
-    return this.request<AuthSession>('/auth/login', {
+  login(input: LoginInput): Promise<LoginResult> {
+    return this.request<LoginResult>('/auth/login', {
       method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  verifyMfaChallenge(input: VerifyMfaChallengeInput): Promise<AuthSession> {
+    return this.request<AuthSession>('/auth/mfa/verify', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  enrollMfa(accessToken: string): Promise<EnrollMfaResult> {
+    return this.request<EnrollMfaResult>('/auth/mfa/enroll', { method: 'POST', accessToken });
+  }
+
+  confirmMfa(accessToken: string, input: MfaCodeInput): Promise<void> {
+    return this.request<void>('/auth/mfa/confirm', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  disableMfa(accessToken: string, input: MfaCodeInput): Promise<void> {
+    return this.request<void>('/auth/mfa/disable', {
+      method: 'POST',
+      accessToken,
       body: JSON.stringify(input),
     });
   }

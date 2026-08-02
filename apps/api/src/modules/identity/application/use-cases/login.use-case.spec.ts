@@ -1,13 +1,14 @@
 import { UserEntity } from '../../domain/entities/user.entity';
 import { AccountInactiveError, InvalidCredentialsError } from '../../domain/errors/identity.errors';
 import type { AuditLogRepositoryPort } from '../../domain/ports/audit-log.repository.port';
+import type { MfaChallengeStorePort } from '../../domain/ports/mfa-challenge-store.port';
 import type { PasswordHasherPort } from '../../domain/ports/password-hasher.port';
 import type { UserRepositoryPort } from '../../domain/ports/user.repository.port';
 import { RoleName } from '../../domain/value-objects/role-name';
 import type { SessionIssuerService } from '../services/session-issuer.service';
 import { LoginUseCase } from './login.use-case';
 
-function buildUser(overrides: { isActive?: boolean } = {}): UserEntity {
+function buildUser(overrides: { isActive?: boolean; mfaEnabled?: boolean } = {}): UserEntity {
   return new UserEntity({
     id: 'user-1',
     email: 'customer@example.com',
@@ -17,6 +18,8 @@ function buildUser(overrides: { isActive?: boolean } = {}): UserEntity {
     role: RoleName.CUSTOMER,
     emailVerifiedAt: null,
     isActive: overrides.isActive ?? true,
+    mfaSecret: overrides.mfaEnabled ? 'encrypted-secret' : null,
+    mfaEnabled: overrides.mfaEnabled ?? false,
     createdAt: new Date(),
   });
 }
@@ -31,6 +34,7 @@ function buildUseCase(user: UserEntity | null, isValidPassword: boolean) {
     updateProfile: jest.fn(),
     updateRole: jest.fn(),
     setActive: jest.fn(),
+    updateMfa: jest.fn(),
     findMany: jest.fn(),
   };
   const hasher: jest.Mocked<PasswordHasherPort> = {
@@ -40,6 +44,11 @@ function buildUseCase(user: UserEntity | null, isValidPassword: boolean) {
   const auditLog: jest.Mocked<AuditLogRepositoryPort> = {
     record: jest.fn().mockResolvedValue(undefined),
   };
+  const mfaChallenges: jest.Mocked<MfaChallengeStorePort> = {
+    create: jest.fn().mockResolvedValue('challenge-token'),
+    peek: jest.fn(),
+    invalidate: jest.fn(),
+  };
   const sessionIssuer = {
     issue: jest
       .fn()
@@ -47,8 +56,8 @@ function buildUseCase(user: UserEntity | null, isValidPassword: boolean) {
     rotate: jest.fn(),
   } as unknown as jest.Mocked<SessionIssuerService>;
 
-  const useCase = new LoginUseCase(users, hasher, auditLog, sessionIssuer);
-  return { useCase, users, hasher, auditLog, sessionIssuer };
+  const useCase = new LoginUseCase(users, hasher, auditLog, mfaChallenges, sessionIssuer);
+  return { useCase, users, hasher, auditLog, mfaChallenges, sessionIssuer };
 }
 
 describe('LoginUseCase', () => {
@@ -63,6 +72,7 @@ describe('LoginUseCase', () => {
       ipAddress: '127.0.0.1',
     });
 
+    if (result.mfaRequired) throw new Error('expected a direct login result');
     expect(result.accessToken).toBe('access-token');
     expect(result.refreshToken).toBe('refresh-token');
     expect(sessionIssuer.issue).toHaveBeenCalledWith(user, {
@@ -114,5 +124,25 @@ describe('LoginUseCase', () => {
         ipAddress: null,
       }),
     ).rejects.toBeInstanceOf(AccountInactiveError);
+  });
+
+  it('returns a challenge instead of a session when the user has MFA enabled', async () => {
+    const user = buildUser({ mfaEnabled: true });
+    const { useCase, mfaChallenges, sessionIssuer, auditLog } = buildUseCase(user, true);
+
+    const result = await useCase.execute({
+      email: user.email,
+      password: 'correct-password',
+      userAgent: null,
+      ipAddress: '127.0.0.1',
+    });
+
+    if (!result.mfaRequired) throw new Error('expected an MFA challenge result');
+    expect(result.challengeToken).toBe('challenge-token');
+    expect(mfaChallenges.create).toHaveBeenCalledWith(user.id);
+    expect(sessionIssuer.issue).not.toHaveBeenCalled();
+    expect(auditLog.record).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.login.success' }),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -8,6 +9,8 @@ import { ConfigModule } from './config/config.module';
 import { APP_CONFIG } from './config/env.config';
 import type { AppConfig } from './config/env.schema';
 import { HealthModule } from './health/health.module';
+import { HttpMetricsMiddleware } from './metrics/http-metrics.middleware';
+import { MetricsModule } from './metrics/metrics.module';
 import { AdministrationModule } from './modules/administration/administration.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
@@ -73,6 +76,7 @@ import { RedisModule } from './redis/redis.module';
     }),
     PrismaModule,
     RedisModule,
+    MetricsModule,
     HealthModule,
     IdentityModule,
     AttributesModule,
@@ -105,4 +109,8 @@ import { RedisModule } from './redis/redis.module';
     NotificationsModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(HttpMetricsMiddleware).forRoutes('*');
+  }
+}

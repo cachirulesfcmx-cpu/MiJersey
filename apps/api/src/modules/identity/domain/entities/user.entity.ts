@@ -9,6 +9,8 @@ export interface UserProps {
   role: RoleName;
   emailVerifiedAt: Date | null;
   isActive: boolean;
+  mfaSecret: string | null;
+  mfaEnabled: boolean;
   createdAt: Date;
 }
 
@@ -55,8 +57,22 @@ export class UserEntity {
     return this.props.createdAt;
   }
 
+  /** Secreto TOTP cifrado (o `null`) — nunca exponer en claro fuera de `TotpService`. */
+  get mfaSecret(): string | null {
+    return this.props.mfaSecret;
+  }
+
+  get mfaEnabled(): boolean {
+    return this.props.mfaEnabled;
+  }
+
   canAuthenticate(): boolean {
     return this.props.isActive;
+  }
+
+  /** MFA (035) solo aplica a personal interno — un cliente nunca inicia sesión en apps/admin. */
+  canUseMfa(): boolean {
+    return this.props.role !== 'CUSTOMER';
   }
 
   toPublicProfile(): {
@@ -66,6 +82,7 @@ export class UserEntity {
     lastName: string;
     role: RoleName;
     isEmailVerified: boolean;
+    mfaEnabled: boolean;
     createdAt: Date;
   } {
     return {
@@ -75,6 +92,7 @@ export class UserEntity {
       lastName: this.props.lastName,
       role: this.props.role,
       isEmailVerified: this.isEmailVerified,
+      mfaEnabled: this.props.mfaEnabled,
       createdAt: this.props.createdAt,
     };
   }

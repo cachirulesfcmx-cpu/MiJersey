@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuthenticatedUser, LoginInput } from '@mijersey/sdk';
+import type { AuthenticatedUser, LoginInput, LoginResult } from '@mijersey/sdk';
 import { ApiClient } from '@mijersey/sdk';
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -11,7 +11,8 @@ interface AuthContextValue {
   user: AuthenticatedUser | null;
   accessToken: string | null;
   isLoading: boolean;
-  login: (input: LoginInput) => Promise<AuthenticatedUser>;
+  login: (input: LoginInput) => Promise<LoginResult>;
+  completeMfaLogin: (challengeToken: string, code: string) => Promise<AuthenticatedUser>;
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
 }
@@ -47,8 +48,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [client]);
 
   const login = useCallback(
-    async (input: LoginInput): Promise<AuthenticatedUser> => {
-      const session = await client.login(input);
+    async (input: LoginInput): Promise<LoginResult> => {
+      const result = await client.login(input);
+      if (!result.mfaRequired) {
+        setUser(result.user);
+        setAccessToken(result.accessToken);
+      }
+      return result;
+    },
+    [client],
+  );
+
+  const completeMfaLogin = useCallback(
+    async (challengeToken: string, code: string): Promise<AuthenticatedUser> => {
+      const session = await client.verifyMfaChallenge({ challengeToken, code });
       setUser(session.user);
       setAccessToken(session.accessToken);
       return session.user;
@@ -70,8 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, accessToken, isLoading, login, logout, hasPermission }),
-    [user, accessToken, isLoading, login, logout, hasPermission],
+    () => ({ user, accessToken, isLoading, login, completeMfaLogin, logout, hasPermission }),
+    [user, accessToken, isLoading, login, completeMfaLogin, logout, hasPermission],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

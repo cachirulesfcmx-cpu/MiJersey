@@ -5,7 +5,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { SessionIssuerService } from './application/services/session-issuer.service';
 import { ChangePasswordUseCase } from './application/use-cases/change-password.use-case';
+import { ConfirmMfaUseCase } from './application/use-cases/confirm-mfa.use-case';
 import { CreateStaffUserUseCase } from './application/use-cases/create-staff-user.use-case';
+import { DisableMfaUseCase } from './application/use-cases/disable-mfa.use-case';
+import { EnrollMfaUseCase } from './application/use-cases/enroll-mfa.use-case';
 import { ForgotPasswordUseCase } from './application/use-cases/forgot-password.use-case';
 import { GetCurrentUserUseCase } from './application/use-cases/get-current-user.use-case';
 import { GetUserStatsUseCase } from './application/use-cases/get-user-stats.use-case';
@@ -23,16 +26,20 @@ import { SetUserActiveUseCase } from './application/use-cases/set-user-active.us
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 import { UpdateUserRoleUseCase } from './application/use-cases/update-user-role.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
+import { VerifyMfaChallengeUseCase } from './application/use-cases/verify-mfa-challenge.use-case';
 import {
   AUDIT_LOG_REPOSITORY,
   EMAIL_VERIFICATION_REPOSITORY,
   MAILER,
+  MFA_CHALLENGE_STORE,
+  MFA_SECRET_CIPHER,
   PASSWORD_HASHER,
   PASSWORD_RESET_REPOSITORY,
   PERMISSION_REPOSITORY,
   ROLE_REPOSITORY,
   SESSION_REPOSITORY,
   TOKEN_SERVICE,
+  TOTP_SERVICE,
   USER_REPOSITORY,
   USER_STATS_REPOSITORY,
 } from './identity.constants';
@@ -45,8 +52,11 @@ import { PrismaRoleRepository } from './infrastructure/persistence/prisma-role.r
 import { PrismaSessionRepository } from './infrastructure/persistence/prisma-session.repository';
 import { PrismaUserRepository } from './infrastructure/persistence/prisma-user.repository';
 import { PrismaUserStatsRepository } from './infrastructure/persistence/prisma-user-stats.repository';
+import { AesGcmMfaSecretCipher } from './infrastructure/security/aes-gcm-mfa-secret-cipher';
 import { BcryptPasswordHasher } from './infrastructure/security/bcrypt-password-hasher';
 import { JwtTokenService } from './infrastructure/security/jwt-token.service';
+import { OtplibTotpService } from './infrastructure/security/otplib-totp.service';
+import { RedisMfaChallengeStore } from './infrastructure/security/redis-mfa-challenge.store';
 import { AdminRolesController } from './presentation/controllers/admin-roles.controller';
 import { AdminUsersController } from './presentation/controllers/admin-users.controller';
 import { AuthController } from './presentation/controllers/auth.controller';
@@ -81,6 +91,10 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
     SetUserActiveUseCase,
     ListRolesUseCase,
     GetUserStatsUseCase,
+    VerifyMfaChallengeUseCase,
+    EnrollMfaUseCase,
+    ConfirmMfaUseCase,
+    DisableMfaUseCase,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
     { provide: SESSION_REPOSITORY, useClass: PrismaSessionRepository },
     { provide: PASSWORD_RESET_REPOSITORY, useClass: PrismaPasswordResetRepository },
@@ -92,6 +106,9 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },
     { provide: TOKEN_SERVICE, useClass: JwtTokenService },
     { provide: MAILER, useClass: ConsoleMailer },
+    { provide: TOTP_SERVICE, useClass: OtplibTotpService },
+    { provide: MFA_SECRET_CIPHER, useClass: AesGcmMfaSecretCipher },
+    { provide: MFA_CHALLENGE_STORE, useClass: RedisMfaChallengeStore },
     JwtAuthGuard,
     PermissionsGuard,
     { provide: APP_GUARD, useClass: ThrottlerGuard },

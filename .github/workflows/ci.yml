@@ -51,6 +51,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 035-Production-Hardening: reporta vulnerabilidades conocidas en dependencias
+      # (npm advisory database) sin bloquear el pipeline — al momento de agregar este
+      # paso el proyecto ya arrastra CVEs altas/críticas heredadas de Next.js 14 y del
+      # toolchain de ESLint (ver docs/production-hardening.md, sección de deuda de
+      # seguridad conocida). Bloquear el build hoy dejaría el CI permanentemente en
+      # rojo sin una campaña de actualización de dependencias fuera del alcance de
+      # este cambio; este paso existe para que las vulnerabilidades sean visibles en
+      # cada corrida en lugar de invisibles.
+      - name: Dependency audit (no bloqueante)
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
       - name: Generate Prisma Client
         run: pnpm --filter @mijersey/api prisma:generate
 

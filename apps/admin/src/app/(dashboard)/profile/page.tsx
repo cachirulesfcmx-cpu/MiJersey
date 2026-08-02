@@ -1,6 +1,6 @@
 'use client';
 
-import type { SessionSummary } from '@mijersey/sdk';
+import type { EnrollMfaResult, SessionSummary } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -27,6 +27,16 @@ export default function ProfilePage() {
 
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
+
+  const [mfaEnabled, setMfaEnabled] = useState(user?.mfaEnabled ?? false);
+  const [enrollment, setEnrollment] = useState<EnrollMfaResult | null>(null);
+  const [confirmCode, setConfirmCode] = useState('');
+  const [disableCode, setDisableCode] = useState('');
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDisabling, setIsDisabling] = useState(false);
+  const [mfaError, setMfaError] = useState<string | null>(null);
+  const [mfaMessage, setMfaMessage] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     if (!accessToken) return;
@@ -88,6 +98,60 @@ export default function ProfilePage() {
     if (!accessToken) return;
     await client.revokeSession(accessToken, sessionId);
     await loadSessions();
+  }
+
+  async function handleEnrollMfa() {
+    if (!accessToken) return;
+    setMfaError(null);
+    setMfaMessage(null);
+    setIsEnrolling(true);
+
+    try {
+      setEnrollment(await client.enrollMfa(accessToken));
+    } catch (err) {
+      setMfaError(
+        err instanceof ApiClientError ? err.message : 'No se pudo iniciar el enrolamiento.',
+      );
+    } finally {
+      setIsEnrolling(false);
+    }
+  }
+
+  async function handleConfirmMfa(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!accessToken) return;
+    setMfaError(null);
+    setIsConfirming(true);
+
+    try {
+      await client.confirmMfa(accessToken, { code: confirmCode });
+      setMfaEnabled(true);
+      setEnrollment(null);
+      setConfirmCode('');
+      setMfaMessage('Autenticación en dos pasos activada.');
+    } catch (err) {
+      setMfaError(err instanceof ApiClientError ? err.message : 'Código de verificación inválido.');
+    } finally {
+      setIsConfirming(false);
+    }
+  }
+
+  async function handleDisableMfa(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!accessToken) return;
+    setMfaError(null);
+    setIsDisabling(true);
+
+    try {
+      await client.disableMfa(accessToken, { code: disableCode });
+      setMfaEnabled(false);
+      setDisableCode('');
+      setMfaMessage('Autenticación en dos pasos desactivada.');
+    } catch (err) {
+      setMfaError(err instanceof ApiClientError ? err.message : 'Código de verificación inválido.');
+    } finally {
+      setIsDisabling(false);
+    }
   }
 
   if (!user) {
@@ -167,6 +231,82 @@ export default function ProfilePage() {
             </Button>
           </div>
         </form>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium text-neutral-900">Autenticación en dos pasos (MFA)</h2>
+
+        {mfaError && <p className="text-danger-600 text-sm">{mfaError}</p>}
+        {mfaMessage && <p className="text-success-600 text-sm">{mfaMessage}</p>}
+
+        {mfaEnabled ? (
+          <form onSubmit={handleDisableMfa} className="flex flex-col gap-4">
+            <p className="text-sm text-neutral-600">
+              Está activada. Ingresa un código actual de tu aplicación de autenticación para
+              desactivarla.
+            </p>
+            <FormField label="Código de verificación" htmlFor="disable-mfa-code">
+              <Input
+                id="disable-mfa-code"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                value={disableCode}
+                onChange={(event) => setDisableCode(event.target.value)}
+              />
+            </FormField>
+            <div>
+              <Button type="submit" variant="secondary" isLoading={isDisabling}>
+                Desactivar
+              </Button>
+            </div>
+          </form>
+        ) : enrollment ? (
+          <form onSubmit={handleConfirmMfa} className="flex flex-col gap-4">
+            <p className="text-sm text-neutral-600">
+              Escanea este código con tu aplicación de autenticación (Google Authenticator, Authy,
+              1Password…) o ingresa la clave manualmente, luego confirma con el código generado.
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element -- data URL generado en el servidor, no un asset optimizable por next/image */}
+            <img
+              src={enrollment.qrCodeDataUrl}
+              alt="Código QR para MFA"
+              width={200}
+              height={200}
+              className="rounded-md border border-neutral-200"
+            />
+            <p className="break-all font-mono text-xs text-neutral-500">{enrollment.secret}</p>
+            <FormField label="Código de verificación" htmlFor="confirm-mfa-code">
+              <Input
+                id="confirm-mfa-code"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                value={confirmCode}
+                onChange={(event) => setConfirmCode(event.target.value)}
+              />
+            </FormField>
+            <div className="flex gap-2">
+              <Button type="submit" isLoading={isConfirming}>
+                Confirmar
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setEnrollment(null)}>
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-neutral-600">
+              Está desactivada. Actívala para proteger tu cuenta con un segundo factor.
+            </p>
+            <div>
+              <Button onClick={() => void handleEnrollMfa()} isLoading={isEnrolling}>
+                Activar
+              </Button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">

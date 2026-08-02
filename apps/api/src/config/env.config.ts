@@ -29,6 +29,7 @@ export function createAppConfig(source: NodeJS.ProcessEnv = process.env): AppCon
     smtpUser: env.SMTP_USER ?? null,
     smtpPassword: env.SMTP_PASSWORD ?? null,
     smtpFrom: env.SMTP_FROM,
+    mfaEncryptionKey: env.MFA_ENCRYPTION_KEY,
     isProduction: env.NODE_ENV === 'production',
   };
 }

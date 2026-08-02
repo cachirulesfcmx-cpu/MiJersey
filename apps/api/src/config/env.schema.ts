@@ -24,6 +24,8 @@ export const appEnvSchema = z.object({
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASSWORD: z.string().min(1).optional(),
   SMTP_FROM: z.string().min(1).default('MiJersey <no-reply@mijersey.com>'),
+  /** Clave para cifrar en reposo el secreto TOTP de MFA (035) — cualquier string; se deriva a 32 bytes vía SHA-256 (ver AesGcmMfaSecretCipher), así que no requiere generar una clave base64 a mano. Cambiar en producción. */
+  MFA_ENCRYPTION_KEY: z.string().min(1).default('dev-mfa-encryption-key-change-me'),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -48,5 +50,6 @@ export interface AppConfig {
   smtpUser: string | null;
   smtpPassword: string | null;
   smtpFrom: string;
+  mfaEncryptionKey: string;
   isProduction: boolean;
 }

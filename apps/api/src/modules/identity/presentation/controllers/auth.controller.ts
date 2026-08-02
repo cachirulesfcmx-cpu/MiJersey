@@ -19,6 +19,9 @@ import { Public } from '../../../../common/decorators/public.decorator';
 import { APP_CONFIG } from '../../../../config/env.config';
 import type { AppConfig } from '../../../../config/env.schema';
 import { ChangePasswordUseCase } from '../../application/use-cases/change-password.use-case';
+import { ConfirmMfaUseCase } from '../../application/use-cases/confirm-mfa.use-case';
+import { DisableMfaUseCase } from '../../application/use-cases/disable-mfa.use-case';
+import { EnrollMfaUseCase } from '../../application/use-cases/enroll-mfa.use-case';
 import { ForgotPasswordUseCase } from '../../application/use-cases/forgot-password.use-case';
 import { GetCurrentUserUseCase } from '../../application/use-cases/get-current-user.use-case';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
@@ -29,6 +32,7 @@ import { ResetPasswordUseCase } from '../../application/use-cases/reset-password
 import { RevokeSessionUseCase } from '../../application/use-cases/revoke-session.use-case';
 import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.use-case';
 import { VerifyEmailUseCase } from '../../application/use-cases/verify-email.use-case';
+import { VerifyMfaChallengeUseCase } from '../../application/use-cases/verify-mfa-challenge.use-case';
 import type { UserEntity } from '../../domain/entities/user.entity';
 import { SessionNotFoundError } from '../../domain/errors/identity.errors';
 import type { PermissionRepositoryPort } from '../../domain/ports/permission.repository.port';
@@ -42,11 +46,13 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { ChangePasswordDto } from '../dto/change-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { LoginDto } from '../dto/login.dto';
+import { MfaCodeDto } from '../dto/mfa-code.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { ResendVerificationDto } from '../dto/resend-verification.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { VerifyEmailDto } from '../dto/verify-email.dto';
+import { VerifyMfaChallengeDto } from '../dto/verify-mfa-challenge.dto';
 import { IdentityExceptionFilter } from '../filters/identity-exception.filter';
 
 const REFRESH_COOKIE_MAX_AGE_MS = REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
@@ -68,6 +74,10 @@ export class AuthController {
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
     private readonly updateProfileUseCase: UpdateProfileUseCase,
+    private readonly verifyMfaChallengeUseCase: VerifyMfaChallengeUseCase,
+    private readonly enrollMfaUseCase: EnrollMfaUseCase,
+    private readonly confirmMfaUseCase: ConfirmMfaUseCase,
+    private readonly disableMfaUseCase: DisableMfaUseCase,
   ) {}
 
   @Public()
@@ -96,12 +106,68 @@ export class AuthController {
       ipAddress: ip,
     });
 
+    if (result.mfaRequired) {
+      return { mfaRequired: true, challengeToken: result.challengeToken };
+    }
+
+    this.setRefreshCookie(res, result.refreshToken);
+
+    return {
+      mfaRequired: false,
+      user: await this.buildAuthenticatedUser(result.user),
+      accessToken: result.accessToken,
+    };
+  }
+
+  @Public()
+  @Post('mfa/verify')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async verifyMfaChallenge(
+    @Body() dto: VerifyMfaChallengeDto,
+    @Req() req: Request,
+    @Ip() ip: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.verifyMfaChallengeUseCase.execute({
+      challengeToken: dto.challengeToken,
+      code: dto.code,
+      userAgent: req.headers['user-agent'] ?? null,
+      ipAddress: ip,
+    });
+
     this.setRefreshCookie(res, result.refreshToken);
 
     return {
       user: await this.buildAuthenticatedUser(result.user),
       accessToken: result.accessToken,
     };
+  }
+
+  @Post('mfa/enroll')
+  @HttpCode(HttpStatus.OK)
+  async enrollMfa(@CurrentUser() user: AccessTokenPayload) {
+    return this.enrollMfaUseCase.execute(user.sub);
+  }
+
+  @Post('mfa/confirm')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmMfa(
+    @Body() dto: MfaCodeDto,
+    @CurrentUser() user: AccessTokenPayload,
+    @Ip() ip: string,
+  ) {
+    await this.confirmMfaUseCase.execute({ userId: user.sub, code: dto.code, ipAddress: ip });
+  }
+
+  @Post('mfa/disable')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async disableMfa(
+    @Body() dto: MfaCodeDto,
+    @CurrentUser() user: AccessTokenPayload,
+    @Ip() ip: string,
+  ) {
+    await this.disableMfaUseCase.execute({ userId: user.sub, code: dto.code, ipAddress: ip });
   }
 
   @Public()

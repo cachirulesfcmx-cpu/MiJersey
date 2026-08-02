@@ -58,12 +58,17 @@ export type {
 export type {
   AuthenticatedUser,
   AuthSession,
+  EnrollMfaResult,
   LoginInput,
+  LoginResult,
+  MfaChallenge,
+  MfaCodeInput,
   RegisterInput,
   ResetPasswordInput,
   RoleName,
   SessionSummary,
   UserProfile,
+  VerifyMfaChallengeInput,
 } from './auth.types.js';
 export type {
   BlogAuthor,

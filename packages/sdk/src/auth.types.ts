@@ -7,6 +7,7 @@ export interface UserProfile {
   lastName: string;
   role: RoleName;
   isEmailVerified: boolean;
+  mfaEnabled: boolean;
   createdAt: string;
 }
 
@@ -15,8 +16,32 @@ export interface AuthenticatedUser extends UserProfile {
 }
 
 export interface AuthSession {
+  mfaRequired: false;
   user: AuthenticatedUser;
   accessToken: string;
+}
+
+/** `POST /auth/login` responde esto en vez de una sesión cuando el usuario tiene MFA activo (035) — completar con `verifyMfaChallenge`. */
+export interface MfaChallenge {
+  mfaRequired: true;
+  challengeToken: string;
+}
+
+export type LoginResult = AuthSession | MfaChallenge;
+
+export interface VerifyMfaChallengeInput {
+  challengeToken: string;
+  code: string;
+}
+
+export interface EnrollMfaResult {
+  secret: string;
+  otpauthUrl: string;
+  qrCodeDataUrl: string;
+}
+
+export interface MfaCodeInput {
+  code: string;
 }
 
 export interface SessionSummary {

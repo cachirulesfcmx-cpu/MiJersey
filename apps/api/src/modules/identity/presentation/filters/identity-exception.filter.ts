@@ -9,6 +9,12 @@ import {
   IdentityError,
   InvalidCredentialsError,
   InvalidEmailError,
+  InvalidMfaCodeError,
+  MfaAlreadyEnabledError,
+  MfaChallengeInvalidError,
+  MfaNotApplicableError,
+  MfaNotEnabledError,
+  MfaNotEnrolledError,
   SessionNotFoundError,
   TokenAlreadyUsedError,
   TokenExpiredError,
@@ -27,6 +33,12 @@ const STATUS_BY_ERROR = new Map<new (...args: never[]) => IdentityError, number>
   [TokenInvalidError, HttpStatus.BAD_REQUEST],
   [UserNotFoundError, HttpStatus.NOT_FOUND],
   [CannotModifySelfError, HttpStatus.FORBIDDEN],
+  [MfaNotApplicableError, HttpStatus.FORBIDDEN],
+  [MfaNotEnrolledError, HttpStatus.CONFLICT],
+  [MfaAlreadyEnabledError, HttpStatus.CONFLICT],
+  [MfaNotEnabledError, HttpStatus.CONFLICT],
+  [InvalidMfaCodeError, HttpStatus.UNAUTHORIZED],
+  [MfaChallengeInvalidError, HttpStatus.UNAUTHORIZED],
 ]);
 
 function deriveErrorCode(error: IdentityError): string {

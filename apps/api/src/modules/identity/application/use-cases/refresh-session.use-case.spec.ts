@@ -35,6 +35,8 @@ function buildUser(): UserEntity {
     role: RoleName.CUSTOMER,
     emailVerifiedAt: new Date(),
     isActive: true,
+    mfaSecret: null,
+    mfaEnabled: false,
     createdAt: new Date(),
   });
 }
@@ -58,6 +60,7 @@ function buildUseCase(session: SessionEntity | null, user: UserEntity | null) {
     updateProfile: jest.fn(),
     updateRole: jest.fn(),
     setActive: jest.fn(),
+    updateMfa: jest.fn(),
     findMany: jest.fn(),
   };
   const tokens: jest.Mocked<TokenServicePort> = {

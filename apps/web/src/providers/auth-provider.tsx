@@ -48,9 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const session = await client.login({ email, password });
-      setUser(session.user);
-      setAccessToken(session.accessToken);
+      const result = await client.login({ email, password });
+      // El storefront es solo para clientes, y un cliente nunca puede activar MFA (035) —
+      // este caso no debería alcanzarse en la práctica.
+      if (result.mfaRequired) {
+        throw new Error('Esta cuenta requiere verificación en dos pasos, no disponible aquí.');
+      }
+      setUser(result.user);
+      setAccessToken(result.accessToken);
     },
     [client],
   );

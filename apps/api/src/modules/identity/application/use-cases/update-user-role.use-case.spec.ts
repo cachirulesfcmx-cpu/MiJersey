@@ -15,6 +15,8 @@ function buildUser(overrides: { id?: string; role?: RoleName } = {}): UserEntity
     role: overrides.role ?? RoleName.SUPPORT,
     emailVerifiedAt: new Date(),
     isActive: true,
+    mfaSecret: null,
+    mfaEnabled: false,
     createdAt: new Date(),
   });
 }
@@ -29,6 +31,7 @@ function buildUseCase(target: UserEntity | null) {
     updateProfile: jest.fn(),
     updateRole: jest.fn().mockResolvedValue(undefined),
     setActive: jest.fn(),
+    updateMfa: jest.fn(),
     findMany: jest.fn(),
   };
   const auditLog: jest.Mocked<AuditLogRepositoryPort> = {

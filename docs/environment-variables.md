@@ -28,6 +28,7 @@ arranca y muestra el detalle del error.
 | `SMTP_USER`                 | No        | —                                             | Usuario SMTP (si el proveedor requiere autenticación)                                                                                           |
 | `SMTP_PASSWORD`             | No        | —                                             | Contraseña SMTP                                                                                                                                 |
 | `SMTP_FROM`                 | No        | `MiJersey <no-reply@mijersey.com>`            | Remitente usado en los correos enviados vía plantillas (031)                                                                                    |
+| `MFA_ENCRYPTION_KEY`        | No        | `dev-mfa-encryption-key-change-me`            | Clave para cifrar en reposo el secreto TOTP de MFA (035) — cualquier string; se deriva a 32 bytes vía SHA-256. **Cambiar en producción**        |
 
 ## `apps/web` y `apps/admin`
 
