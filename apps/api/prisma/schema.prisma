@@ -1029,6 +1029,8 @@ model Order {
 
   @@index([customerId])
   @@index([contactEmail])
+  /// Soporta los rangos de fecha de Analytics (032 §8 "consultas indexadas") — sin este índice, los reportes de ventas escanean toda la tabla en cada consulta.
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -1835,4 +1837,30 @@ model EmailTemplateVersion {
 
   @@unique([templateId, versionNumber])
   @@map("email_template_versions")
+}
+
+/// Log de eventos de analítica (032 §3) — "colector de eventos" desacoplado: sin FK a ninguna tabla (mismo criterio que `Payment.orderId`/`NavigationItem.target`), para que ningún módulo productor (021 Orders, 024 Promotions, 027 Blog, 033 Tracking, ...) tenga que importar este módulo ni viceversa. `entityType`/`entityId` identifican el recurso relacionado como strings libres, igual que `AuditLogEntry`. Índices pensados para las dos consultas reales: listar/filtrar por tipo+fecha, y buscar el historial de una entidad puntual.
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  eventType  String
+  entityType String
+  entityId   String
+  payload    Json
+  occurredAt DateTime @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([entityType, entityId])
+  @@map("analytics_events")
+}
+
+/// Dashboard configurable (032 §3/§6 "los dashboards sean configurables") — `widgets` es un arreglo JSON de `{ id, type, title, config }` (sin tabla propia por widget: no hay un conjunto cerrado de tipos que amerite modelarlos como filas). `filters` guarda un preset de filtros (rango de fechas, canal, segmento) reutilizable al abrir el dashboard. Sin versionado: la spec no lo pide para este modelo.
+model AnalyticsDashboard {
+  id        String   @id @default(uuid())
+  name      String
+  widgets   Json
+  filters   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("analytics_dashboards")
 }

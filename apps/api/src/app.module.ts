@@ -9,6 +9,7 @@ import { APP_CONFIG } from './config/env.config';
 import type { AppConfig } from './config/env.schema';
 import { HealthModule } from './health/health.module';
 import { AdministrationModule } from './modules/administration/administration.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { BrandsModule } from './modules/brands/brands.module';
@@ -97,6 +98,7 @@ import { RedisModule } from './redis/redis.module';
     ThemeModule,
     SiteConfigModule,
     EmailTemplatesModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

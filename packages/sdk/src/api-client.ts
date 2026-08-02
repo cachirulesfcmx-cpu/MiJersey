@@ -13,6 +13,21 @@ import type {
   UpdateProfileInput,
 } from './admin.types.js';
 import type {
+  AnalyticsDashboard,
+  AnalyticsEvent,
+  CreateAnalyticsDashboardInput,
+  CustomerInsights,
+  DateRangeParams,
+  ExecutiveDashboardView,
+  ExportReportParams,
+  ExportReportResult,
+  ListAnalyticsEventsParams,
+  RecordAnalyticsEventInput,
+  SalesReportView,
+  TopProduct,
+  UpdateAnalyticsDashboardInput,
+} from './analytics.types.js';
+import type {
   AssignAttributeInput,
   Attribute,
   AttributeFilterInput,
@@ -2645,5 +2660,129 @@ export class ApiClient {
 
   deleteEmailLayout(accessToken: string, id: string): Promise<void> {
     return this.request<void>(`/admin/email/layouts/${id}`, { method: 'DELETE', accessToken });
+  }
+
+  getExecutiveDashboard(
+    accessToken: string,
+    params: DateRangeParams = {},
+  ): Promise<ExecutiveDashboardView> {
+    const query = toQueryString({ from: params.from, to: params.to });
+    return this.request<ExecutiveDashboardView>(`/admin/analytics/dashboard${query}`, {
+      accessToken,
+    });
+  }
+
+  getSalesReport(accessToken: string, params: DateRangeParams = {}): Promise<SalesReportView> {
+    const query = toQueryString({ from: params.from, to: params.to });
+    return this.request<SalesReportView>(`/admin/analytics/sales${query}`, { accessToken });
+  }
+
+  getCustomerInsights(
+    accessToken: string,
+    params: DateRangeParams & { limit?: number } = {},
+  ): Promise<CustomerInsights> {
+    const query = toQueryString({ from: params.from, to: params.to, limit: params.limit });
+    return this.request<CustomerInsights>(`/admin/analytics/customers${query}`, { accessToken });
+  }
+
+  getProductPerformance(
+    accessToken: string,
+    params: DateRangeParams & { limit?: number } = {},
+  ): Promise<TopProduct[]> {
+    const query = toQueryString({ from: params.from, to: params.to, limit: params.limit });
+    return this.request<TopProduct[]>(`/admin/analytics/products${query}`, { accessToken });
+  }
+
+  listAnalyticsEvents(
+    accessToken: string,
+    params: ListAnalyticsEventsParams = {},
+  ): Promise<PaginatedResult<AnalyticsEvent>> {
+    const query = toQueryString({
+      page: params.page,
+      pageSize: params.pageSize,
+      eventType: params.eventType,
+      entityType: params.entityType,
+      from: params.from,
+      to: params.to,
+    });
+    return this.request<PaginatedResult<AnalyticsEvent>>(`/admin/analytics/events${query}`, {
+      accessToken,
+    });
+  }
+
+  recordAnalyticsEvent(
+    accessToken: string,
+    input: RecordAnalyticsEventInput,
+  ): Promise<AnalyticsEvent> {
+    return this.request<AnalyticsEvent>('/admin/analytics/events', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  async exportAnalyticsReport(
+    accessToken: string,
+    params: ExportReportParams,
+  ): Promise<ExportReportResult> {
+    const query = toQueryString({ type: params.type, from: params.from, to: params.to });
+    const response = await this.fetchImpl(`${this.baseUrl}/admin/analytics/export${query}`, {
+      credentials: 'include',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+      throw new ApiClientError(
+        body?.error.message ?? response.statusText,
+        response.status,
+        body?.error.code ?? 'UNKNOWN_ERROR',
+        body?.error.requestId,
+      );
+    }
+
+    const disposition = response.headers.get('content-disposition') ?? '';
+    const filenameMatch = /filename="([^"]+)"/.exec(disposition);
+    const filename = filenameMatch?.[1] ?? `analytics-${params.type}.csv`;
+    const csv = await response.text();
+    return { filename, csv };
+  }
+
+  listAnalyticsDashboards(accessToken: string): Promise<AnalyticsDashboard[]> {
+    return this.request<AnalyticsDashboard[]>('/admin/analytics/dashboards', { accessToken });
+  }
+
+  getAnalyticsDashboard(accessToken: string, id: string): Promise<AnalyticsDashboard> {
+    return this.request<AnalyticsDashboard>(`/admin/analytics/dashboards/${id}`, { accessToken });
+  }
+
+  createAnalyticsDashboard(
+    accessToken: string,
+    input: CreateAnalyticsDashboardInput,
+  ): Promise<AnalyticsDashboard> {
+    return this.request<AnalyticsDashboard>('/admin/analytics/dashboards', {
+      method: 'POST',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateAnalyticsDashboard(
+    accessToken: string,
+    id: string,
+    input: UpdateAnalyticsDashboardInput,
+  ): Promise<AnalyticsDashboard> {
+    return this.request<AnalyticsDashboard>(`/admin/analytics/dashboards/${id}`, {
+      method: 'PATCH',
+      accessToken,
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteAnalyticsDashboard(accessToken: string, id: string): Promise<void> {
+    return this.request<void>(`/admin/analytics/dashboards/${id}`, {
+      method: 'DELETE',
+      accessToken,
+    });
   }
 }

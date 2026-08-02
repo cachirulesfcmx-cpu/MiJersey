@@ -11,6 +11,28 @@ export type {
   StaffMember,
   UpdateProfileInput,
 } from './admin.types.js';
+export type {
+  AnalyticsDashboard,
+  AnalyticsDashboardFilters,
+  AnalyticsEvent,
+  AnalyticsWidget,
+  AnalyticsWidgetType,
+  CreateAnalyticsDashboardInput,
+  CustomerInsights,
+  DateRangeParams,
+  ExecutiveDashboardView,
+  ExportReportParams,
+  ExportReportResult,
+  ExportReportType,
+  ListAnalyticsEventsParams,
+  RecordAnalyticsEventInput,
+  SalesReportView,
+  SalesSummary,
+  SalesTrendPoint,
+  TopCustomer,
+  TopProduct,
+  UpdateAnalyticsDashboardInput,
+} from './analytics.types.js';
 export type { ApiClientOptions, ApiRequestOptions } from './api-client.js';
 export { ApiClient, ApiClientError } from './api-client.js';
 export type {
