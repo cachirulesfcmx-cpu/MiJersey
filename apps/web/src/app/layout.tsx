@@ -1,6 +1,7 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
+import { Bebas_Neue } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { CartLauncher } from '../components/cart/CartLauncher';
@@ -11,6 +12,13 @@ import { env } from '../config/env';
 import { AuthProvider } from '../providers/auth-provider';
 import { CartProvider } from '../providers/cart-provider';
 import { WishlistProvider } from '../providers/wishlist-provider';
+
+/** Tipografía bold/condensada para titulares — refuerza la identidad "arena" del storefront sin depender del `--font-family-theme` editable en el admin (029), que sigue controlando la tipografía de cuerpo de texto vía `SiteTheme`. */
+const displayFont = Bebas_Neue({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-display',
+});
 
 export const metadata: Metadata = {
   title: 'MiJersey',
@@ -25,7 +33,7 @@ export const revalidate = 60;
 /** Integración con Home (013)/CMS Pages (026)/Blog (027) sin cambios estructurales en esas páginas (spec 028 DoD): el menú de cada ubicación se resuelve una vez aquí y se reutiliza en todo el sitio. */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" className={displayFont.variable}>
       <body className="bg-white text-neutral-900 antialiased">
         <AuthProvider>
           <CartProvider>

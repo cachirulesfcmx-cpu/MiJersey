@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tema "arena" del storefront — utilidades originales (no copian CSS de ningún
+   sitio de referencia): botón píldora con degradado magenta, badge de pill
+   pequeño para etiquetas tipo "Nuevo"/"Oferta", y una textura de puntos suaves
+   ("stardust") para fondos oscuros del header/footer/hero. */
+@layer components {
+  .btn-pop {
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pop-500 to-pop-400 px-6 py-3 font-display text-base uppercase tracking-wide text-white shadow-lg shadow-pop-600/30 transition-transform hover:scale-[1.03] active:scale-[0.98];
+  }
+
+  .badge-pop {
+    @apply inline-flex items-center rounded-full bg-pop-500 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white;
+  }
+
+  .bg-stardust {
+    background-image: theme('backgroundImage.stardust');
+  }
+}

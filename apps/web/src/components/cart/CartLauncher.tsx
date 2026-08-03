@@ -15,7 +15,7 @@ export function CartLauncher() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg"
+        className="from-pop-500 to-pop-600 shadow-pop-600/40 fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br text-white shadow-lg"
         aria-label="Abrir carrito"
       >
         <svg

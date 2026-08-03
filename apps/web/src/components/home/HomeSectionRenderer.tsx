@@ -55,7 +55,7 @@ export function HomeSectionRenderer({
       const headline = str(c.headline);
       if (!imageUrl || !headline) return null;
       return (
-        <section className="relative flex h-[60vh] min-h-[320px] w-full items-end overflow-hidden bg-neutral-100 sm:h-[70vh]">
+        <section className="bg-arena-950 relative flex h-[70vh] min-h-[380px] w-full items-end overflow-hidden sm:h-[75vh]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
@@ -63,14 +63,16 @@ export function HomeSectionRenderer({
             loading={priority ? 'eager' : 'lazy'}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="relative z-10 flex flex-col gap-3 bg-gradient-to-t from-black/60 to-transparent p-8 text-white sm:p-12">
-            <h1 className="max-w-2xl text-3xl font-semibold sm:text-5xl">{headline}</h1>
-            {str(c.subheadline) && <p className="max-w-xl text-lg">{str(c.subheadline)}</p>}
+          <div className="from-arena-950 via-arena-900/60 absolute inset-0 bg-gradient-to-t to-transparent" />
+          <div className="relative z-10 flex flex-col gap-4 p-6 text-white sm:p-12">
+            <h1 className="font-display max-w-2xl text-4xl uppercase leading-none tracking-wide sm:text-6xl">
+              {headline}
+            </h1>
+            {str(c.subheadline) && (
+              <p className="max-w-xl text-base text-white/80 sm:text-lg">{str(c.subheadline)}</p>
+            )}
             {str(c.ctaLabel) && str(c.ctaUrl) && (
-              <Link
-                href={str(c.ctaUrl)}
-                className="bg-brand-600 hover:bg-brand-700 mt-2 inline-block w-fit rounded-md px-5 py-2.5 text-sm font-medium"
-              >
+              <Link href={str(c.ctaUrl)} className="btn-pop mt-2 w-fit">
                 {str(c.ctaLabel)}
               </Link>
             )}
@@ -83,23 +85,28 @@ export function HomeSectionRenderer({
       const grid = banners(c.banners).filter((b) => b.imageUrl);
       if (grid.length === 0) return null;
       return (
-        <section className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-6 lg:grid-cols-3">
           {grid.map((banner, index) => {
             const content = (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={banner.imageUrl ?? undefined}
-                alt={banner.title ?? ''}
-                loading="lazy"
-                className="h-56 w-full rounded-lg object-cover"
-              />
+              <div className="group relative h-48 w-full overflow-hidden rounded-2xl sm:h-64">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={banner.imageUrl ?? undefined}
+                  alt={banner.title ?? ''}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="from-arena-950/85 via-arena-950/10 absolute inset-0 bg-gradient-to-t to-transparent" />
+                {banner.title && (
+                  <span className="font-display absolute bottom-4 left-4 text-2xl uppercase tracking-wide text-white sm:text-3xl">
+                    {banner.title}
+                  </span>
+                )}
+              </div>
             );
             return (
-              <div key={`${section.id}-${index}`} className="flex flex-col gap-2">
+              <div key={`${section.id}-${index}`}>
                 {banner.linkUrl ? <Link href={banner.linkUrl}>{content}</Link> : content}
-                {banner.title && (
-                  <p className="text-sm font-medium text-neutral-900">{banner.title}</p>
-                )}
               </div>
             );
           })}
@@ -115,16 +122,18 @@ export function HomeSectionRenderer({
       if (list.length === 0) return null;
       const basePath = ENTITY_PATH_BY_TYPE[section.type] ?? '/';
       return (
-        <section className="flex flex-col gap-4 p-4 sm:p-8">
+        <section className="flex flex-col gap-4 p-3 sm:gap-6 sm:p-8">
           {str(c.heading) && (
-            <h2 className="text-xl font-semibold text-neutral-900">{str(c.heading)}</h2>
+            <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+              {str(c.heading)}
+            </h2>
           )}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
             {list.map((item) => (
               <Link
                 key={item.id}
                 href={`${basePath}/${item.slug}`}
-                className="hover:border-brand-300 flex flex-col gap-2 rounded-lg border border-neutral-200 p-3 hover:shadow-sm"
+                className="group flex flex-col gap-2 rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-shadow hover:shadow-md"
               >
                 {item.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -132,14 +141,14 @@ export function HomeSectionRenderer({
                     src={item.imageUrl}
                     alt={item.name}
                     loading="lazy"
-                    className="aspect-square w-full rounded-md object-cover"
+                    className="aspect-square w-full rounded-xl bg-neutral-50 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                   />
                 ) : (
-                  <div className="aspect-square w-full rounded-md bg-neutral-50" />
+                  <div className="aspect-square w-full rounded-xl bg-neutral-50" />
                 )}
-                <span className="text-sm font-medium text-neutral-900">{item.name}</span>
+                <span className="truncate text-sm font-medium text-neutral-900">{item.name}</span>
                 {typeof item.fromPrice === 'number' && (
-                  <span className="text-xs text-neutral-500">
+                  <span className="font-display text-pop-600 text-lg tracking-wide">
                     Desde ${item.fromPrice.toFixed(2)}
                   </span>
                 )}
@@ -168,13 +177,12 @@ export function HomeSectionRenderer({
           />
           <div className="flex flex-col gap-2">
             {str(c.headline) && (
-              <h2 className="text-2xl font-semibold text-neutral-900">{str(c.headline)}</h2>
+              <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+                {str(c.headline)}
+              </h2>
             )}
             {str(c.ctaLabel) && str(c.ctaUrl) && (
-              <Link
-                href={str(c.ctaUrl)}
-                className="bg-brand-600 hover:bg-brand-700 w-fit rounded-md px-5 py-2.5 text-sm font-medium text-white"
-              >
+              <Link href={str(c.ctaUrl)} className="btn-pop w-fit">
                 {str(c.ctaLabel)}
               </Link>
             )}
@@ -212,14 +220,13 @@ export function HomeSectionRenderer({
           )}
           <div className="flex flex-1 flex-col gap-3">
             {str(c.title) && (
-              <h2 className="text-2xl font-semibold text-neutral-900">{str(c.title)}</h2>
+              <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+                {str(c.title)}
+              </h2>
             )}
             {str(c.body) && <p className="text-neutral-600">{str(c.body)}</p>}
             {str(c.ctaLabel) && str(c.ctaUrl) && (
-              <Link
-                href={str(c.ctaUrl)}
-                className="bg-brand-600 hover:bg-brand-700 w-fit rounded-md px-5 py-2.5 text-sm font-medium text-white"
-              >
+              <Link href={str(c.ctaUrl)} className="btn-pop w-fit">
                 {str(c.ctaLabel)}
               </Link>
             )}
