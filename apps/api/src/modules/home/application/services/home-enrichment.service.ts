@@ -138,6 +138,7 @@ export class HomeEnrichmentService {
               name: p.name,
               imageUrl: url(p.imageMediaId),
               fromPrice: p.fromPrice,
+              compareAtPrice: p.compareAtPrice,
             })),
         };
         break;

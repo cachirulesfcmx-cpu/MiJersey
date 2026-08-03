@@ -23,13 +23,17 @@
  *   node tools/fix-storefront-showcase.mjs --dry-run   # solo muestra que haria
  *   node tools/fix-storefront-showcase.mjs             # aplica los cambios
  */
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 
 const repoRoot = process.cwd();
+const apiDir = path.resolve(repoRoot, 'apps/api');
 const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
+const env = loadEnvFile(path.join(apiDir, '.env'));
+const R2_PUBLIC_URL = (env.R2_PUBLIC_URL ?? '').replace(/\/$/, '');
 
 const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/];
 const FEATURED_PRODUCTS_COUNT = 8;
@@ -49,9 +53,13 @@ try {
       status: 'ACTIVE',
       visibility: 'PUBLIC',
       categories: { some: { categoryId: category.id } },
+      // Requerido: que su variante mas barata (la que el home resuelve) tenga imagen real --
+      // sin este filtro el picker podia elegir productos con variantes sin imageId, dejando la
+      // tarjeta en blanco en el home (bug real detectado: 8/8 destacados sin foto).
+      variants: { some: { status: 'ACTIVE', imageId: { not: null } } },
     },
     orderBy: { name: 'asc' },
-    take: 60,
+    take: 120,
     select: { id: true, slug: true, name: true },
   });
 
@@ -70,6 +78,7 @@ try {
 
   await updateFeaturedProductsSections(prisma, featuredProducts, dryRun);
   await updateFeaturedCategoriesSections(prisma, category, dryRun);
+  await fixBrokenHeroImage(prisma, featuredProducts, dryRun);
   await ensureNavigation(prisma, category, 'header', dryRun);
   await ensureNavigation(prisma, category, 'footer', dryRun);
 
@@ -142,6 +151,54 @@ async function updateFeaturedCategoriesSections(prisma, category, dryRun) {
       await prisma.homeSection.update({
         where: { id: section.id },
         data: { configuration: nextConfiguration },
+      });
+    }
+  }
+}
+
+/**
+ * El HERO_BANNER apunta a un MediaAsset cuyo archivo local nunca existio (una de las 8 imagenes
+ * "faltantes" detectadas por tools/migrate-images-to-r2.mjs), asi que su `url` sigue siendo el
+ * viejo dominio de Railway (`/uploads/...`), que 404 en cuanto el contenedor se reinicia. Si
+ * detectamos eso, lo reemplazamos por la imagen (ya en R2) de uno de los productos destacados.
+ */
+async function fixBrokenHeroImage(prisma, featuredProducts, dryRun) {
+  const sections = await prisma.homeSection.findMany({
+    where: { type: 'HERO_BANNER', status: 'PUBLISHED', isVisible: true },
+  });
+  if (sections.length === 0) return;
+  if (!R2_PUBLIC_URL) {
+    console.warn('[HERO_BANNER] Falta R2_PUBLIC_URL en apps/api/.env -- no puedo verificar/corregir la imagen del hero.');
+    return;
+  }
+
+  const replacement = await prisma.productVariant.findFirst({
+    where: { productId: { in: featuredProducts.map((p) => p.id) }, status: 'ACTIVE', imageId: { not: null } },
+    select: { imageId: true },
+  });
+  if (!replacement?.imageId) {
+    console.warn('[HERO_BANNER] Ninguno de los productos destacados tiene imagen -- no puedo corregir el hero.');
+    return;
+  }
+
+  for (const section of sections) {
+    const cfg = section.configuration ?? {};
+    const currentImageId = cfg.imageMediaId ?? null;
+    const currentAsset = currentImageId ? await prisma.mediaAsset.findUnique({ where: { id: currentImageId } }) : null;
+    const isBroken = !currentAsset || !currentAsset.url.startsWith(R2_PUBLIC_URL);
+
+    if (!isBroken) {
+      console.log(`[HERO_BANNER] "${section.title}": la imagen ya esta en R2, no se toca.`);
+      continue;
+    }
+
+    console.log(
+      `[HERO_BANNER] "${section.title}": imagen rota/local detectada (asset ${currentImageId ?? 'ninguno'}) -> se reemplaza por la imagen de un producto destacado.`,
+    );
+    if (!dryRun) {
+      await prisma.homeSection.update({
+        where: { id: section.id },
+        data: { configuration: { ...cfg, imageMediaId: replacement.imageId } },
       });
     }
   }
@@ -226,4 +283,27 @@ function loadPrismaClient() {
 function fail(message) {
   console.error(message);
   process.exit(1);
+}
+
+function loadEnvFile(filePath) {
+  const result = {};
+  let content;
+  try {
+    content = readFileSync(filePath, 'utf8');
+  } catch {
+    return result;
+  }
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    result[key] = value;
+  }
+  return result;
 }

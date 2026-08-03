@@ -204,7 +204,12 @@ import type {
   UpdatePromotionInput,
   ValidatePromotionResult,
 } from './promotions.types.js';
-import type { CreateReviewInput, ProductReviewsResult, Review } from './reviews.types.js';
+import type {
+  CreateReviewInput,
+  FeaturedReviewsResult,
+  ProductReviewsResult,
+  Review,
+} from './reviews.types.js';
 import type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
@@ -2090,6 +2095,11 @@ export class ApiClient {
       body: JSON.stringify(input),
       ...(accessToken ? { accessToken } : {}),
     });
+  }
+
+  listFeaturedReviews(limit?: number): Promise<FeaturedReviewsResult> {
+    const query = toQueryString({ limit });
+    return this.request<FeaturedReviewsResult>(`/reviews/featured${query}`);
   }
 
   listPromotions(

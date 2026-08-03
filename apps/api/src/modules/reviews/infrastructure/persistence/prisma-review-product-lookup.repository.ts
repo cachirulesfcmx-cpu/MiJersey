@@ -23,4 +23,30 @@ export class PrismaReviewProductLookupRepository implements ReviewProductLookupP
     });
     return count > 0;
   }
+
+  async findProductsByIds(
+    ids: string[],
+  ): Promise<{ id: string; slug: string; name: string; imageMediaId: string | null }[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.prisma.product.findMany({
+      where: { id: { in: ids }, deletedAt: null, status: 'ACTIVE', visibility: 'PUBLIC' },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        variants: {
+          where: { status: 'ACTIVE' },
+          orderBy: { price: 'asc' },
+          take: 1,
+          select: { imageId: true },
+        },
+      },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      imageMediaId: row.variants[0]?.imageId ?? null,
+    }));
+  }
 }

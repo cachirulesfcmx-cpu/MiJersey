@@ -112,4 +112,13 @@ export class PrismaReviewRepository implements ReviewRepositoryPort {
     const row = await this.prisma.review.update({ where: { id }, data: { status } });
     return toEntity(row);
   }
+
+  async findFeatured(limit: number): Promise<ReviewEntity[]> {
+    const rows = await this.prisma.review.findMany({
+      where: { status: 'APPROVED', rating: { gte: 4 } },
+      orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }],
+      take: limit,
+    });
+    return rows.map(toEntity);
+  }
 }

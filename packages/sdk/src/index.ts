@@ -273,6 +273,8 @@ export type {
 } from './promotions.types.js';
 export type {
   CreateReviewInput,
+  FeaturedReview,
+  FeaturedReviewsResult,
   ProductReviewsResult,
   Review,
   ReviewStatus,

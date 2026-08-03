@@ -34,3 +34,11 @@ export interface CreateReviewInput {
   title?: string;
   body?: string;
 }
+
+export interface FeaturedReview extends Review {
+  product: { slug: string; name: string; imageUrl: string | null } | null;
+}
+
+export interface FeaturedReviewsResult {
+  items: FeaturedReview[];
+}

@@ -8,4 +8,8 @@ export interface ReviewProductLookupPort {
   findPublicProductBySlug(slug: string): Promise<{ id: string; slug: string; name: string } | null>;
   /** True si el cliente tiene al menos un pedido pagado (`PaymentStatus.PAID`) que incluya este producto. */
   hasVerifiedPurchase(customerId: string, productId: string): Promise<boolean>;
+  /** Datos mínimos + imagen (variante ACTIVA más barata, mismo criterio que Home) para mostrar reseñas destacadas con contexto de producto. */
+  findProductsByIds(
+    ids: string[],
+  ): Promise<{ id: string; slug: string; name: string; imageMediaId: string | null }[]>;
 }

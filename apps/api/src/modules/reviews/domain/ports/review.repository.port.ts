@@ -34,4 +34,6 @@ export interface ReviewRepositoryPort {
   findPending(page: number, pageSize: number): Promise<PaginatedReviews>;
   summarizeApproved(productId: string): Promise<ReviewSummary>;
   updateStatus(id: string, status: ReviewStatus): Promise<ReviewEntity>;
+  /** Mejores reseñas `APPROVED` (rating desc, luego más recientes) — para destacar en el home. */
+  findFeatured(limit: number): Promise<ReviewEntity[]>;
 }

@@ -26,7 +26,7 @@ export class PrismaHomeLookupRepository implements HomeLookupPort {
           where: { status: 'ACTIVE' },
           orderBy: { price: 'asc' },
           take: 1,
-          select: { price: true, imageId: true },
+          select: { price: true, imageId: true, compareAtPrice: true },
         },
       },
     });
@@ -40,6 +40,9 @@ export class PrismaHomeLookupRepository implements HomeLookupPort {
         name: row.name,
         imageMediaId: row.variants[0]?.imageId ?? null,
         fromPrice: row.variants[0] ? Number(row.variants[0].price) : null,
+        compareAtPrice: row.variants[0]?.compareAtPrice
+          ? Number(row.variants[0].compareAtPrice)
+          : null,
       }));
   }
 

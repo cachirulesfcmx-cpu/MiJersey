@@ -4,6 +4,8 @@ export interface ProductLookupSummary {
   name: string;
   imageMediaId: string | null;
   fromPrice: number | null;
+  /** `compareAtPrice` real de la variante usada para `fromPrice` — para el badge de descuento en el home (nunca inventado). */
+  compareAtPrice: number | null;
 }
 
 export interface CategoryLookupSummary {

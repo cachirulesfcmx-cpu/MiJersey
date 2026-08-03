@@ -65,12 +65,24 @@ export function PromotionCountdownBar() {
 
   return (
     <div
-      className="flex items-center justify-center gap-3 px-4 py-2 text-center text-sm text-white"
+      className="sticky top-0 z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-sm text-white"
       style={{ background: 'var(--tf-neutral-950)' }}
     >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        className="shrink-0 text-white/70"
+      >
+        <circle cx="12" cy="12" r="9" strokeLinecap="round" />
+        <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
       <span className="font-medium">{promotionLabel(promotion)}</span>
       <span className="tf-caption text-white/70">Termina en</span>
-      <span className="font-display tracking-wide">{formatRemaining(remaining)}</span>
+      <span className="font-display tabular-nums tracking-wide">{formatRemaining(remaining)}</span>
       <button
         type="button"
         onClick={() => setDismissed(true)}
