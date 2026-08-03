@@ -83,10 +83,20 @@ try {
 
     const productVariants = variantsByProduct.get(legacyProduct.id) ?? [];
     const optionValueCache = await ensureOptions(prisma, product.id, productVariants);
+    const usedCombinationKeys = new Set();
 
     for (const legacyVariant of productVariants) {
       const optionValueIds = getVariantOptionValueIds(optionValueCache, legacyVariant);
-      const combinationKey = optionValueIds.slice().sort().join(':') || `legacy:${legacyVariant.id}`;
+      const baseCombinationKey = optionValueIds.slice().sort().join(':') || `legacy:${legacyVariant.id}`;
+      // El export legacy trae productos con filas de variantes duplicadas (misma
+      // Talla/Dorsal/Version, distinto SKU/id). No las colapsamos: si la combinacion
+      // de opciones ya se uso en este producto, se desambigua con el id legacy para
+      // mantenerlas como variantes separadas en vez de chocar contra la unique
+      // constraint (productId, combinationKey).
+      const combinationKey = usedCombinationKeys.has(baseCombinationKey)
+        ? `${baseCombinationKey}:legacy-${legacyVariant.id}`
+        : baseCombinationKey;
+      usedCombinationKeys.add(combinationKey);
       const variant = await prisma.productVariant.upsert({
         where: { sku: legacyVariant.sku },
         create: {
