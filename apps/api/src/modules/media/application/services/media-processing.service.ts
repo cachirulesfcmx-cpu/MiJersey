@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import sharp from 'sharp';
 
 import { InvalidUploadError } from '../../domain/errors/media.errors';
@@ -21,6 +21,8 @@ export interface MediaProcessingResult {
  */
 @Injectable()
 export class MediaProcessingService {
+  private readonly logger = new Logger(MediaProcessingService.name);
+
   constructor(@Inject(STORAGE_PORT) private readonly storage: StoragePort) {}
 
   async process(buffer: Buffer, type: MediaType): Promise<MediaProcessingResult> {
@@ -47,7 +49,11 @@ export class MediaProcessingService {
         duration: null,
         thumbnailUrl: thumbnail.url,
       };
-    } catch {
+    } catch (err) {
+      this.logger.error(
+        'Fallo al procesar imagen con sharp',
+        err instanceof Error ? err.stack : err,
+      );
       throw new InvalidUploadError('El archivo de imagen está dañado o no se pudo procesar');
     }
   }
