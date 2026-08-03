@@ -53,10 +53,11 @@ try {
       status: 'ACTIVE',
       visibility: 'PUBLIC',
       categories: { some: { categoryId: category.id } },
-      // Requerido: que su variante mas barata (la que el home resuelve) tenga imagen real --
-      // sin este filtro el picker podia elegir productos con variantes sin imageId, dejando la
-      // tarjeta en blanco en el home (bug real detectado: 8/8 destacados sin foto).
-      variants: { some: { status: 'ACTIVE', imageId: { not: null } } },
+      // Requerido: que el producto tenga al menos una imagen en su galeria real (ProductMedia,
+      // 015) -- la fuente real de imagenes del catalogo importado. `variant.imageId` es solo un
+      // override opcional (007) que el import nunca pobla, asi que filtrar por ese campo dejaba
+      // 0 candidatos (bug real detectado: el picker no encontraba NINGUN producto elegible).
+      media: { some: {} },
     },
     orderBy: { name: 'asc' },
     take: 120,
@@ -125,6 +126,18 @@ async function updateFeaturedProductsSections(prisma, featuredProducts, dryRun) 
 }
 
 async function updateFeaturedCategoriesSections(prisma, category, dryRun) {
+  // Si ya existen sub-categorias de liga (creadas por tools/categorize-by-league.mjs), ese script
+  // es el dueño de esta seccion -- sobrescribirla aqui con solo "Jerseys" la degradaria de vuelta.
+  // Corre categorize-by-league.mjs DESPUES de este script si quieres que la seccion "Compra por
+  // Liga" refleje las ligas reales en vez de la categoria unica.
+  const hasLeagueCategories = await prisma.category.count({ where: { parentId: category.id } });
+  if (hasLeagueCategories > 0) {
+    console.log(
+      `\n[FEATURED_CATEGORIES] Ya existen ${hasLeagueCategories} categoria(s) de liga -- no se toca esta seccion aqui (correr tools/categorize-by-league.mjs si quieres actualizarla).`,
+    );
+    return;
+  }
+
   const sections = await prisma.homeSection.findMany({
     where: { type: 'FEATURED_CATEGORIES', status: 'PUBLISHED', isVisible: true },
   });
@@ -172,14 +185,16 @@ async function fixBrokenHeroImage(prisma, featuredProducts, dryRun) {
     return;
   }
 
-  const replacement = await prisma.productVariant.findFirst({
-    where: { productId: { in: featuredProducts.map((p) => p.id) }, status: 'ACTIVE', imageId: { not: null } },
-    select: { imageId: true },
+  const replacement = await prisma.productMedia.findFirst({
+    where: { productId: { in: featuredProducts.map((p) => p.id) } },
+    orderBy: { sortOrder: 'asc' },
+    select: { mediaId: true },
   });
-  if (!replacement?.imageId) {
+  if (!replacement?.mediaId) {
     console.warn('[HERO_BANNER] Ninguno de los productos destacados tiene imagen -- no puedo corregir el hero.');
     return;
   }
+  const replacementImageId = replacement.mediaId;
 
   for (const section of sections) {
     const cfg = section.configuration ?? {};
@@ -198,7 +213,7 @@ async function fixBrokenHeroImage(prisma, featuredProducts, dryRun) {
     if (!dryRun) {
       await prisma.homeSection.update({
         where: { id: section.id },
-        data: { configuration: { ...cfg, imageMediaId: replacement.imageId } },
+        data: { configuration: { ...cfg, imageMediaId: replacementImageId } },
       });
     }
   }

@@ -28,6 +28,9 @@ export class PrismaHomeLookupRepository implements HomeLookupPort {
           take: 1,
           select: { price: true, imageId: true, compareAtPrice: true },
         },
+        // Fallback a la galería del producto (ProductMedia, 015) -- `variant.imageId` es un
+        // override opcional (007) que el catálogo legacy importado nunca pobló.
+        media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
       },
     });
     const byId = new Map(rows.map((row) => [row.id, row]));
@@ -38,7 +41,7 @@ export class PrismaHomeLookupRepository implements HomeLookupPort {
         id: row.id,
         slug: row.slug,
         name: row.name,
-        imageMediaId: row.variants[0]?.imageId ?? null,
+        imageMediaId: row.variants[0]?.imageId ?? row.media[0]?.mediaId ?? null,
         fromPrice: row.variants[0] ? Number(row.variants[0].price) : null,
         compareAtPrice: row.variants[0]?.compareAtPrice
           ? Number(row.variants[0].compareAtPrice)

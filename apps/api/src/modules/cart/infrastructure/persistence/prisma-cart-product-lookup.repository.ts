@@ -7,7 +7,17 @@ import type {
 } from '../../domain/ports/cart-product-lookup.port';
 
 const VARIANT_INCLUDE = {
-  product: { select: { name: true, slug: true, status: true, visibility: true } },
+  product: {
+    select: {
+      name: true,
+      slug: true,
+      status: true,
+      visibility: true,
+      // Fallback a la galería del producto (ProductMedia, 015) -- `variant.imageId` es un
+      // override opcional (007) que el catálogo legacy importado nunca pobló.
+      media: { orderBy: { sortOrder: 'asc' as const }, take: 1, select: { mediaId: true } },
+    },
+  },
 } as const;
 
 type VariantRow = {
@@ -18,7 +28,13 @@ type VariantRow = {
   price: { toNumber(): number };
   imageId: string | null;
   status: string;
-  product: { name: string; slug: string; status: string; visibility: string };
+  product: {
+    name: string;
+    slug: string;
+    status: string;
+    visibility: string;
+    media: { mediaId: string }[];
+  };
 };
 
 function toInfo(row: VariantRow): CartVariantInfo {
@@ -30,7 +46,7 @@ function toInfo(row: VariantRow): CartVariantInfo {
     variantTitle: row.title,
     sku: row.sku,
     price: row.price.toNumber(),
-    imageId: row.imageId,
+    imageId: row.imageId ?? row.product.media[0]?.mediaId ?? null,
     isAvailableForSale:
       row.status === 'ACTIVE' &&
       row.product.status === 'ACTIVE' &&

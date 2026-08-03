@@ -40,13 +40,16 @@ export class PrismaReviewProductLookupRepository implements ReviewProductLookupP
           take: 1,
           select: { imageId: true },
         },
+        // Fallback a la galería del producto (ProductMedia, 015) -- `variant.imageId` es un
+        // override opcional (007) que el catálogo legacy importado nunca pobló.
+        media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
       },
     });
     return rows.map((row) => ({
       id: row.id,
       slug: row.slug,
       name: row.name,
-      imageMediaId: row.variants[0]?.imageId ?? null,
+      imageMediaId: row.variants[0]?.imageId ?? row.media[0]?.mediaId ?? null,
     }));
   }
 }

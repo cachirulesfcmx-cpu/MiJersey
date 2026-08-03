@@ -159,13 +159,17 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
         take: params.pageSize,
         include: {
           // Misma resolución que Home (013, ver PrismaHomeLookupRepository): la variante activa
-          // más barata aporta la imagen/precio "de vitrina" del producto en listados.
+          // más barata aporta el precio "de vitrina" del producto en listados.
           variants: {
             where: { status: 'ACTIVE' },
             orderBy: { price: 'asc' },
             take: 1,
             select: { price: true, compareAtPrice: true, imageId: true },
           },
+          // Imagen real del producto: la galería (ProductMedia, 015) es la fuente primaria --
+          // `variant.imageId` es solo un override opcional por variante (007) que el catálogo
+          // legacy importado nunca pobló, así que sin este fallback el listado queda en blanco.
+          media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
         },
       }),
       this.prisma.product.count({ where }),
@@ -174,7 +178,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
     const mediaIds = [
       ...new Set(
         items
-          .map((product) => product.variants[0]?.imageId)
+          .map((product) => product.variants[0]?.imageId ?? product.media[0]?.mediaId)
           .filter((id): id is string => Boolean(id)),
       ),
     ];
@@ -186,6 +190,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
     return {
       items: items.map((product) => {
         const cheapestVariant = product.variants[0];
+        const imageId = cheapestVariant?.imageId ?? product.media[0]?.mediaId ?? null;
         return {
           id: product.id,
           sku: product.sku,
@@ -194,9 +199,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
           status: product.status,
           visibility: product.visibility,
           createdAt: product.createdAt,
-          imageUrl: cheapestVariant?.imageId
-            ? (mediaUrlById.get(cheapestVariant.imageId) ?? null)
-            : null,
+          imageUrl: imageId ? (mediaUrlById.get(imageId) ?? null) : null,
           price: cheapestVariant ? Number(cheapestVariant.price) : null,
           compareAtPrice: cheapestVariant?.compareAtPrice
             ? Number(cheapestVariant.compareAtPrice)
