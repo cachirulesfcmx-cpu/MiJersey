@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { CartLauncher } from '../components/cart/CartLauncher';
 import { SiteNavigation } from '../components/navigation/SiteNavigation';
+import { SiteChrome } from '../components/theme/SiteChrome';
 import { SiteTheme } from '../components/theme/SiteTheme';
 import { ConsentBanner } from '../components/tracking/ConsentBanner';
 import { env } from '../config/env';
@@ -34,16 +35,19 @@ export const revalidate = 60;
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={displayFont.variable}>
-      <body className="bg-white text-neutral-900 antialiased">
+      <body className="tf-root bg-white text-neutral-900 antialiased">
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
               <SiteTheme />
-              <SiteNavigation location="header" />
-              {children}
-              <SiteNavigation location="footer" />
-              <CartLauncher />
-              <ConsentBanner />
+              <SiteChrome
+                header={<SiteNavigation location="header" />}
+                footer={<SiteNavigation location="footer" />}
+                cart={<CartLauncher />}
+                consent={<ConsentBanner />}
+              >
+                {children}
+              </SiteChrome>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

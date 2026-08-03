@@ -2,25 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tema "arena" del storefront — utilidades originales (no copian CSS de ningún
-   sitio de referencia): botón píldora con degradado magenta, badge de pill
-   pequeño para etiquetas tipo "Nuevo"/"Oferta", y una textura de puntos suaves
-   ("stardust") para fondos oscuros del header/footer/hero. */
+@import '../styles/theme-framework.css';
+
+/* El storefront todavía no implementa un toggle de modo oscuro propio — sin esto,
+   navegadores con "oscurecer sitios automáticamente" (frecuente en Chrome Android)
+   repintan el sitio con un heurístico de inversión que rompe el contraste real. */
+:root {
+  color-scheme: light;
+}
+
+/* Storefront de MiJersey re-temado con "Continuum" (apps/web/src/styles/theme-framework.css):
+   estas utilidades conservan sus nombres originales (btn-pop, card-arena, etc.) para no tocar
+   los ~90 archivos que ya las consumen, pero ahora se definen con los tokens de Continuum
+   (radios, sombras, motion) en vez de la paleta violeta/magenta original. */
 @layer components {
   .btn-pop {
-    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pop-500 to-pop-400 px-6 py-3 font-display text-base uppercase tracking-wide text-white shadow-lg shadow-pop-600/30 transition-transform hover:scale-[1.03] active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition-[transform,box-shadow] active:scale-[0.98];
+    background: var(--tf-accent);
+    box-shadow: var(--tf-shadow-sm);
+    transition-duration: var(--tf-dur-fast);
+    transition-timing-function: var(--tf-ease-standard);
+  }
+  .btn-pop:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--tf-shadow-md);
   }
 
   .btn-pop-outline {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-arena-800 px-6 py-[10px] font-display text-base uppercase tracking-wide text-arena-900 transition-colors hover:bg-arena-800 hover:text-white active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full border px-6 py-[10px] text-sm font-semibold transition-colors active:scale-[0.98];
+    border-color: var(--tf-border-strong);
+    color: var(--tf-text);
+  }
+  .btn-pop-outline:hover {
+    border-color: var(--tf-text);
+    background: var(--tf-bg-subtle);
   }
 
   .btn-pop-sm {
-    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pop-500 to-pop-400 px-4 py-2 font-display text-sm uppercase tracking-wide text-white shadow-md shadow-pop-600/30 transition-transform hover:scale-[1.03] active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold text-white transition-[transform,box-shadow] active:scale-[0.98];
+    background: var(--tf-accent);
+    box-shadow: var(--tf-shadow-sm);
+    transition-duration: var(--tf-dur-fast);
+    transition-timing-function: var(--tf-ease-standard);
+  }
+  .btn-pop-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--tf-shadow-md);
   }
 
   .badge-pop {
-    @apply inline-flex items-center rounded-full bg-pop-500 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white;
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+    background: var(--tf-accent-tint);
+    color: var(--tf-accent-strong);
   }
 
   .bg-stardust {
@@ -29,31 +62,78 @@
 
   /* Encabezado de sección reutilizable en todo el storefront (PLP, cuenta, blog, etc.) */
   .section-heading {
-    @apply font-display text-2xl uppercase tracking-wide text-arena-950 sm:text-3xl;
+    @apply text-2xl sm:text-3xl;
+    font-weight: var(--tf-h3-weight);
+    letter-spacing: var(--tf-h2-tracking);
+    color: var(--tf-text);
   }
 
   /* Tarjeta base con elevación sutil al hover — usada en PLP, cuenta, blog. */
   .card-arena {
-    @apply rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-arena-900/5;
+    @apply p-4 transition-all;
+    background: var(--tf-surface);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-xl);
+    box-shadow: var(--tf-shadow-sm);
+    transition-duration: var(--tf-dur-base);
+    transition-timing-function: var(--tf-ease-decel);
+  }
+  .card-arena:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--tf-shadow-lg);
+    border-color: var(--tf-border-strong);
   }
 
   /* Input/textarea/select consistentes para todos los formularios del storefront. */
   .input-arena {
-    @apply w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-pop-500 focus:outline-none focus:ring-2 focus:ring-pop-500/20;
+    @apply w-full px-4 py-3 text-sm transition-colors;
+    color: var(--tf-text);
+    background: var(--tf-surface);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-md);
+  }
+  .input-arena::placeholder {
+    color: var(--tf-text-faint);
+  }
+  .input-arena:focus {
+    outline: none;
+    border-color: var(--tf-accent);
+    box-shadow: var(--tf-shadow-focus);
   }
 
   .label-arena {
-    @apply text-xs font-semibold uppercase tracking-wide text-neutral-500;
+    @apply text-xs font-semibold uppercase tracking-wide;
+    color: var(--tf-text-muted);
   }
 
   /* Enlace con subrayado animado — navegación secundaria, tabs, breadcrumbs. */
   .link-underline {
-    @apply relative text-neutral-600 transition-colors hover:text-arena-900 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-pop-500 after:transition-all after:duration-300 hover:after:w-full;
+    @apply relative transition-colors after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:transition-all;
+    color: var(--tf-text-muted);
+  }
+  .link-underline:hover {
+    color: var(--tf-text);
+  }
+  .link-underline::after {
+    background: var(--tf-accent);
+    transition-duration: var(--tf-dur-base);
+  }
+  .link-underline:hover::after {
+    width: 100%;
   }
 
   /* Shimmer de carga para estados skeleton (PLP, PDP, cuenta). */
   .skeleton-arena {
-    @apply animate-pulse rounded-xl bg-neutral-100;
+    @apply animate-pulse;
+    background: var(--tf-bg-subtle);
+    border-radius: var(--tf-radius-md);
+  }
+
+  /* Panel de dropdown/mega menú del header real (SiteNavigation) — superficie elevada del sistema Continuum. */
+  .site-nav-dropdown {
+    background: var(--tf-surface);
+    border: 1px solid var(--tf-border);
+    box-shadow: var(--tf-shadow-lg);
   }
 }
 
@@ -71,6 +151,6 @@
   }
 
   .animate-fade-in-up {
-    animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fade-in-up var(--tf-dur-slow, 0.5s) var(--tf-ease-decel, cubic-bezier(0.16, 1, 0.3, 1)) both;
   }
 }

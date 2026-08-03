@@ -6,32 +6,32 @@ const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      // Paleta "arena" — solo para el storefront (apps/web), no toca el preset
-      // compartido con apps/admin. Violeta oscuro a magenta, tono energético
-      // inspirado en estética "glitch/arcade" genérica (sin depender de
-      // ningún sitio o marca puntual): fondo profundo para header/footer/hero,
-      // acento vibrante para CTAs y badges.
+      // Paleta ligada al theme "Continuum" (apps/web/src/styles/theme-framework.css):
+      // `arena` pasa a ser la escala neutra de tinta (--tf-neutral-*) y `pop`
+      // el acento configurable (--tf-accent-*), para que todo el storefront
+      // que ya usa estas utilidades de Tailwind se re-tematice sin tocar cada
+      // archivo — el valor real vive en las variables CSS, no aquí.
       colors: {
         arena: {
-          950: '#0b0a1f',
-          900: '#140f33',
-          800: '#231352',
-          700: '#361b72',
-          600: '#4a1f8f',
+          950: 'var(--tf-neutral-950, #0a0a0c)',
+          900: 'var(--tf-neutral-900, #131317)',
+          800: 'var(--tf-neutral-800, #212127)',
+          700: 'var(--tf-neutral-700, #35353e)',
+          600: 'var(--tf-neutral-600, #4d4d58)',
         },
         pop: {
-          400: '#ff5fb0',
-          500: '#e8348f',
-          600: '#c21f75',
+          400: 'hsl(var(--tf-accent-h, 217) var(--tf-accent-s, 91%) calc(var(--tf-accent-l, 60%) + 8%))',
+          500: 'var(--tf-accent, #3b82f6)',
+          600: 'var(--tf-accent-strong, #2563eb)',
         },
       },
       fontFamily: {
-        display: ['var(--font-display)'],
+        display: ['var(--tf-font-sans)', 'var(--font-display)'],
       },
       backgroundImage: {
         'arena-gradient': 'linear-gradient(135deg, var(--tw-gradient-stops))',
         stardust:
-          'radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.5) 0, transparent 60%), radial-gradient(1.5px 1.5px at 70% 60%, rgba(255,255,255,0.4) 0, transparent 60%), radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.35) 0, transparent 60%), radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.3) 0, transparent 60%), radial-gradient(1.5px 1.5px at 55% 10%, rgba(255,255,255,0.4) 0, transparent 60%)',
+          'radial-gradient(60% 50% at 80% 0%, hsl(var(--tf-accent-h, 217) var(--tf-accent-s, 91%) var(--tf-accent-l, 60%) / 0.25) 0%, transparent 70%)',
       },
     },
   },
