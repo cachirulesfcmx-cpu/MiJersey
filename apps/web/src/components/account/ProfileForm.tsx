@@ -4,6 +4,8 @@ import type { MyAccount } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { useState } from 'react';
 
+import { INPUT_OVERRIDE_CLASS, PRIMARY_BUTTON_OVERRIDE_CLASS } from '../ui/form-styles';
+
 export interface ProfileFormValue {
   firstName: string;
   lastName: string;
@@ -29,7 +31,7 @@ export function ProfileForm({
 
   return (
     <form
-      className="flex flex-col gap-4"
+      className="card-arena flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit({ firstName, lastName, phone, marketingEmailsOptIn });
@@ -40,6 +42,7 @@ export function ProfileForm({
           <Input
             id="profile-firstName"
             required
+            className={INPUT_OVERRIDE_CLASS}
             value={firstName}
             onChange={(event) => setFirstName(event.target.value)}
           />
@@ -48,6 +51,7 @@ export function ProfileForm({
           <Input
             id="profile-lastName"
             required
+            className={INPUT_OVERRIDE_CLASS}
             value={lastName}
             onChange={(event) => setLastName(event.target.value)}
           />
@@ -55,6 +59,7 @@ export function ProfileForm({
         <FormField label="Teléfono (opcional)" htmlFor="profile-phone">
           <Input
             id="profile-phone"
+            className={INPUT_OVERRIDE_CLASS}
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
           />
@@ -64,13 +69,18 @@ export function ProfileForm({
       <label className="flex items-center gap-2 text-sm text-neutral-700">
         <input
           type="checkbox"
+          className="accent-pop-500"
           checked={marketingEmailsOptIn}
           onChange={(event) => setMarketingEmailsOptIn(event.target.checked)}
         />
         Recibir correos promocionales
       </label>
 
-      <Button type="submit" isLoading={isSubmitting} className="self-start">
+      <Button
+        type="submit"
+        isLoading={isSubmitting}
+        className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+      >
         Guardar cambios
       </Button>
     </form>

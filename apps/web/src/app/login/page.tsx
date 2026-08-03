@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
+import { AUTH_BUTTON_CLASS, AUTH_INPUT_CLASS, AuthCard } from '../../components/ui/AuthCard';
 import { useAuth } from '../../providers/auth-provider';
 
 export default function LoginPage() {
@@ -32,15 +33,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold text-neutral-900">Iniciar sesión</h1>
-
+    <AuthCard title="Iniciar sesión">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <FormField label="Correo electrónico" htmlFor="email">
           <Input
             type="email"
             autoComplete="email"
             required
+            className={AUTH_INPUT_CLASS}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
@@ -51,6 +51,7 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             required
+            className={AUTH_INPUT_CLASS}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -62,19 +63,19 @@ export default function LoginPage() {
           </p>
         )}
 
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} className={AUTH_BUTTON_CLASS}>
           Entrar
         </Button>
       </form>
 
-      <div className="flex justify-between text-sm text-neutral-500">
-        <Link href="/forgot-password" className="hover:text-neutral-900">
+      <div className="mt-6 flex justify-between text-sm">
+        <Link href="/forgot-password" className="link-underline">
           ¿Olvidaste tu contraseña?
         </Link>
-        <Link href="/register" className="hover:text-neutral-900">
+        <Link href="/register" className="link-underline">
           Crear cuenta
         </Link>
       </div>
-    </main>
+    </AuthCard>
   );
 }

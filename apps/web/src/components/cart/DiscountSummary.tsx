@@ -40,7 +40,7 @@ export function DiscountSummary({ sessionId }: { sessionId: string }) {
   if (!result || result.applicable.length === 0) return null;
 
   return (
-    <div className="border-success-200 bg-success-50 flex flex-col gap-1 rounded-md border p-3 text-sm">
+    <div className="border-success-200 bg-success-50 animate-fade-in-up flex flex-col gap-1 rounded-2xl border p-3 text-sm">
       <p className="text-success-700 font-medium">Promociones aplicables a tu carrito</p>
       {result.applicable.map((promotion) => (
         <p key={promotion.id} className="text-success-600">

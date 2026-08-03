@@ -68,7 +68,7 @@ export function ConsentBanner() {
     <div
       role="dialog"
       aria-label="Preferencias de privacidad"
-      className="fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 border-t border-neutral-200 bg-white p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between"
+      className="animate-fade-in-up fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 border-t border-neutral-200 bg-white p-4 shadow-2xl sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="text-sm text-neutral-700">
         Usamos cookies para medir el uso del sitio y mejorar tu experiencia. Puedes aceptar todas o
@@ -78,15 +78,11 @@ export function ConsentBanner() {
         <button
           type="button"
           onClick={rejectNonEssential}
-          className="rounded-md border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+          className="rounded-full border border-neutral-300 px-4 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-50"
         >
           Solo necesarias
         </button>
-        <button
-          type="button"
-          onClick={acceptAll}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-800"
-        >
+        <button type="button" onClick={acceptAll} className="btn-pop-sm">
           Aceptar todo
         </button>
       </div>

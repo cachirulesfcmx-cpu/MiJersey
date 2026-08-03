@@ -2,7 +2,7 @@
 
 import type { Ticket } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
-import { Button, Skeleton } from '@mijersey/ui';
+import { Skeleton } from '@mijersey/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -47,13 +47,13 @@ export default function MyTicketsPage() {
   }, [load]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={[{ label: 'Cuenta', href: '/account' }, { label: 'Mis tickets' }]} />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900">Mis tickets</h1>
-        <Link href="/account/support/new">
-          <Button>Nuevo ticket</Button>
+        <h1 className="section-heading">Mis tickets</h1>
+        <Link href="/account/support/new" className="btn-pop-sm">
+          Nuevo ticket
         </Link>
       </div>
 
@@ -61,8 +61,8 @@ export default function MyTicketsPage() {
 
       {!tickets && !error && (
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
+          <Skeleton className="skeleton-arena h-16 w-full" />
+          <Skeleton className="skeleton-arena h-16 w-full" />
         </div>
       )}
 
@@ -73,16 +73,13 @@ export default function MyTicketsPage() {
       <ul className="flex flex-col gap-3">
         {tickets?.map((ticket) => (
           <li key={ticket.id}>
-            <Link
-              href={`/account/support/${ticket.id}`}
-              className="flex flex-col gap-1 rounded-md border border-neutral-200 p-4 hover:border-neutral-300"
-            >
+            <Link href={`/account/support/${ticket.id}`} className="card-arena flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-neutral-900">{ticket.subject}</span>
                 <span className="text-xs text-neutral-500">{ticket.ticketNumber}</span>
               </div>
               <div className="flex items-center justify-between text-sm text-neutral-500">
-                <span>{STATUS_LABELS[ticket.status]}</span>
+                <span className="badge-pop">{STATUS_LABELS[ticket.status]}</span>
                 <span>{new Date(ticket.createdAt).toLocaleDateString('es-MX')}</span>
               </div>
             </Link>

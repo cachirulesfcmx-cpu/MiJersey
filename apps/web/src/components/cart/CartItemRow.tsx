@@ -30,25 +30,21 @@ export function CartItemRow({
   }
 
   return (
-    <div className="flex gap-3 border-b border-neutral-200 py-4">
+    <div className="card-arena flex gap-4">
       <Link
         href={`/products/${item.productSlug}`}
-        className="h-16 w-16 shrink-0 rounded-md bg-neutral-50"
+        className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-50"
       >
         {item.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.imageUrl}
-            alt={item.productName}
-            className="h-full w-full rounded-md object-cover"
-          />
+          <img src={item.imageUrl} alt={item.productName} className="h-full w-full object-cover" />
         )}
       </Link>
 
       <div className="flex flex-1 flex-col gap-1">
         <Link
           href={`/products/${item.productSlug}`}
-          className="text-sm font-medium text-neutral-900"
+          className="hover:text-pop-600 text-sm font-medium text-neutral-900"
         >
           {item.productName}
         </Link>
@@ -62,7 +58,7 @@ export function CartItemRow({
         <div className="mt-1 flex items-center gap-2">
           <button
             type="button"
-            className="h-6 w-6 rounded border border-neutral-200 text-sm disabled:opacity-30"
+            className="hover:border-pop-500 hover:text-pop-600 h-7 w-7 rounded-full border border-neutral-200 text-sm transition-colors disabled:opacity-30"
             disabled={isUpdating || item.quantity <= 1}
             onClick={() => void handleQuantityChange(item.quantity - 1)}
           >
@@ -71,7 +67,7 @@ export function CartItemRow({
           <span className="w-6 text-center text-sm">{item.quantity}</span>
           <button
             type="button"
-            className="h-6 w-6 rounded border border-neutral-200 text-sm disabled:opacity-30"
+            className="hover:border-pop-500 hover:text-pop-600 h-7 w-7 rounded-full border border-neutral-200 text-sm transition-colors disabled:opacity-30"
             disabled={isUpdating || item.quantity >= item.availableQuantity}
             onClick={() => void handleQuantityChange(item.quantity + 1)}
           >
@@ -87,7 +83,9 @@ export function CartItemRow({
         </div>
       </div>
 
-      <span className="text-sm font-medium text-neutral-900">{formatPrice(item.subtotal)}</span>
+      <span className="font-display text-lg tracking-wide text-neutral-900">
+        {formatPrice(item.subtotal)}
+      </span>
     </div>
   );
 }

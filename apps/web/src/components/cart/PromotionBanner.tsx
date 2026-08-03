@@ -43,9 +43,9 @@ export function PromotionBanner() {
   if (promotions.length === 0) return null;
 
   return (
-    <div className="bg-brand-50 border-brand-100 flex flex-col gap-1 rounded-md border p-4 text-sm">
+    <div className="animate-fade-in-up from-pop-500/10 to-arena-800/10 flex flex-col gap-1 rounded-2xl bg-gradient-to-r p-4 text-sm">
       {promotions.map((promotion) => (
-        <p key={promotion.id} className="text-brand-700">
+        <p key={promotion.id} className="text-arena-900 font-medium">
           🎉 {promotion.name}: {describePromotion(promotion)}
         </p>
       ))}

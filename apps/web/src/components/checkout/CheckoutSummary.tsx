@@ -3,6 +3,8 @@
 import type { Checkout } from '@mijersey/sdk';
 import { Button } from '@mijersey/ui';
 
+import { PRIMARY_BUTTON_OVERRIDE_CLASS } from '../ui/form-styles';
+
 function formatPrice(amount: number): string {
   return amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }
@@ -25,13 +27,13 @@ export function CheckoutSummary({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1 rounded-md border border-neutral-200 p-4 text-sm">
-        <h2 className="mb-1 font-semibold text-neutral-900">Dirección de envío</h2>
+      <div className="card-arena flex flex-col gap-1 text-sm">
+        <h2 className="label-arena mb-1">Dirección de envío</h2>
         <p className="text-neutral-600">{formatAddress(checkout.shippingAddress)}</p>
       </div>
 
-      <div className="flex flex-col gap-1 rounded-md border border-neutral-200 p-4 text-sm">
-        <h2 className="mb-1 font-semibold text-neutral-900">Método de envío</h2>
+      <div className="card-arena flex flex-col gap-1 text-sm">
+        <h2 className="label-arena mb-1">Método de envío</h2>
         <p className="text-neutral-600">
           {checkout.shippingMethod
             ? `${checkout.shippingMethod.name} (${checkout.shippingMethod.estimatedDaysMin}-${checkout.shippingMethod.estimatedDaysMax} días)`
@@ -39,7 +41,7 @@ export function CheckoutSummary({
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-md border border-neutral-200 p-4">
+      <div className="card-arena flex flex-col gap-2">
         {checkout.cart.items.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">
             <span className="text-neutral-600">
@@ -67,9 +69,13 @@ export function CheckoutSummary({
             <span className="text-neutral-500">IVA (16%)</span>
             <span>{formatPrice(checkout.taxAmount)}</span>
           </div>
-          <div className="flex justify-between border-t border-neutral-200 pt-1 text-base font-semibold">
-            <span>Total</span>
-            <span>{formatPrice(checkout.grandTotal)}</span>
+          <div className="flex justify-between border-t border-neutral-200 pt-2">
+            <span className="font-display text-arena-950 text-lg uppercase tracking-wide">
+              Total
+            </span>
+            <span className="font-display text-pop-600 text-lg tracking-wide">
+              {formatPrice(checkout.grandTotal)}
+            </span>
           </div>
         </div>
       </div>
@@ -78,7 +84,11 @@ export function CheckoutSummary({
         Al confirmar, se genera tu pedido con este total y podrás elegir cómo pagarlo.
       </p>
 
-      <Button onClick={onConfirm} isLoading={isConfirming} className="self-start">
+      <Button
+        onClick={onConfirm}
+        isLoading={isConfirming}
+        className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+      >
         Confirmar pedido
       </Button>
     </div>

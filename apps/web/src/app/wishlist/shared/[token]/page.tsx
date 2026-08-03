@@ -60,23 +60,23 @@ export default function SharedWishlistPage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10">
-      <h1 className="text-3xl font-semibold text-neutral-900">{wishlist.name}</h1>
+    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
+      <h1 className="section-heading">{wishlist.name}</h1>
 
       {wishlist.items.length === 0 ? (
         <EmptyWishlist />
       ) : (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-3">
           {wishlist.items.map((item) => (
-            <div key={item.id} className="flex gap-3 border-b border-neutral-200 py-4">
-              <div className="h-20 w-20 shrink-0 rounded-md bg-neutral-50">
+            <div key={item.id} className="card-arena flex gap-4">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-50">
                 {item.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.imageUrl}
                     alt={item.productName}
                     loading="lazy"
-                    className="h-full w-full rounded-md object-cover"
+                    className="h-full w-full object-cover"
                   />
                 )}
               </div>
@@ -84,7 +84,7 @@ export default function SharedWishlistPage() {
               <div className="flex flex-1 flex-col gap-1">
                 <span className="text-sm font-medium text-neutral-900">{item.productName}</span>
                 <span className="text-xs text-neutral-500">{item.variantTitle}</span>
-                <span className="text-sm font-medium text-neutral-900">
+                <span className="font-display text-pop-600 tracking-wide">
                   {formatPrice(item.price)}
                 </span>
                 {!item.isAvailable && (
@@ -95,7 +95,7 @@ export default function SharedWishlistPage() {
                   <button
                     type="button"
                     onClick={() => void handleAddToCart(item.id, item.variantId)}
-                    className="bg-brand-600 hover:bg-brand-700 mt-2 self-start rounded-md px-3 py-1.5 text-xs font-medium text-white"
+                    className="btn-pop-sm mt-2 self-start"
                   >
                     {addedItemId === item.id ? 'Agregado ✓' : 'Agregar al carrito'}
                   </button>

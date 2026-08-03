@@ -9,12 +9,12 @@ export function ErrorRecovery({
   retryLabel?: string;
 }) {
   return (
-    <div className="border-danger-200 bg-danger-50 flex flex-col gap-3 rounded-md border p-4">
+    <div className="border-danger-200 bg-danger-50 flex flex-col gap-3 rounded-2xl border p-4">
       <p className="text-danger-700 text-sm">{message}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="border-danger-300 text-danger-700 self-start rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-white"
+        className="border-danger-300 text-danger-700 self-start rounded-full border px-4 py-1.5 text-sm font-medium transition-colors hover:bg-white"
       >
         {retryLabel}
       </button>

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
 import { SearchBox } from '../search/SearchBox';
+import { Reveal } from '../ui/Reveal';
 import { ActiveFilters } from './ActiveFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { ProductGrid } from './ProductGrid';
@@ -154,7 +155,7 @@ export function ProductListingClient({ scope, showSearchBox = false }: ProductLi
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Skeleton key={index} className="aspect-square w-full" />
+              <Skeleton key={index} className="skeleton-arena aspect-square w-full" />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -163,15 +164,17 @@ export function ProductListingClient({ scope, showSearchBox = false }: ProductLi
             description="Prueba a ajustar los filtros o la búsqueda."
           />
         ) : (
-          <>
+          <Reveal>
             <ProductGrid products={products} view={state.view} />
-            <Pagination
-              page={state.page}
-              pageSize={PAGE_SIZE}
-              total={total}
-              onPageChange={(page) => update({ page })}
-            />
-          </>
+            <div className="mt-6">
+              <Pagination
+                page={state.page}
+                pageSize={PAGE_SIZE}
+                total={total}
+                onPageChange={(page) => update({ page })}
+              />
+            </div>
+          </Reveal>
         )}
       </div>
     </div>

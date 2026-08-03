@@ -11,11 +11,66 @@
     @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pop-500 to-pop-400 px-6 py-3 font-display text-base uppercase tracking-wide text-white shadow-lg shadow-pop-600/30 transition-transform hover:scale-[1.03] active:scale-[0.98];
   }
 
+  .btn-pop-outline {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-arena-800 px-6 py-[10px] font-display text-base uppercase tracking-wide text-arena-900 transition-colors hover:bg-arena-800 hover:text-white active:scale-[0.98];
+  }
+
+  .btn-pop-sm {
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pop-500 to-pop-400 px-4 py-2 font-display text-sm uppercase tracking-wide text-white shadow-md shadow-pop-600/30 transition-transform hover:scale-[1.03] active:scale-[0.98];
+  }
+
   .badge-pop {
     @apply inline-flex items-center rounded-full bg-pop-500 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white;
   }
 
   .bg-stardust {
     background-image: theme('backgroundImage.stardust');
+  }
+
+  /* Encabezado de sección reutilizable en todo el storefront (PLP, cuenta, blog, etc.) */
+  .section-heading {
+    @apply font-display text-2xl uppercase tracking-wide text-arena-950 sm:text-3xl;
+  }
+
+  /* Tarjeta base con elevación sutil al hover — usada en PLP, cuenta, blog. */
+  .card-arena {
+    @apply rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-arena-900/5;
+  }
+
+  /* Input/textarea/select consistentes para todos los formularios del storefront. */
+  .input-arena {
+    @apply w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-pop-500 focus:outline-none focus:ring-2 focus:ring-pop-500/20;
+  }
+
+  .label-arena {
+    @apply text-xs font-semibold uppercase tracking-wide text-neutral-500;
+  }
+
+  /* Enlace con subrayado animado — navegación secundaria, tabs, breadcrumbs. */
+  .link-underline {
+    @apply relative text-neutral-600 transition-colors hover:text-arena-900 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-pop-500 after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  /* Shimmer de carga para estados skeleton (PLP, PDP, cuenta). */
+  .skeleton-arena {
+    @apply animate-pulse rounded-xl bg-neutral-100;
+  }
+}
+
+@layer utilities {
+  /* Animación de entrada usada por <Reveal> — fade + subtle rise al entrar en viewport. */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }

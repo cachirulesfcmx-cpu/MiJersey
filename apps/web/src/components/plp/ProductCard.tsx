@@ -18,11 +18,8 @@ export function ProductCard({
 }) {
   if (view === 'list') {
     return (
-      <Link
-        href={`/products/${product.slug}`}
-        className="hover:border-brand-300 flex items-center gap-4 rounded-lg border border-neutral-200 p-3 hover:shadow-sm"
-      >
-        <div className="h-16 w-16 shrink-0 rounded-md bg-neutral-50" />
+      <Link href={`/products/${product.slug}`} className="card-arena group flex items-center gap-4">
+        <div className="h-16 w-16 shrink-0 rounded-xl bg-neutral-50 transition-transform duration-300 group-hover:scale-105" />
         <div className="flex flex-col">
           <span className="text-sm font-medium text-neutral-900">{product.name}</span>
           <span className="text-xs text-neutral-400">{product.sku}</span>
@@ -32,12 +29,11 @@ export function ProductCard({
   }
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="hover:border-brand-300 flex flex-col gap-2 rounded-lg border border-neutral-200 p-4 hover:shadow-sm"
-    >
-      <div className="aspect-square rounded-md bg-neutral-50" />
-      <span className="text-sm font-medium text-neutral-900">{product.name}</span>
+    <Link href={`/products/${product.slug}`} className="card-arena group flex flex-col gap-3">
+      <div className="aspect-square overflow-hidden rounded-xl bg-neutral-50">
+        <div className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
+      </div>
+      <span className="truncate text-sm font-medium text-neutral-900">{product.name}</span>
       <span className="text-xs text-neutral-400">{product.sku}</span>
     </Link>
   );

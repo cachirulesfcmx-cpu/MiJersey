@@ -41,10 +41,10 @@ export function WishlistItemCard({
   }
 
   return (
-    <div className="flex gap-3 border-b border-neutral-200 py-4">
+    <div className="card-arena flex gap-4">
       <Link
         href={`/products/${item.productSlug}`}
-        className="h-20 w-20 shrink-0 rounded-md bg-neutral-50"
+        className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-50"
       >
         {item.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -52,7 +52,7 @@ export function WishlistItemCard({
             src={item.imageUrl}
             alt={item.productName}
             loading="lazy"
-            className="h-full w-full rounded-md object-cover"
+            className="h-full w-full object-cover"
           />
         )}
       </Link>
@@ -60,12 +60,12 @@ export function WishlistItemCard({
       <div className="flex flex-1 flex-col gap-1">
         <Link
           href={`/products/${item.productSlug}`}
-          className="text-sm font-medium text-neutral-900"
+          className="hover:text-pop-600 text-sm font-medium text-neutral-900"
         >
           {item.productName}
         </Link>
         <span className="text-xs text-neutral-500">{item.variantTitle}</span>
-        <span className="text-sm font-medium text-neutral-900">{formatPrice(item.price)}</span>
+        <span className="font-display text-pop-600 tracking-wide">{formatPrice(item.price)}</span>
 
         {!item.isAvailable && (
           <span className="text-danger-600 text-xs">Este producto ya no está disponible</span>
@@ -74,13 +74,13 @@ export function WishlistItemCard({
           <span className="text-danger-600 text-xs">Agotado</span>
         )}
 
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-4">
           {onMoveToCart && (
             <button
               type="button"
               disabled={!item.isAvailable || item.availableQuantity === 0 || isMoving}
               onClick={() => void handleMoveToCart()}
-              className="bg-brand-600 hover:bg-brand-700 rounded-md px-3 py-1.5 text-xs font-medium text-white disabled:bg-neutral-300 disabled:text-neutral-600"
+              className="btn-pop-sm disabled:cursor-not-allowed disabled:opacity-40"
             >
               Mover al carrito
             </button>
@@ -89,7 +89,7 @@ export function WishlistItemCard({
             type="button"
             disabled={isRemoving}
             onClick={() => void handleRemove()}
-            className="text-danger-600 text-xs hover:underline disabled:opacity-50"
+            className="link-underline text-danger-600 text-xs disabled:opacity-50"
           >
             Quitar
           </button>

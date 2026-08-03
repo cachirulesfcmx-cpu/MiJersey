@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { OrderTimeline } from '../../../../components/account/OrderTimeline';
 import { ShipmentStatus } from '../../../../components/account/ShipmentStatus';
 import { Breadcrumbs } from '../../../../components/plp/Breadcrumbs';
+import { PRIMARY_BUTTON_OVERRIDE_CLASS } from '../../../../components/ui/form-styles';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 import { useCart } from '../../../../providers/cart-provider';
@@ -113,7 +114,7 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs
         items={[
           { label: 'Inicio', href: '/' },
@@ -121,7 +122,7 @@ export default function OrderDetailPage() {
           { label: order.orderNumber },
         ]}
       />
-      <h1 className="text-2xl font-semibold text-neutral-900">Pedido {order.orderNumber}</h1>
+      <h1 className="section-heading">Pedido {order.orderNumber}</h1>
       <p className="text-sm text-neutral-500">
         {new Date(order.createdAt).toLocaleDateString('es-MX')} · {order.status} · Pago:{' '}
         {order.paymentStatus} · Envío: {order.fulfillmentStatus}
@@ -130,7 +131,7 @@ export default function OrderDetailPage() {
         <p className="text-danger-600 text-sm">Motivo de cancelación: {order.cancelReason}</p>
       )}
 
-      <div className="flex flex-col gap-2 rounded-md border border-neutral-200 p-4">
+      <div className="card-arena flex flex-col gap-2">
         {order.items.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">
             <span className="text-neutral-600">
@@ -158,31 +159,36 @@ export default function OrderDetailPage() {
             <span className="text-neutral-500">Impuestos</span>
             <span>{formatPrice(order.taxTotal)}</span>
           </div>
-          <div className="flex justify-between border-t border-neutral-200 pt-1 text-base font-semibold">
-            <span>Total</span>
-            <span>{formatPrice(order.grandTotal)}</span>
+          <div className="flex justify-between border-t border-neutral-200 pt-2">
+            <span className="font-display text-arena-950 text-lg uppercase tracking-wide">
+              Total
+            </span>
+            <span className="font-display text-pop-600 text-lg tracking-wide">
+              {formatPrice(order.grandTotal)}
+            </span>
           </div>
         </div>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium text-neutral-900">Seguimiento</h2>
+        <h2 className="section-heading text-xl">Seguimiento</h2>
         <OrderTimeline events={timeline} />
       </section>
 
       {accessToken && <ShipmentStatus orderId={order.id} accessToken={accessToken} />}
 
-      <Link
-        href={`/account/support/new?orderId=${order.id}`}
-        className="text-brand-600 text-sm hover:underline"
-      >
+      <Link href={`/account/support/new?orderId=${order.id}`} className="link-underline text-sm">
         ¿Necesitas ayuda con este pedido?
       </Link>
 
       {reorderMessage && <p className="text-sm text-neutral-600">{reorderMessage}</p>}
 
       <div className="flex gap-3">
-        <Button onClick={() => void handleReorder()} isLoading={isReordering} className="flex-1">
+        <Button
+          onClick={() => void handleReorder()}
+          isLoading={isReordering}
+          className={`!flex-1 ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+        >
           Comprar de nuevo
         </Button>
         {canCancel(order) && (
@@ -190,7 +196,7 @@ export default function OrderDetailPage() {
             variant="secondary"
             onClick={() => void handleCancel()}
             isLoading={isCancelling}
-            className="flex-1"
+            className="!flex-1 !rounded-full"
           >
             Cancelar pedido
           </Button>

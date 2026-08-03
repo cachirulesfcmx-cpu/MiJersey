@@ -20,6 +20,7 @@ import { ChangePasswordForm } from '../../components/account/ChangePasswordForm'
 import { NotificationPreferences } from '../../components/account/NotificationPreferences';
 import { OrderHistory } from '../../components/account/OrderHistory';
 import { ProfileForm, type ProfileFormValue } from '../../components/account/ProfileForm';
+import { Reveal } from '../../components/ui/Reveal';
 import { env } from '../../config/env';
 import { useAuth } from '../../providers/auth-provider';
 
@@ -240,17 +241,17 @@ export default function AccountPage() {
   if (isLoading || !user) {
     return (
       <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-24 w-full" />
+        <Skeleton className="skeleton-arena h-8 w-48" />
+        <Skeleton className="skeleton-arena h-24 w-full" />
       </main>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 p-6">
-      <header className="flex items-center justify-between">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 px-4 py-8 sm:px-6 sm:py-10">
+      <Reveal className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">
+          <h1 className="section-heading">
             {user.firstName} {user.lastName}
           </h1>
           <p className="text-sm text-neutral-500">{user.email}</p>
@@ -258,21 +259,21 @@ export default function AccountPage() {
             <p className="text-warning-600 mt-1 text-xs">Tu correo aún no está verificado.</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/wishlist" className="text-brand-600 text-sm hover:underline">
+        <div className="flex items-center gap-4">
+          <Link href="/wishlist" className="link-underline text-sm">
             Mi lista de deseos
           </Link>
-          <Link href="/account/support" className="text-brand-600 text-sm hover:underline">
+          <Link href="/account/support" className="link-underline text-sm">
             Mis tickets
           </Link>
-          <Button variant="secondary" onClick={handleLogout}>
+          <Button variant="secondary" onClick={handleLogout} className="!rounded-full">
             Cerrar sesión
           </Button>
         </div>
-      </header>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-900">Perfil</h2>
+      <Reveal className="flex flex-col gap-4">
+        <h2 className="section-heading text-xl">Perfil</h2>
         {profileError && <p className="text-danger-600 text-sm">{profileError}</p>}
         {account ? (
           <ProfileForm
@@ -281,12 +282,12 @@ export default function AccountPage() {
             onSubmit={handleProfileSubmit}
           />
         ) : (
-          <Skeleton className="h-40 w-full" />
+          <Skeleton className="skeleton-arena h-40 w-full" />
         )}
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-900">Direcciones</h2>
+      <Reveal className="flex flex-col gap-4">
+        <h2 className="section-heading text-xl">Direcciones</h2>
         {addressError && <p className="text-danger-600 text-sm">{addressError}</p>}
         {addresses ? (
           <AddressBook
@@ -297,23 +298,23 @@ export default function AccountPage() {
             onDelete={handleDeleteAddress}
           />
         ) : (
-          <Skeleton className="h-24 w-full" />
+          <Skeleton className="skeleton-arena h-24 w-full" />
         )}
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-900">Pedidos</h2>
+      <Reveal className="flex flex-col gap-4">
+        <h2 className="section-heading text-xl">Pedidos</h2>
         <OrderHistory orders={orders} />
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-900">Seguridad</h2>
+      <Reveal className="flex flex-col gap-4">
+        <h2 className="section-heading text-xl">Seguridad</h2>
         {passwordError && <p className="text-danger-600 text-sm">{passwordError}</p>}
         <ChangePasswordForm isSubmitting={isChangingPassword} onSubmit={handleChangePassword} />
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-900">Notificaciones</h2>
+      <Reveal className="flex flex-col gap-4">
+        <h2 className="section-heading text-xl">Notificaciones</h2>
         {notificationPreferencesError && (
           <p className="text-danger-600 text-sm">{notificationPreferencesError}</p>
         )}
@@ -322,22 +323,22 @@ export default function AccountPage() {
           isSaving={isSavingNotificationPreferences}
           onToggle={(channel, enabled) => void handleToggleNotificationPreference(channel, enabled)}
         />
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
+      <Reveal className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-neutral-900">Sesiones activas</h2>
-          <Button variant="ghost" onClick={handleRevokeAll}>
+          <h2 className="section-heading text-xl">Sesiones activas</h2>
+          <button type="button" onClick={handleRevokeAll} className="link-underline text-sm">
             Cerrar todas las demás
-          </Button>
+          </button>
         </div>
 
         {sessionsError && <p className="text-danger-600 text-sm">{sessionsError}</p>}
 
         {!sessions && !sessionsError && (
           <div className="flex flex-col gap-2">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
+            <Skeleton className="skeleton-arena h-14 w-full" />
+            <Skeleton className="skeleton-arena h-14 w-full" />
           </div>
         )}
 
@@ -347,30 +348,29 @@ export default function AccountPage() {
 
         <ul className="flex flex-col gap-2">
           {sessions?.map((session) => (
-            <li
-              key={session.id}
-              className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm"
-            >
+            <li key={session.id} className="card-arena flex items-center justify-between text-sm">
               <div>
                 <p className="font-medium text-neutral-900">
                   {session.userAgent ?? 'Dispositivo desconocido'}
-                  {session.isCurrent && (
-                    <span className="text-brand-600 ml-2 text-xs">(esta sesión)</span>
-                  )}
+                  {session.isCurrent && <span className="badge-pop ml-2">Esta sesión</span>}
                 </p>
                 <p className="text-xs text-neutral-500">
                   Último uso: {new Date(session.lastUsedAt).toLocaleString('es-MX')}
                 </p>
               </div>
               {!session.isCurrent && (
-                <Button variant="ghost" onClick={() => handleRevoke(session.id)}>
+                <button
+                  type="button"
+                  onClick={() => handleRevoke(session.id)}
+                  className="link-underline text-danger-600 text-sm"
+                >
                   Revocar
-                </Button>
+                </button>
               )}
             </li>
           ))}
         </ul>
-      </section>
+      </Reveal>
     </main>
   );
 }

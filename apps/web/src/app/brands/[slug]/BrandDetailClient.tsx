@@ -35,7 +35,7 @@ export default function BrandDetailClient({ brand }: { brand: PublicBrand }) {
           />
         )}
         <div>
-          <h1 className="text-3xl font-semibold text-neutral-900">{brand.name}</h1>
+          <h1 className="section-heading">{brand.name}</h1>
           {brand.country && <p className="text-sm text-neutral-500">{brand.country}</p>}
         </div>
       </div>
@@ -47,14 +47,14 @@ export default function BrandDetailClient({ brand }: { brand: PublicBrand }) {
           href={brand.website}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-brand-600 self-start text-sm hover:underline"
+          className="link-underline self-start text-sm"
         >
           Visitar sitio web
         </a>
       )}
 
       <div className="border-t border-neutral-200 pt-6">
-        <h2 className="mb-4 text-lg font-semibold text-neutral-900">Productos</h2>
+        <h2 className="section-heading mb-4 text-xl sm:text-2xl">Productos</h2>
         <ProductListingClient scope={{ brandId: brand.id }} />
       </div>
     </main>

@@ -12,7 +12,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
         // eslint-disable-next-line react/no-array-index-key
         <span key={index}>
           {item.href ? (
-            <Link href={item.href} className="hover:underline">
+            <Link href={item.href} className="link-underline">
               {item.label}
             </Link>
           ) : (

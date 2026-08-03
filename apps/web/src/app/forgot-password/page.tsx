@@ -5,6 +5,7 @@ import { Button, FormField, Input } from '@mijersey/ui';
 import Link from 'next/link';
 import { type FormEvent, useMemo, useState } from 'react';
 
+import { AUTH_BUTTON_CLASS, AUTH_INPUT_CLASS, AuthCard } from '../../components/ui/AuthCard';
 import { env } from '../../config/env';
 
 export default function ForgotPasswordPage() {
@@ -31,22 +32,20 @@ export default function ForgotPasswordPage() {
 
   if (isDone) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold text-neutral-900">Revisa tu correo</h1>
+      <AuthCard title="Revisa tu correo">
         <p className="text-sm text-neutral-500">
           Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña.
         </p>
-        <Link href="/login" className="text-brand-600 hover:text-brand-700 text-sm font-medium">
+        <Link href="/login" className="link-underline mt-4 inline-block text-sm font-medium">
           Volver a iniciar sesión
         </Link>
-      </main>
+      </AuthCard>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold text-neutral-900">Recuperar contraseña</h1>
-      <p className="text-sm text-neutral-500">
+    <AuthCard title="Recuperar contraseña">
+      <p className="mb-4 text-sm text-neutral-500">
         Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
       </p>
 
@@ -56,6 +55,7 @@ export default function ForgotPasswordPage() {
             type="email"
             autoComplete="email"
             required
+            className={AUTH_INPUT_CLASS}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
@@ -67,14 +67,14 @@ export default function ForgotPasswordPage() {
           </p>
         )}
 
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} className={AUTH_BUTTON_CLASS}>
           Enviar enlace
         </Button>
       </form>
 
-      <Link href="/login" className="text-center text-sm text-neutral-500 hover:text-neutral-900">
+      <Link href="/login" className="link-underline mt-6 block text-center text-sm">
         Volver a iniciar sesión
       </Link>
-    </main>
+    </AuthCard>
   );
 }

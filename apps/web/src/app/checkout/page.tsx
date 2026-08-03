@@ -170,18 +170,18 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Checkout' }]} />
-      <h1 className="text-3xl font-semibold text-neutral-900">Checkout</h1>
+      <h1 className="section-heading">Checkout</h1>
 
       {step !== 'confirmed' && <CheckoutProgress current={step} />}
 
       {isLoading || !checkout ? (
-        <p className="text-sm text-neutral-500">Cargando…</p>
+        <div className="skeleton-arena h-40 w-full" />
       ) : checkout.cart.items.length === 0 && step !== 'confirmed' ? (
-        <div className="flex flex-col items-start gap-3">
+        <div className="flex flex-col items-start gap-3 py-10">
           <p className="text-neutral-600">Tu carrito está vacío.</p>
-          <Link href="/search" className="text-brand-600 text-sm hover:underline">
+          <Link href="/search" className="btn-pop">
             Ir a comprar
           </Link>
         </div>
@@ -228,13 +228,14 @@ export default function CheckoutPage() {
             ))}
 
           {step === 'confirmed' && order && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 rounded-md border border-neutral-200 p-6">
-                <h2 className="text-lg font-semibold text-neutral-900">¡Pedido registrado!</h2>
+            <div className="animate-fade-in-up flex flex-col gap-4">
+              <div className="card-arena flex flex-col gap-3">
+                <h2 className="section-heading text-xl">¡Pedido registrado!</h2>
                 <p className="text-sm text-neutral-600">
-                  Tu número de pedido es <strong>{order.orderNumber}</strong>.
+                  Tu número de pedido es{' '}
+                  <strong className="text-pop-600">{order.orderNumber}</strong>.
                 </p>
-                <p className="text-sm text-neutral-600">
+                <p className="font-display text-arena-950 text-lg tracking-wide">
                   Total:{' '}
                   {order.grandTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                 </p>
@@ -253,7 +254,7 @@ export default function CheckoutPage() {
               )}
 
               {payment && payment.status === 'CAPTURED' && (
-                <Link href="/" className="text-brand-600 text-sm hover:underline">
+                <Link href="/" className="link-underline text-sm">
                   Volver al inicio
                 </Link>
               )}

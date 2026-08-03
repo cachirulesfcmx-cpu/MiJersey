@@ -51,8 +51,8 @@ export function ShippingEstimator({
   if (error || (quotes && quotes.length === 0)) return null;
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-neutral-200 p-4 text-sm">
-      <h3 className="font-semibold text-neutral-900">Estimador de envío</h3>
+    <div className="flex flex-col gap-2 rounded-2xl border border-neutral-200 p-4 text-sm">
+      <h3 className="label-arena">Estimador de envío</h3>
       {!quotes ? (
         <p className="text-neutral-500">Calculando…</p>
       ) : (

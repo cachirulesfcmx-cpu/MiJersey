@@ -5,6 +5,7 @@ import { Button, FormField, Input } from '@mijersey/ui';
 import Link from 'next/link';
 import { type ChangeEvent, type FormEvent, useState } from 'react';
 
+import { AUTH_BUTTON_CLASS, AUTH_INPUT_CLASS, AuthCard } from '../../components/ui/AuthCard';
 import { useAuth } from '../../providers/auth-provider';
 
 export default function RegisterPage() {
@@ -37,27 +38,25 @@ export default function RegisterPage() {
 
   if (isDone) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold text-neutral-900">Revisa tu correo</h1>
+      <AuthCard title="Revisa tu correo">
         <p className="text-sm text-neutral-500">
           Te enviamos un enlace para verificar tu cuenta antes de iniciar sesión.
         </p>
-        <Link href="/login" className="text-brand-600 hover:text-brand-700 text-sm font-medium">
+        <Link href="/login" className="link-underline mt-4 inline-block text-sm font-medium">
           Volver a iniciar sesión
         </Link>
-      </main>
+      </AuthCard>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold text-neutral-900">Crear cuenta</h1>
-
+    <AuthCard title="Crear cuenta">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <FormField label="Nombre" htmlFor="firstName">
           <Input
             autoComplete="given-name"
             required
+            className={AUTH_INPUT_CLASS}
             value={form.firstName}
             onChange={updateField('firstName')}
           />
@@ -67,6 +66,7 @@ export default function RegisterPage() {
           <Input
             autoComplete="family-name"
             required
+            className={AUTH_INPUT_CLASS}
             value={form.lastName}
             onChange={updateField('lastName')}
           />
@@ -77,6 +77,7 @@ export default function RegisterPage() {
             type="email"
             autoComplete="email"
             required
+            className={AUTH_INPUT_CLASS}
             value={form.email}
             onChange={updateField('email')}
           />
@@ -88,6 +89,7 @@ export default function RegisterPage() {
             autoComplete="new-password"
             minLength={8}
             required
+            className={AUTH_INPUT_CLASS}
             value={form.password}
             onChange={updateField('password')}
           />
@@ -99,17 +101,17 @@ export default function RegisterPage() {
           </p>
         )}
 
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} className={AUTH_BUTTON_CLASS}>
           Crear cuenta
         </Button>
       </form>
 
-      <p className="text-center text-sm text-neutral-500">
+      <p className="mt-6 text-center text-sm text-neutral-500">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/login" className="text-brand-600 hover:text-brand-700 font-medium">
+        <Link href="/login" className="link-underline font-medium">
           Inicia sesión
         </Link>
       </p>
-    </main>
+    </AuthCard>
   );
 }

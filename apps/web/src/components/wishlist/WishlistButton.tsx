@@ -50,10 +50,10 @@ export function WishlistButton({
       disabled={isSubmitting}
       aria-pressed={active}
       aria-label={active ? 'Quitar de mi lista de deseos' : 'Agregar a mi lista de deseos'}
-      className={`flex h-10 w-10 items-center justify-center rounded-md border disabled:opacity-50 ${
+      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors disabled:opacity-50 ${
         active
-          ? 'border-danger-200 bg-danger-50 text-danger-600'
-          : 'border-neutral-300 text-neutral-700'
+          ? 'border-pop-500 bg-pop-500/10 text-pop-600'
+          : 'border-neutral-200 text-neutral-500 hover:border-neutral-300'
       } ${className}`}
     >
       <svg

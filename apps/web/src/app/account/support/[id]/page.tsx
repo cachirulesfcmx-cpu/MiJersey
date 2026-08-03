@@ -7,6 +7,10 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Breadcrumbs } from '../../../../components/plp/Breadcrumbs';
+import {
+  INPUT_OVERRIDE_CLASS,
+  PRIMARY_BUTTON_OVERRIDE_CLASS,
+} from '../../../../components/ui/form-styles';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 
@@ -89,7 +93,7 @@ export default function MyTicketDetailPage() {
   const isClosed = ticket.status === 'CLOSED';
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs
         items={[
           { label: 'Cuenta', href: '/account' },
@@ -99,9 +103,9 @@ export default function MyTicketDetailPage() {
       />
 
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-900">{ticket.subject}</h1>
-        <p className="text-sm text-neutral-500">
-          {ticket.ticketNumber} · {STATUS_LABELS[ticket.status]}
+        <h1 className="section-heading">{ticket.subject}</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          {ticket.ticketNumber} · <span className="badge-pop">{STATUS_LABELS[ticket.status]}</span>
         </p>
       </div>
 
@@ -114,10 +118,10 @@ export default function MyTicketDetailPage() {
           messages.map((message) => (
             <div
               key={message.id}
-              className={`max-w-[85%] rounded-md border p-3 text-sm ${
+              className={`max-w-[85%] rounded-2xl p-4 text-sm ${
                 message.authorType === 'AGENT'
-                  ? 'self-start border-neutral-200 bg-neutral-50'
-                  : 'bg-brand-50 border-brand-100 self-end'
+                  ? 'self-start bg-neutral-100'
+                  : 'bg-pop-500/10 self-end'
               }`}
             >
               <p className="mb-1 text-xs text-neutral-500">
@@ -139,10 +143,14 @@ export default function MyTicketDetailPage() {
             onChange={(event) => setReplyMessage(event.target.value)}
             rows={4}
             placeholder="Escribe tu mensaje…"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className={INPUT_OVERRIDE_CLASS}
             required
           />
-          <Button type="submit" isLoading={isReplying} className="self-start">
+          <Button
+            type="submit"
+            isLoading={isReplying}
+            className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+          >
             Enviar
           </Button>
         </form>

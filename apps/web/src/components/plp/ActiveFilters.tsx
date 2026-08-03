@@ -64,24 +64,20 @@ export function ActiveFilters({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-700"
+          className="bg-pop-500/10 text-pop-600 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
         >
           {chip.label}
           <button
             type="button"
             onClick={chip.onRemove}
-            className="text-neutral-400 hover:text-neutral-600"
+            className="text-pop-500 hover:text-pop-700 transition-colors"
             aria-label="Quitar filtro"
           >
             ×
           </button>
         </span>
       ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="text-xs text-neutral-500 hover:underline"
-      >
+      <button type="button" onClick={onClearAll} className="link-underline text-xs">
         Limpiar todo
       </button>
     </div>

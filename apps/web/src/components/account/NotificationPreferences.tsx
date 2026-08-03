@@ -28,12 +28,13 @@ export function NotificationPreferences({
       {preferences.map((preference) => (
         <li
           key={preference.channel}
-          className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm"
+          className="card-arena flex items-center justify-between text-sm"
         >
           <span className="text-neutral-900">{CHANNEL_LABELS[preference.channel]}</span>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
+              className="accent-pop-500"
               checked={preference.enabled}
               disabled={isSaving}
               onChange={(event) => onToggle(preference.channel, event.target.checked)}

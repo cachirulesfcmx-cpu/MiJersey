@@ -77,7 +77,7 @@ export default async function CollectionPage({ params }: { params: { slug: strin
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10">
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
         <Breadcrumbs
           items={[
             { label: 'Inicio', href: '/' },
@@ -85,7 +85,7 @@ export default async function CollectionPage({ params }: { params: { slug: strin
             { label: collection.name },
           ]}
         />
-        <h1 className="text-3xl font-semibold text-neutral-900">{collection.name}</h1>
+        <h1 className="section-heading">{collection.name}</h1>
         {collection.description && (
           <p className="max-w-3xl text-neutral-600">{collection.description}</p>
         )}

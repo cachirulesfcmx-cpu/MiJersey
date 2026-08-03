@@ -16,7 +16,7 @@ export function PaymentStatus({ payment }: { payment: Payment }) {
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-md border p-4 text-sm ${
+      className={`flex items-center gap-2 rounded-2xl border p-4 text-sm ${
         isPaid
           ? 'border-success-200 bg-success-50 text-success-700'
           : 'border-neutral-200 bg-neutral-50 text-neutral-700'

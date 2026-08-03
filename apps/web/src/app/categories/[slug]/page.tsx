@@ -92,9 +92,9 @@ export default async function CategoryPage({ params }: { params: { slug: string 
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10">
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
         <Breadcrumbs items={breadcrumbItems} />
-        <h1 className="text-3xl font-semibold text-neutral-900">{category.name}</h1>
+        <h1 className="section-heading">{category.name}</h1>
         {category.description && (
           <p className="max-w-3xl text-neutral-600">{category.description}</p>
         )}

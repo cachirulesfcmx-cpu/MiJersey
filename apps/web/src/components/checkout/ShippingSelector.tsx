@@ -4,6 +4,8 @@ import type { ShippingMethod } from '@mijersey/sdk';
 import { Button } from '@mijersey/ui';
 import { useState } from 'react';
 
+import { PRIMARY_BUTTON_OVERRIDE_CLASS } from '../ui/form-styles';
+
 function formatPrice(amount: number): string {
   return amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }
@@ -33,8 +35,10 @@ export function ShippingSelector({
         {methods.map((method) => (
           <label
             key={method.id}
-            className={`flex cursor-pointer items-center justify-between rounded-md border p-3 text-sm ${
-              selectedId === method.id ? 'border-brand-500 bg-brand-50' : 'border-neutral-200'
+            className={`flex cursor-pointer items-center justify-between rounded-2xl border-2 p-4 text-sm transition-colors ${
+              selectedId === method.id
+                ? 'border-pop-500 bg-pop-500/5'
+                : 'border-neutral-200 hover:border-neutral-300'
             }`}
           >
             <span className="flex items-center gap-3">
@@ -44,6 +48,7 @@ export function ShippingSelector({
                 value={method.id}
                 checked={selectedId === method.id}
                 onChange={() => setSelectedId(method.id)}
+                className="accent-pop-500"
               />
               <span className="flex flex-col">
                 <span className="font-medium text-neutral-900">{method.name}</span>
@@ -52,12 +57,19 @@ export function ShippingSelector({
                 </span>
               </span>
             </span>
-            <span className="font-medium text-neutral-900">{formatPrice(method.basePrice)}</span>
+            <span className="font-display text-arena-950 tracking-wide">
+              {formatPrice(method.basePrice)}
+            </span>
           </label>
         ))}
       </div>
 
-      <Button type="submit" isLoading={isSubmitting} disabled={!selectedId} className="self-start">
+      <Button
+        type="submit"
+        isLoading={isSubmitting}
+        disabled={!selectedId}
+        className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+      >
         Continuar a revisión
       </Button>
     </form>

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { BreadcrumbItem } from '../../../components/plp/Breadcrumbs';
 import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
 import { ProductGrid } from '../../../components/plp/ProductGrid';
+import { Reveal } from '../../../components/ui/Reveal';
 import { WishlistButton } from '../../../components/wishlist/WishlistButton';
 import { env } from '../../../config/env';
 import { useCart } from '../../../providers/cart-provider';
@@ -58,6 +59,7 @@ export default function ProductDetailClient({
   const [related, setRelated] = useState<ProductSearchSummary[]>([]);
   const [cartError, setCartError] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
   const activeVariant = useMemo(
     () => findMatchingVariant(product, selection),
@@ -89,7 +91,12 @@ export default function ProductDetailClient({
     setIsAddingToCart(true);
     try {
       await addItem({ variantId: activeVariant.id, quantity });
-      if (goToCart) router.push('/cart');
+      if (goToCart) {
+        router.push('/cart');
+      } else {
+        setJustAdded(true);
+        setTimeout(() => setJustAdded(false), 2000);
+      }
     } catch (err) {
       setCartError(
         err instanceof ApiClientError ? err.message : 'No se pudo agregar el producto al carrito.',
@@ -100,12 +107,12 @@ export default function ProductDetailClient({
   }
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-10">
+    <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={breadcrumbItems} />
 
-      <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <div className="flex flex-col gap-3">
-          <div className="aspect-square overflow-hidden rounded-lg bg-neutral-50">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
+        <Reveal className="flex flex-col gap-3">
+          <div className="aspect-square overflow-hidden rounded-3xl bg-neutral-50 shadow-sm">
             {mainImage && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={mainImage} alt={product.name} className="h-full w-full object-cover" />
@@ -118,8 +125,10 @@ export default function ProductDetailClient({
                   key={url}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  className={`h-16 w-16 overflow-hidden rounded-md border ${
-                    index === activeImage ? 'border-brand-500' : 'border-neutral-200'
+                  className={`h-16 w-16 overflow-hidden rounded-xl border-2 transition-colors ${
+                    index === activeImage
+                      ? 'border-pop-500'
+                      : 'border-neutral-200 hover:border-neutral-300'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -128,11 +137,11 @@ export default function ProductDetailClient({
               ))}
             </div>
           )}
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col gap-5">
-          {product.brand && <span className="text-sm text-neutral-500">{product.brand.name}</span>}
-          <h1 className="text-3xl font-semibold text-neutral-900">{product.name}</h1>
+        <Reveal delayMs={100} className="flex flex-col gap-5">
+          {product.brand && <span className="label-arena">{product.brand.name}</span>}
+          <h1 className="section-heading">{product.name}</h1>
           {product.shortDescription && (
             <p className="text-neutral-600">{product.shortDescription}</p>
           )}
@@ -140,7 +149,7 @@ export default function ProductDetailClient({
           <div className="flex items-baseline gap-3">
             {activeVariant ? (
               <>
-                <span className="text-2xl font-semibold text-neutral-900">
+                <span className="font-display text-pop-600 text-3xl tracking-wide">
                   {formatPrice(activeVariant.price)}
                 </span>
                 {activeVariant.compareAtPrice && (
@@ -156,17 +165,17 @@ export default function ProductDetailClient({
 
           {product.options.map((option) => (
             <div key={option.id} className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-neutral-900">{option.name}</span>
+              <span className="label-arena">{option.name}</span>
               <div className="flex flex-wrap gap-2">
                 {option.values.map((value) => (
                   <button
                     key={value.id}
                     type="button"
                     onClick={() => setSelection((prev) => ({ ...prev, [option.id]: value.id }))}
-                    className={`rounded-md border px-3 py-1 text-sm ${
+                    className={`rounded-full border-2 px-4 py-1.5 text-sm font-medium transition-all ${
                       selection[option.id] === value.id
-                        ? 'border-brand-500 bg-brand-50 text-brand-700'
-                        : 'border-neutral-200 text-neutral-700'
+                        ? 'border-pop-500 bg-pop-500/10 text-pop-600'
+                        : 'border-neutral-200 text-neutral-700 hover:border-neutral-300'
                     }`}
                   >
                     {value.value}
@@ -177,7 +186,7 @@ export default function ProductDetailClient({
           ))}
 
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-neutral-900">Cantidad</span>
+            <span className="label-arena">Cantidad</span>
             <input
               type="number"
               min={1}
@@ -189,29 +198,29 @@ export default function ProductDetailClient({
                   Math.min(Math.max(1, Number(event.target.value) || 1), Math.max(maxQuantity, 1)),
                 )
               }
-              className="w-20 rounded-md border border-neutral-200 px-2 py-1 text-sm"
+              className="input-arena w-20 py-1.5 text-center"
             />
             {activeVariant && !activeVariant.inStock && (
-              <span className="text-danger-600 text-xs">Agotado</span>
+              <span className="badge-pop bg-danger-600">Agotado</span>
             )}
           </div>
 
           {cartError && <p className="text-danger-600 text-sm">{cartError}</p>}
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               disabled={!activeVariant?.inStock || isAddingToCart}
               onClick={() => void handleAddToCart(false)}
-              className="bg-brand-600 hover:bg-brand-700 flex-1 rounded-md px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-300 disabled:text-neutral-600"
+              className="btn-pop flex-1 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
             >
-              Agregar al carrito
+              {justAdded ? '¡Agregado!' : 'Agregar al carrito'}
             </button>
             <button
               type="button"
               disabled={!activeVariant?.inStock || isAddingToCart}
               onClick={() => void handleAddToCart(true)}
-              className="flex-1 rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 disabled:text-neutral-400"
+              className="btn-pop-outline flex-1 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Comprar ahora
             </button>
@@ -240,14 +249,14 @@ export default function ProductDetailClient({
               <p className="whitespace-pre-line text-neutral-600">{product.description}</p>
             </div>
           )}
-        </div>
+        </Reveal>
       </div>
 
       {related.length > 0 && (
-        <div className="border-t border-neutral-200 pt-8">
-          <h2 className="mb-4 text-lg font-semibold text-neutral-900">Productos relacionados</h2>
+        <Reveal className="border-t border-neutral-200 pt-8">
+          <h2 className="section-heading mb-4 text-xl sm:text-2xl">Productos relacionados</h2>
           <ProductGrid products={related} view="grid" />
-        </div>
+        </Reveal>
       )}
     </main>
   );

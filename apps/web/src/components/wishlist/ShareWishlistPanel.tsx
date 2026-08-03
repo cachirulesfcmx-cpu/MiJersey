@@ -39,22 +39,14 @@ export function ShareWishlistPanel({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-neutral-200 p-4">
-      <span className="text-sm font-medium text-neutral-900">Compartir lista de deseos</span>
+    <div className="card-arena flex flex-col gap-2">
+      <span className="label-arena">Compartir lista de deseos</span>
       {error && <p className="text-danger-600 text-xs">{error}</p>}
 
       {shareUrl ? (
         <div className="flex items-center gap-2">
-          <input
-            readOnly
-            value={shareUrl}
-            className="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-600"
-          />
-          <button
-            type="button"
-            onClick={() => void handleCopy()}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700"
-          >
+          <input readOnly value={shareUrl} className="input-arena flex-1 py-2 text-xs" />
+          <button type="button" onClick={() => void handleCopy()} className="btn-pop-sm shrink-0">
             {copied ? 'Copiado' : 'Copiar'}
           </button>
         </div>
@@ -63,7 +55,7 @@ export function ShareWishlistPanel({
           type="button"
           disabled={isSharing}
           onClick={() => void handleShare()}
-          className="bg-brand-600 hover:bg-brand-700 self-start rounded-md px-3 py-1.5 text-xs font-medium text-white disabled:bg-neutral-300"
+          className="btn-pop-sm self-start disabled:cursor-not-allowed disabled:opacity-40"
         >
           Generar enlace
         </button>

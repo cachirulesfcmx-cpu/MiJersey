@@ -54,7 +54,7 @@ export function RelatedMatches({ term }: { term: string }) {
         <Link
           key={`${item.type}-${item.id}`}
           href={`${TYPE_PATH[item.type]}/${item.slug}`}
-          className="rounded-full border border-neutral-200 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-50"
+          className="hover:border-pop-500 hover:text-pop-600 rounded-full border border-neutral-200 px-3 py-1 text-sm text-neutral-700 transition-colors"
         >
           <span className="text-neutral-400">{TYPE_LABEL[item.type]}:</span> {item.name}
         </Link>

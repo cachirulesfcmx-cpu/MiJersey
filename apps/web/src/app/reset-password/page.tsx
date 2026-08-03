@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { type FormEvent, Suspense, useMemo, useState } from 'react';
 
+import { AUTH_BUTTON_CLASS, AUTH_INPUT_CLASS, AuthCard } from '../../components/ui/AuthCard';
 import { env } from '../../config/env';
 
 export default function ResetPasswordPage() {
@@ -44,37 +45,33 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold text-neutral-900">Enlace inválido</h1>
+      <AuthCard title="Enlace inválido">
         <p className="text-sm text-neutral-500">Solicita un nuevo enlace de recuperación.</p>
         <Link
           href="/forgot-password"
-          className="text-brand-600 hover:text-brand-700 text-sm font-medium"
+          className="link-underline mt-4 inline-block text-sm font-medium"
         >
           Recuperar contraseña
         </Link>
-      </main>
+      </AuthCard>
     );
   }
 
   if (isDone) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold text-neutral-900">Contraseña actualizada</h1>
+      <AuthCard title="Contraseña actualizada">
         <p className="text-sm text-neutral-500">
           Ya puedes iniciar sesión con tu nueva contraseña.
         </p>
-        <Link href="/login" className="text-brand-600 hover:text-brand-700 text-sm font-medium">
+        <Link href="/login" className="link-underline mt-4 inline-block text-sm font-medium">
           Iniciar sesión
         </Link>
-      </main>
+      </AuthCard>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold text-neutral-900">Nueva contraseña</h1>
-
+    <AuthCard title="Nueva contraseña">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <FormField label="Contraseña nueva" htmlFor="newPassword" hint="Mínimo 8 caracteres">
           <Input
@@ -82,6 +79,7 @@ function ResetPasswordForm() {
             autoComplete="new-password"
             minLength={8}
             required
+            className={AUTH_INPUT_CLASS}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
           />
@@ -93,10 +91,10 @@ function ResetPasswordForm() {
           </p>
         )}
 
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} className={AUTH_BUTTON_CLASS}>
           Restablecer contraseña
         </Button>
       </form>
-    </main>
+    </AuthCard>
   );
 }

@@ -8,12 +8,12 @@ export function ViewToggle({
   onChange: (view: 'grid' | 'list') => void;
 }) {
   return (
-    <div className="flex gap-1 rounded-md border border-neutral-200 p-1">
+    <div className="flex gap-1 rounded-full border border-neutral-200 p-1">
       <button
         type="button"
         onClick={() => onChange('grid')}
-        className={`rounded px-2 py-1 text-xs ${
-          view === 'grid' ? 'bg-neutral-900 text-white' : 'text-neutral-500'
+        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+          view === 'grid' ? 'bg-arena-950 text-white' : 'hover:text-arena-900 text-neutral-500'
         }`}
       >
         Cuadrícula
@@ -21,8 +21,8 @@ export function ViewToggle({
       <button
         type="button"
         onClick={() => onChange('list')}
-        className={`rounded px-2 py-1 text-xs ${
-          view === 'list' ? 'bg-neutral-900 text-white' : 'text-neutral-500'
+        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+          view === 'list' ? 'bg-arena-950 text-white' : 'hover:text-arena-900 text-neutral-500'
         }`}
       >
         Lista

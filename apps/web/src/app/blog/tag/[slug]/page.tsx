@@ -35,14 +35,12 @@ export default async function BlogTagArchivePage({
   const tagName = result.items[0]?.tags.find((t) => t.slug === params.slug)?.name;
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <div>
-        <Link href="/blog" className="text-brand-600 text-sm hover:underline">
+        <Link href="/blog" className="link-underline text-sm">
           ← Blog
         </Link>
-        <h1 className="text-3xl font-semibold text-neutral-900">
-          Etiqueta: #{tagName ?? params.slug}
-        </h1>
+        <h1 className="section-heading">Etiqueta: #{tagName ?? params.slug}</h1>
       </div>
 
       {result.items.length === 0 && (
@@ -55,20 +53,14 @@ export default async function BlogTagArchivePage({
         ))}
       </div>
 
-      <div className="flex justify-center gap-4 text-sm">
+      <div className="flex justify-center gap-6 text-sm">
         {page > 1 && (
-          <Link
-            href={`/blog/tag/${params.slug}?page=${page - 1}`}
-            className="text-brand-600 hover:underline"
-          >
+          <Link href={`/blog/tag/${params.slug}?page=${page - 1}`} className="link-underline">
             Anterior
           </Link>
         )}
         {page < totalPages && (
-          <Link
-            href={`/blog/tag/${params.slug}?page=${page + 1}`}
-            className="text-brand-600 hover:underline"
-          >
+          <Link href={`/blog/tag/${params.slug}?page=${page + 1}`} className="link-underline">
             Siguiente
           </Link>
         )}

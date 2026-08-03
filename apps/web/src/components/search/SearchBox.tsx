@@ -82,22 +82,19 @@ export function SearchBox({ client, value, onChange, onSubmit }: SearchBoxProps)
         className="flex gap-2"
       >
         <input
-          className="w-full rounded-md border border-neutral-200 px-3 py-2 text-sm"
+          className="input-arena"
           placeholder="Buscar productos…"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onFocus={() => setIsOpen(true)}
         />
-        <button
-          type="submit"
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50"
-        >
+        <button type="submit" className="btn-pop-sm shrink-0">
           Buscar
         </button>
       </form>
 
       {(showRecent || showSuggestions) && (
-        <div className="absolute z-10 mt-1 w-full rounded-md border border-neutral-200 bg-white shadow-sm">
+        <div className="animate-fade-in-up shadow-arena-950/10 absolute z-10 mt-2 w-full rounded-2xl border border-neutral-100 bg-white p-1 shadow-xl">
           {showRecent && (
             <div className="flex flex-col gap-1 p-2">
               <div className="flex items-center justify-between px-2">

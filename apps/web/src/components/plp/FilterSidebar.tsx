@@ -45,15 +45,19 @@ export function FilterSidebar({
 
         return (
           <fieldset key={facet.attributeId} className="flex flex-col gap-2">
-            <legend className="text-sm font-semibold text-neutral-900">{facet.name}</legend>
+            <legend className="label-arena mb-1">{facet.name}</legend>
             {facet.values.map((facetValue) => {
               const key = valueBased ? (facetValue.valueId ?? '') : facetValue.value;
               const checked = selected.includes(key);
               return (
-                <label key={key} className="flex items-center gap-2 text-sm text-neutral-600">
+                <label
+                  key={key}
+                  className="hover:text-arena-900 flex cursor-pointer items-center gap-2 text-sm text-neutral-600 transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={checked}
+                    className="accent-pop-500"
                     onChange={() =>
                       toggle(facet.attributeId, facet.type, facetValue.valueId, facetValue.value)
                     }

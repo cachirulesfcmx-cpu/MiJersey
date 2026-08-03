@@ -4,6 +4,11 @@ import type { CheckoutAddressInput } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { useState } from 'react';
 
+import {
+  INPUT_OVERRIDE_CLASS as AUTH_INPUT_CLASS,
+  PRIMARY_BUTTON_OVERRIDE_CLASS,
+} from '../ui/form-styles';
+
 export interface AddressFormValue {
   contactEmail: string;
   shipping: CheckoutAddressInput;
@@ -37,6 +42,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-firstName`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.firstName}
           onChange={(event) => onChange({ ...value, firstName: event.target.value })}
         />
@@ -45,6 +51,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-lastName`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.lastName}
           onChange={(event) => onChange({ ...value, lastName: event.target.value })}
         />
@@ -53,6 +60,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-addressLine1`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.addressLine1}
           onChange={(event) => onChange({ ...value, addressLine1: event.target.value })}
         />
@@ -60,6 +68,7 @@ function AddressFields({
       <FormField label="Interior / referencia (opcional)" htmlFor={`${idPrefix}-addressLine2`}>
         <Input
           id={`${idPrefix}-addressLine2`}
+          className={AUTH_INPUT_CLASS}
           value={value.addressLine2 ?? ''}
           onChange={(event) => onChange({ ...value, addressLine2: event.target.value })}
         />
@@ -68,6 +77,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-city`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.city}
           onChange={(event) => onChange({ ...value, city: event.target.value })}
         />
@@ -76,6 +86,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-state`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.state}
           onChange={(event) => onChange({ ...value, state: event.target.value })}
         />
@@ -84,6 +95,7 @@ function AddressFields({
         <Input
           id={`${idPrefix}-postalCode`}
           required
+          className={AUTH_INPUT_CLASS}
           value={value.postalCode}
           onChange={(event) => onChange({ ...value, postalCode: event.target.value })}
         />
@@ -93,6 +105,7 @@ function AddressFields({
           id={`${idPrefix}-country`}
           required
           maxLength={2}
+          className={AUTH_INPUT_CLASS}
           value={value.country}
           onChange={(event) => onChange({ ...value, country: event.target.value.toUpperCase() })}
         />
@@ -100,6 +113,7 @@ function AddressFields({
       <FormField label="Teléfono (opcional)" htmlFor={`${idPrefix}-phone`}>
         <Input
           id={`${idPrefix}-phone`}
+          className={AUTH_INPUT_CLASS}
           value={value.phone ?? ''}
           onChange={(event) => onChange({ ...value, phone: event.target.value })}
         />
@@ -132,7 +146,7 @@ export function AddressForm({
 
   return (
     <form
-      className="flex flex-col gap-6"
+      className="card-arena flex flex-col gap-6"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit({ contactEmail, shipping, billingSameAsShipping, billing });
@@ -143,19 +157,21 @@ export function AddressForm({
           id="contactEmail"
           type="email"
           required
+          className={AUTH_INPUT_CLASS}
           value={contactEmail}
           onChange={(event) => setContactEmail(event.target.value)}
         />
       </FormField>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-neutral-900">Dirección de envío</h2>
+        <h2 className="label-arena text-sm">Dirección de envío</h2>
         <AddressFields value={shipping} onChange={setShipping} idPrefix="shipping" />
       </div>
 
       <label className="flex items-center gap-2 text-sm text-neutral-700">
         <input
           type="checkbox"
+          className="accent-pop-500"
           checked={billingSameAsShipping}
           onChange={(event) => setBillingSameAsShipping(event.target.checked)}
         />
@@ -164,12 +180,16 @@ export function AddressForm({
 
       {!billingSameAsShipping && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-neutral-900">Dirección de facturación</h2>
+          <h2 className="label-arena text-sm">Dirección de facturación</h2>
           <AddressFields value={billing} onChange={setBilling} idPrefix="billing" />
         </div>
       )}
 
-      <Button type="submit" isLoading={isSubmitting} className="self-start">
+      <Button
+        type="submit"
+        isLoading={isSubmitting}
+        className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+      >
         Continuar a envío
       </Button>
     </form>

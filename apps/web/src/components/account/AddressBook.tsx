@@ -4,6 +4,8 @@ import type { Address, AddressType, CreateAddressInput } from '@mijersey/sdk';
 import { Button, FormField, Input } from '@mijersey/ui';
 import { useState } from 'react';
 
+import { INPUT_OVERRIDE_CLASS, PRIMARY_BUTTON_OVERRIDE_CLASS } from '../ui/form-styles';
+
 const EMPTY_FORM: CreateAddressInput = {
   type: 'SHIPPING',
   firstName: '',
@@ -49,25 +51,20 @@ export function AddressBook({
           <p className="text-sm text-neutral-500">Todavía no tienes direcciones guardadas.</p>
         )}
         {addresses.map((address) => (
-          <div
-            key={address.id}
-            className="flex flex-col gap-1 rounded-md border border-neutral-200 p-3 text-sm"
-          >
+          <div key={address.id} className="card-arena flex flex-col gap-1 text-sm">
             <div className="flex items-center justify-between">
               <span className="font-medium text-neutral-900">
                 {address.firstName} {address.lastName} —{' '}
                 {address.type === 'SHIPPING' ? 'Envío' : 'Facturación'}
-                {address.isDefault && (
-                  <span className="text-brand-600 ml-2 text-xs">(predeterminada)</span>
-                )}
+                {address.isDefault && <span className="badge-pop ml-2">Predeterminada</span>}
               </span>
             </div>
             <p className="text-neutral-600">{formatAddress(address)}</p>
-            <div className="mt-1 flex gap-3">
+            <div className="mt-1 flex gap-4">
               {!address.isDefault && (
                 <button
                   type="button"
-                  className="text-sm text-neutral-600 hover:underline"
+                  className="link-underline text-sm"
                   onClick={() => void onSetDefault(address)}
                 >
                   Hacer predeterminada
@@ -75,7 +72,7 @@ export function AddressBook({
               )}
               <button
                 type="button"
-                className="text-danger-600 text-sm hover:underline"
+                className="link-underline text-danger-600 text-sm"
                 onClick={() => void onDelete(address)}
               >
                 Eliminar
@@ -87,13 +84,13 @@ export function AddressBook({
 
       {isAdding ? (
         <form
-          className="flex flex-col gap-3 rounded-md border border-neutral-200 p-4"
+          className="card-arena flex flex-col gap-3"
           onSubmit={(event) => void handleSubmit(event)}
         >
           <FormField label="Tipo" htmlFor="address-type">
             <select
               id="address-type"
-              className="h-10 rounded-md border border-neutral-200 px-3 text-sm"
+              className={`h-11 ${INPUT_OVERRIDE_CLASS}`}
               value={form.type}
               onChange={(event) => setForm({ ...form, type: event.target.value as AddressType })}
             >
@@ -106,6 +103,7 @@ export function AddressBook({
               <Input
                 id="address-firstName"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.firstName}
                 onChange={(event) => setForm({ ...form, firstName: event.target.value })}
               />
@@ -114,6 +112,7 @@ export function AddressBook({
               <Input
                 id="address-lastName"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.lastName}
                 onChange={(event) => setForm({ ...form, lastName: event.target.value })}
               />
@@ -122,6 +121,7 @@ export function AddressBook({
               <Input
                 id="address-line1"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.addressLine1}
                 onChange={(event) => setForm({ ...form, addressLine1: event.target.value })}
               />
@@ -130,6 +130,7 @@ export function AddressBook({
               <Input
                 id="address-city"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.city}
                 onChange={(event) => setForm({ ...form, city: event.target.value })}
               />
@@ -138,6 +139,7 @@ export function AddressBook({
               <Input
                 id="address-state"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.state}
                 onChange={(event) => setForm({ ...form, state: event.target.value })}
               />
@@ -146,6 +148,7 @@ export function AddressBook({
               <Input
                 id="address-postalCode"
                 required
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.postalCode}
                 onChange={(event) => setForm({ ...form, postalCode: event.target.value })}
               />
@@ -155,6 +158,7 @@ export function AddressBook({
                 id="address-country"
                 required
                 maxLength={2}
+                className={INPUT_OVERRIDE_CLASS}
                 value={form.country}
                 onChange={(event) =>
                   setForm({ ...form, country: event.target.value.toUpperCase() })
@@ -163,16 +167,29 @@ export function AddressBook({
             </FormField>
           </div>
           <div className="flex gap-3">
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              className={PRIMARY_BUTTON_OVERRIDE_CLASS}
+            >
               Guardar dirección
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              className="!rounded-full"
+              onClick={() => setIsAdding(false)}
+            >
               Cancelar
             </Button>
           </div>
         </form>
       ) : (
-        <Button variant="secondary" className="self-start" onClick={() => setIsAdding(true)}>
+        <Button
+          variant="secondary"
+          className="!self-start !rounded-full"
+          onClick={() => setIsAdding(true)}
+        >
           Agregar dirección
         </Button>
       )}

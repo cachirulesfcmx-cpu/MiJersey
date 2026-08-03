@@ -7,6 +7,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
 
 import { Breadcrumbs } from '../../../../components/plp/Breadcrumbs';
+import {
+  INPUT_OVERRIDE_CLASS,
+  PRIMARY_BUTTON_OVERRIDE_CLASS,
+} from '../../../../components/ui/form-styles';
 import { env } from '../../../../config/env';
 import { useAuth } from '../../../../providers/auth-provider';
 
@@ -64,7 +68,7 @@ function NewTicketForm() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 p-6">
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs
         items={[
           { label: 'Cuenta', href: '/account' },
@@ -73,15 +77,18 @@ function NewTicketForm() {
         ]}
       />
 
-      <h1 className="text-2xl font-semibold text-neutral-900">Nuevo ticket</h1>
+      <h1 className="section-heading">Nuevo ticket</h1>
 
-      <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => void handleSubmit(event)}
+        className="card-arena flex flex-col gap-4"
+      >
         <FormField label="Asunto" htmlFor="ticket-subject">
           <input
             id="ticket-subject"
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className={INPUT_OVERRIDE_CLASS}
             required
           />
         </FormField>
@@ -91,7 +98,7 @@ function NewTicketForm() {
             id="ticket-category"
             value={category}
             onChange={(event) => setCategory(event.target.value as TicketCategory)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className={`h-11 ${INPUT_OVERRIDE_CLASS}`}
           >
             {CATEGORIES.map(({ value, label }) => (
               <option key={value} value={value}>
@@ -107,14 +114,18 @@ function NewTicketForm() {
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             rows={5}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className={INPUT_OVERRIDE_CLASS}
             required
           />
         </FormField>
 
         {error && <p className="text-danger-600 text-sm">{error}</p>}
 
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button
+          type="submit"
+          isLoading={isSubmitting}
+          className={`!self-start ${PRIMARY_BUTTON_OVERRIDE_CLASS}`}
+        >
           Crear ticket
         </Button>
       </form>

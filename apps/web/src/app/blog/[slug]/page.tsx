@@ -76,7 +76,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   };
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -89,10 +89,10 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           <img
             src={post.featuredImage}
             alt={post.title}
-            className="aspect-video w-full rounded-md object-cover"
+            className="aspect-video w-full rounded-3xl object-cover"
           />
         )}
-        <h1 className="text-3xl font-semibold text-neutral-900">{post.title}</h1>
+        <h1 className="section-heading">{post.title}</h1>
         {post.publishedAt && (
           <p className="text-sm text-neutral-500">
             {new Date(post.publishedAt).toLocaleDateString('es-MX')}
@@ -106,22 +106,18 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
 
       {(post.categories.length > 0 || post.tags.length > 0) && (
-        <div className="flex flex-wrap gap-2 text-xs text-neutral-500">
+        <div className="flex flex-wrap gap-2">
           {post.categories.map((category) => (
             <a
               key={category.id}
               href={`/blog/category/${category.slug}`}
-              className="rounded-full bg-neutral-100 px-2 py-1 hover:bg-neutral-200"
+              className="badge-pop bg-arena-800"
             >
               {category.name}
             </a>
           ))}
           {post.tags.map((tag) => (
-            <a
-              key={tag.id}
-              href={`/blog/tag/${tag.slug}`}
-              className="rounded-full bg-neutral-100 px-2 py-1 hover:bg-neutral-200"
-            >
+            <a key={tag.id} href={`/blog/tag/${tag.slug}`} className="badge-pop">
               #{tag.name}
             </a>
           ))}
@@ -130,7 +126,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
       {related.length > 0 && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-neutral-900">Artículos relacionados</h2>
+          <h2 className="section-heading text-xl">Artículos relacionados</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {related.map((relatedPost) => (
               <PostCard key={relatedPost.id} post={relatedPost} />

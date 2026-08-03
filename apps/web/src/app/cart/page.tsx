@@ -8,6 +8,7 @@ import { DiscountSummary } from '../../components/cart/DiscountSummary';
 import { OrderSummary } from '../../components/cart/OrderSummary';
 import { PromotionBanner } from '../../components/cart/PromotionBanner';
 import { Breadcrumbs } from '../../components/plp/Breadcrumbs';
+import { Reveal } from '../../components/ui/Reveal';
 import { useCart } from '../../providers/cart-provider';
 
 export default function CartPage() {
@@ -15,26 +16,31 @@ export default function CartPage() {
     useCart();
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Carrito' }]} />
-      <h1 className="text-3xl font-semibold text-neutral-900">Tu carrito</h1>
+      <h1 className="section-heading">Tu carrito</h1>
 
       <PromotionBanner />
 
       {error && <p className="text-danger-600 text-sm">{error}</p>}
 
       {isLoading || !cart ? (
-        <p className="text-sm text-neutral-500">Cargando…</p>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 2 }).map((_, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={index} className="skeleton-arena h-24 w-full" />
+          ))}
+        </div>
       ) : cart.items.length === 0 ? (
-        <div className="flex flex-col items-start gap-3">
+        <div className="flex flex-col items-start gap-3 py-10">
           <p className="text-neutral-600">Tu carrito está vacío.</p>
-          <Link href="/search" className="text-brand-600 text-sm hover:underline">
+          <Link href="/search" className="btn-pop">
             Ir a comprar
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="flex flex-col md:col-span-2">
+        <Reveal className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="flex flex-col gap-3 md:col-span-2">
             {cart.items.map((item) => (
               <CartItemRow
                 key={item.id}
@@ -49,14 +55,11 @@ export default function CartPage() {
             <OrderSummary cart={cart} />
             <CouponBox coupon={cart.coupon} onApply={applyCoupon} onRemove={removeCoupon} />
             {sessionId && <DiscountSummary sessionId={sessionId} />}
-            <Link
-              href="/checkout"
-              className="bg-brand-600 hover:bg-brand-700 rounded-md px-4 py-2 text-center text-sm font-medium text-white"
-            >
+            <Link href="/checkout" className="btn-pop">
               Ir a pagar
             </Link>
           </div>
-        </div>
+        </Reveal>
       )}
     </main>
   );

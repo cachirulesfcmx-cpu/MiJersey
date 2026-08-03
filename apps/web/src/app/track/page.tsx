@@ -41,9 +41,9 @@ export default function TrackShipmentPage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Rastrear envío' }]} />
-      <h1 className="text-2xl font-semibold text-neutral-900">Rastrear envío</h1>
+      <h1 className="section-heading">Rastrear envío</h1>
 
       <form className="flex gap-3" onSubmit={(event) => void handleSubmit(event)}>
         <input
@@ -52,12 +52,12 @@ export default function TrackShipmentPage() {
           onChange={(event) => setTrackingNumber(event.target.value)}
           placeholder="Número de guía (ej. MJ-ABC12345)"
           required
-          className="flex-1 rounded-md border border-neutral-200 px-3 py-2 text-sm"
+          className="input-arena flex-1"
         />
         <button
           type="submit"
           disabled={isLoading}
-          className="bg-brand-600 hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-300"
+          className="btn-pop shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isLoading ? 'Buscando…' : 'Rastrear'}
         </button>
@@ -66,11 +66,11 @@ export default function TrackShipmentPage() {
       {error && <p className="text-danger-600 text-sm">{error}</p>}
 
       {shipment && (
-        <div className="flex flex-col gap-3 rounded-md border border-neutral-200 p-4">
+        <div className="card-arena animate-fade-in-up flex flex-col gap-3">
           <div className="flex items-center gap-2 text-sm">
             <span
               className={`h-2 w-2 rounded-full ${
-                shipment.status === 'DELIVERED' ? 'bg-success-600' : 'bg-brand-500'
+                shipment.status === 'DELIVERED' ? 'bg-success-600' : 'bg-pop-500'
               }`}
             />
             <span className="font-medium text-neutral-900">{STATUS_LABELS[shipment.status]}</span>

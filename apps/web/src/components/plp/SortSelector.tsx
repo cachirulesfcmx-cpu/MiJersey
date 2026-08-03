@@ -35,7 +35,7 @@ export function SortSelector({
         const option = OPTIONS.find((o) => o.value === event.target.value);
         if (option) onChange(option.sortBy, option.sortDir);
       }}
-      className="rounded-md border border-neutral-200 px-3 py-2 text-sm"
+      className="input-arena w-auto py-2 text-sm"
     >
       {OPTIONS.map((option) => (
         <option key={option.value} value={option.value}>

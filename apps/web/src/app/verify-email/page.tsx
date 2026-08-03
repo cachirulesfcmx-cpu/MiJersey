@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 
+import { AuthCard } from '../../components/ui/AuthCard';
 import { env } from '../../config/env';
 
 type Status = 'pending' | 'success' | 'error';
@@ -38,31 +39,37 @@ function VerifyEmailStatus() {
       });
   }, [client, token]);
 
+  const title =
+    status === 'pending'
+      ? 'Verificando…'
+      : status === 'success'
+        ? 'Correo verificado'
+        : 'No se pudo verificar';
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-      {status === 'pending' && (
-        <p className="text-sm text-neutral-500">Verificando tu correo electrónico…</p>
-      )}
+    <AuthCard title={title}>
+      <div className="flex flex-col items-center gap-4 text-center">
+        {status === 'pending' && (
+          <>
+            <span className="border-t-pop-500 h-8 w-8 animate-spin rounded-full border-2 border-neutral-200" />
+            <p className="text-sm text-neutral-500">Verificando tu correo electrónico…</p>
+          </>
+        )}
 
-      {status === 'success' && (
-        <>
-          <h1 className="text-2xl font-semibold text-neutral-900">Correo verificado</h1>
+        {status === 'success' && (
           <p className="text-sm text-neutral-500">Ya puedes iniciar sesión.</p>
-        </>
-      )}
+        )}
 
-      {status === 'error' && (
-        <>
-          <h1 className="text-2xl font-semibold text-neutral-900">No se pudo verificar</h1>
+        {status === 'error' && (
           <p className="text-danger-600 text-sm">
             {message ?? 'El enlace es inválido o ya expiró.'}
           </p>
-        </>
-      )}
+        )}
 
-      <Link href="/login" className="text-brand-600 hover:text-brand-700 text-sm font-medium">
-        Ir a iniciar sesión
-      </Link>
-    </main>
+        <Link href="/login" className="link-underline text-sm font-medium">
+          Ir a iniciar sesión
+        </Link>
+      </div>
+    </AuthCard>
   );
 }

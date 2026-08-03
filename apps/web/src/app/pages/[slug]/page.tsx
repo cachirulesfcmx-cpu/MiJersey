@@ -73,13 +73,10 @@ function renderBlock(block: PageBlock) {
             imageUrl ? { backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover' } : undefined
           }
         >
-          {headline && <h2 className="text-3xl font-semibold text-neutral-900">{headline}</h2>}
+          {headline && <h2 className="section-heading">{headline}</h2>}
           {subheadline && <p className="text-neutral-600">{subheadline}</p>}
           {ctaLabel && ctaUrl && (
-            <a
-              href={ctaUrl}
-              className="bg-brand-600 hover:bg-brand-700 mx-auto rounded-md px-4 py-2 text-sm font-medium text-white"
-            >
+            <a href={ctaUrl} className="btn-pop mx-auto">
               {ctaLabel}
             </a>
           )}
@@ -91,16 +88,10 @@ function renderBlock(block: PageBlock) {
       const buttonLabel = block.config.buttonLabel as string | undefined;
       const buttonUrl = block.config.buttonUrl as string | undefined;
       return (
-        <div
-          key={block.id}
-          className="flex flex-col items-center gap-3 rounded-md border border-neutral-200 p-6 text-center"
-        >
+        <div key={block.id} className="card-arena flex flex-col items-center gap-3 text-center">
           {headline && <p className="text-lg font-medium text-neutral-900">{headline}</p>}
           {buttonLabel && buttonUrl && (
-            <a
-              href={buttonUrl}
-              className="bg-brand-600 hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-medium text-white"
-            >
+            <a href={buttonUrl} className="btn-pop">
               {buttonLabel}
             </a>
           )}
@@ -121,8 +112,8 @@ export default async function CmsPage({ params }: { params: { slug: string } }) 
   if (!page) notFound();
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10">
-      <h1 className="text-3xl font-semibold text-neutral-900">{page.title}</h1>
+    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
+      <h1 className="section-heading">{page.title}</h1>
       <div className="flex flex-col gap-6">{page.blocks.map(renderBlock)}</div>
     </main>
   );

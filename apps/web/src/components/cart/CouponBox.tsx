@@ -33,9 +33,9 @@ export function CouponBox({
 
   if (coupon) {
     return (
-      <div className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm">
+      <div className="border-pop-500/30 bg-pop-500/5 flex items-center justify-between rounded-2xl border p-3 text-sm">
         <span>
-          Cupón <strong>{coupon.code}</strong>
+          Cupón <strong className="text-pop-600">{coupon.code}</strong>
           {!coupon.isValid && <span className="text-danger-600 ml-2">(ya no es válido)</span>}
         </span>
         <button
@@ -53,7 +53,7 @@ export function CouponBox({
     <form onSubmit={(event) => void handleApply(event)} className="flex flex-col gap-2">
       <div className="flex gap-2">
         <input
-          className="w-full rounded-md border border-neutral-200 px-3 py-2 text-sm"
+          className="input-arena"
           placeholder="Código de cupón"
           value={code}
           onChange={(event) => setCode(event.target.value)}
@@ -61,7 +61,7 @@ export function CouponBox({
         <button
           type="submit"
           disabled={isSubmitting || !code.trim()}
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
+          className="btn-pop-sm shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Aplicar
         </button>

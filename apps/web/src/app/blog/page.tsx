@@ -23,9 +23,9 @@ export default async function BlogHomePage({ searchParams }: { searchParams: { p
   const totalPages = Math.max(1, Math.ceil(result.total / pageSize));
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       <div>
-        <h1 className="text-3xl font-semibold text-neutral-900">Blog</h1>
+        <h1 className="section-heading">Blog</h1>
         <p className="text-neutral-600">Cuidado, historia y colección de jerseys.</p>
       </div>
 
@@ -39,14 +39,14 @@ export default async function BlogHomePage({ searchParams }: { searchParams: { p
         ))}
       </div>
 
-      <div className="flex justify-center gap-4 text-sm">
+      <div className="flex justify-center gap-6 text-sm">
         {page > 1 && (
-          <Link href={`/blog?page=${page - 1}`} className="text-brand-600 hover:underline">
+          <Link href={`/blog?page=${page - 1}`} className="link-underline">
             Anterior
           </Link>
         )}
         {page < totalPages && (
-          <Link href={`/blog?page=${page + 1}`} className="text-brand-600 hover:underline">
+          <Link href={`/blog?page=${page + 1}`} className="link-underline">
             Siguiente
           </Link>
         )}

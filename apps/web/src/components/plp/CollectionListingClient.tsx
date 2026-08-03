@@ -6,6 +6,7 @@ import { EmptyState, Pagination, Skeleton } from '@mijersey/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
+import { Reveal } from '../ui/Reveal';
 import { ProductGrid } from './ProductGrid';
 import { useProductListingUrlState } from './use-product-listing-url-state';
 import { ViewToggle } from './ViewToggle';
@@ -57,7 +58,7 @@ export function CollectionListingClient({ slug }: { slug: string }) {
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Skeleton key={index} className="aspect-square w-full" />
+            <Skeleton key={index} className="skeleton-arena aspect-square w-full" />
           ))}
         </div>
       ) : products.length === 0 ? (
@@ -66,15 +67,17 @@ export function CollectionListingClient({ slug }: { slug: string }) {
           description="Vuelve pronto para ver las novedades."
         />
       ) : (
-        <>
+        <Reveal>
           <ProductGrid products={products} view={state.view} />
-          <Pagination
-            page={state.page}
-            pageSize={PAGE_SIZE}
-            total={total}
-            onPageChange={(page) => update({ page })}
-          />
-        </>
+          <div className="mt-6">
+            <Pagination
+              page={state.page}
+              pageSize={PAGE_SIZE}
+              total={total}
+              onPageChange={(page) => update({ page })}
+            />
+          </div>
+        </Reveal>
       )}
     </div>
   );

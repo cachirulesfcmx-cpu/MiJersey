@@ -20,7 +20,7 @@ export function OrderTimeline({ events }: { events: OrderTimelineEvent[] }) {
     <ol className="flex flex-col gap-3">
       {events.map((event, index) => (
         <li key={`${event.field}-${event.occurredAt}-${index}`} className="flex gap-3 text-sm">
-          <span className="bg-brand-500 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
+          <span className="bg-pop-500 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
           <div>
             <p className="font-medium text-neutral-900">{labelFor(event)}</p>
             <p className="text-xs text-neutral-500">

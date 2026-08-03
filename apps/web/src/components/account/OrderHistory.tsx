@@ -20,7 +20,7 @@ export function OrderHistory({ orders }: { orders: CustomerOrderSummary[] | null
         <li key={order.id}>
           <Link
             href={`/account/orders/${order.id}`}
-            className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm hover:border-neutral-300"
+            className="card-arena flex items-center justify-between text-sm"
           >
             <div>
               <p className="font-medium text-neutral-900">{order.orderNumber}</p>
@@ -30,8 +30,10 @@ export function OrderHistory({ orders }: { orders: CustomerOrderSummary[] | null
               </p>
             </div>
             <div className="text-right">
-              <p className="font-medium text-neutral-900">{formatPrice(order.grandTotal)}</p>
-              <p className="text-xs text-neutral-500">{order.status}</p>
+              <p className="font-display text-arena-950 tracking-wide">
+                {formatPrice(order.grandTotal)}
+              </p>
+              <p className="badge-pop mt-1">{order.status}</p>
             </div>
           </Link>
         </li>

@@ -7,12 +7,12 @@ export function PaymentMethodSelector({
   onPay: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-neutral-200 p-6">
-      <h2 className="text-lg font-semibold text-neutral-900">Método de pago</h2>
+    <div className="card-arena flex flex-col gap-4">
+      <h2 className="section-heading text-xl">Método de pago</h2>
 
       <div className="flex flex-col gap-2">
-        <label className="border-brand-500 bg-brand-50 flex items-center gap-3 rounded-md border p-3 text-sm">
-          <input type="radio" name="payment-method" checked readOnly className="accent-brand-600" />
+        <label className="border-pop-500 bg-pop-500/5 flex items-center gap-3 rounded-2xl border-2 p-3 text-sm">
+          <input type="radio" name="payment-method" checked readOnly className="accent-pop-500" />
           <div>
             <span className="font-medium text-neutral-900">
               Pago manual (efectivo / transferencia)
@@ -26,7 +26,7 @@ export function PaymentMethodSelector({
         {['Tarjeta (Stripe)', 'Mercado Pago', 'PayPal'].map((label) => (
           <label
             key={label}
-            className="flex items-center gap-3 rounded-md border border-neutral-200 p-3 text-sm text-neutral-400"
+            className="flex items-center gap-3 rounded-2xl border-2 border-neutral-200 p-3 text-sm text-neutral-400"
           >
             <input type="radio" name="payment-method" disabled />
             <div>
@@ -41,7 +41,7 @@ export function PaymentMethodSelector({
         type="button"
         disabled={isSubmitting}
         onClick={onPay}
-        className="bg-brand-600 hover:bg-brand-700 self-start rounded-md px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-300"
+        className="btn-pop self-start disabled:opacity-40"
       >
         {isSubmitting ? 'Procesando…' : 'Pagar'}
       </button>
