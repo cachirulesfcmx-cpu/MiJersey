@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { copyFile, mkdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -10,6 +10,7 @@ const DEFAULT_BRAND = 'Bart Jerseys';
 const DEFAULT_WAREHOUSE_CODE = 'LEGACY';
 const DEFAULT_WAREHOUSE_NAME = 'Legacy Jerseys';
 const MEDIA_PREFIX = 'legacy-jerseys/products';
+const DEFAULT_CONCURRENCY = 4;
 
 const args = parseArgs(process.argv.slice(2));
 const repoRoot = process.cwd();
@@ -17,6 +18,7 @@ const sqlPath = path.resolve(repoRoot, args.sql ?? 'legacy/jerseys_catalog.sql')
 const assetsRoot = path.resolve(repoRoot, args.assets ?? 'legacy/public/assets');
 const uploadsDir = path.resolve(repoRoot, 'apps/api/uploads');
 const dryRun = Boolean(args['dry-run']);
+const concurrency = Math.max(1, Number(args.concurrency) || DEFAULT_CONCURRENCY);
 
 if (!existsSync(sqlPath)) {
   fail(`No existe el SQL: ${sqlPath}`);
@@ -50,6 +52,8 @@ if (dryRun) {
   process.exit(0);
 }
 
+console.log(`Concurrencia: ${concurrency} productos en paralelo`);
+
 const PrismaClient = loadPrismaClient();
 const prisma = new PrismaClient();
 
@@ -61,101 +65,74 @@ try {
   let productCount = 0;
   let imageCount = 0;
   let variantCount = 0;
+  const failures = [];
 
-  for (const legacyProduct of products) {
-    const product = await upsertProduct(prisma, legacyProduct, category.id, brand.id);
-    await upsertProductSeo(prisma, product.id, legacyProduct);
+  await mapWithConcurrency(products, concurrency, async (legacyProduct) => {
+    try {
+      const product = await upsertProduct(prisma, legacyProduct, category.id, brand.id);
+      await upsertProductSeo(prisma, product.id, legacyProduct);
 
-    const productImages = imagesByProduct.get(legacyProduct.id) ?? [];
-    for (const legacyImage of productImages) {
-      const mediaAsset = await upsertMediaAsset(prisma, legacyImage, product.id);
-      await prisma.productMedia.upsert({
-        where: { productId_mediaId: { productId: product.id, mediaId: mediaAsset.id } },
-        create: {
-          productId: product.id,
-          mediaId: mediaAsset.id,
-          sortOrder: numberOrZero(legacyImage.sort_order),
-        },
-        update: { sortOrder: numberOrZero(legacyImage.sort_order) },
-      });
-      imageCount += 1;
-    }
+      const productImages = imagesByProduct.get(legacyProduct.id) ?? [];
+      const importedImages = await importImages(prisma, product.id, productImages);
 
-    const productVariants = variantsByProduct.get(legacyProduct.id) ?? [];
-    const optionValueCache = await ensureOptions(prisma, product.id, productVariants);
-    const usedCombinationKeys = new Set();
+      const productVariants = variantsByProduct.get(legacyProduct.id) ?? [];
+      const optionValueCache = await ensureOptions(prisma, product.id, productVariants);
+      const importedVariants = await importVariants(
+        prisma,
+        product,
+        legacyProduct,
+        productVariants,
+        optionValueCache,
+        warehouse.id,
+      );
 
-    for (const legacyVariant of productVariants) {
-      const optionValueIds = getVariantOptionValueIds(optionValueCache, legacyVariant);
-      const baseCombinationKey = optionValueIds.slice().sort().join(':') || `legacy:${legacyVariant.id}`;
-      // El export legacy trae productos con filas de variantes duplicadas (misma
-      // Talla/Dorsal/Version, distinto SKU/id). No las colapsamos: si la combinacion
-      // de opciones ya se uso en este producto, se desambigua con el id legacy para
-      // mantenerlas como variantes separadas en vez de chocar contra la unique
-      // constraint (productId, combinationKey).
-      const combinationKey = usedCombinationKeys.has(baseCombinationKey)
-        ? `${baseCombinationKey}:legacy-${legacyVariant.id}`
-        : baseCombinationKey;
-      usedCombinationKeys.add(combinationKey);
-      const variant = await prisma.productVariant.upsert({
-        where: { sku: legacyVariant.sku },
-        create: {
-          productId: product.id,
-          sku: legacyVariant.sku,
-          slug: `${product.slug}-${legacyVariant.id}`,
-          title: buildVariantTitle(legacyVariant),
-          price: decimalAdd(legacyProduct.price, legacyVariant.price_modifier),
-          compareAtPrice: nullableDecimal(legacyProduct.compare_at_price),
-          status: legacyVariant.active === '1' ? 'ACTIVE' : 'ARCHIVED',
-          combinationKey,
-          createdAt: dateOrNow(legacyVariant.created_at),
-          updatedAt: dateOrNow(legacyVariant.updated_at),
-        },
-        update: {
-          title: buildVariantTitle(legacyVariant),
-          price: decimalAdd(legacyProduct.price, legacyVariant.price_modifier),
-          compareAtPrice: nullableDecimal(legacyProduct.compare_at_price),
-          status: legacyVariant.active === '1' ? 'ACTIVE' : 'ARCHIVED',
-          combinationKey,
-          updatedAt: dateOrNow(legacyVariant.updated_at),
-        },
-      });
-
-      for (const optionValueId of optionValueIds) {
-        await prisma.productVariantOptionValue.upsert({
-          where: { variantId_optionValueId: { variantId: variant.id, optionValueId } },
-          create: { variantId: variant.id, optionValueId },
-          update: {},
-        });
+      imageCount += importedImages;
+      variantCount += importedVariants;
+      productCount += 1;
+      if (productCount % 50 === 0) {
+        console.log(`Importados ${productCount}/${products.length} productos...`);
       }
-
-      await prisma.inventoryItem.upsert({
-        where: { variantId_warehouseId: { variantId: variant.id, warehouseId: warehouse.id } },
-        create: {
-          variantId: variant.id,
-          warehouseId: warehouse.id,
-          availableQuantity: numberOrZero(legacyVariant.stock),
-        },
-        update: {
-          availableQuantity: numberOrZero(legacyVariant.stock),
-        },
-      });
-
-      variantCount += 1;
+    } catch (error) {
+      failures.push({ sku: legacyProduct.sku, name: legacyProduct.name, message: error.message });
+      console.error(`Fallo en producto ${legacyProduct.sku} (${legacyProduct.name}): ${error.message}`);
     }
-
-    productCount += 1;
-    if (productCount % 50 === 0) {
-      console.log(`Importados ${productCount}/${products.length} productos...`);
-    }
-  }
+  });
 
   console.log('Importacion terminada.');
-  console.log(`Productos procesados: ${productCount}`);
+  console.log(`Productos procesados: ${productCount}/${products.length}`);
   console.log(`Imagenes procesadas: ${imageCount}`);
   console.log(`Variantes procesadas: ${variantCount}`);
+
+  if (failures.length > 0) {
+    console.log(`Productos con error (el import es idempotente, puedes volver a correrlo para reintentarlos): ${failures.length}`);
+    for (const failure of failures) {
+      console.log(`  - ${failure.sku} (${failure.name}): ${failure.message}`);
+    }
+    process.exitCode = 1;
+  }
 } finally {
   await prisma.$disconnect();
+}
+
+// Ejecuta `worker` sobre `items` con hasta `limit` llamadas en vuelo a la vez,
+// en vez de esperar cada una antes de empezar la siguiente. Cada producto ya
+// agrupa sus propias operaciones en unas pocas transacciones batched (ver
+// importImages/importVariants/ensureOptions), asi que correr varios productos
+// a la vez multiplica el throughput sin disparar el numero de conexiones mas
+// alla de `limit`. Si Postgres/el proxy de Railway empieza a rechazar
+// conexiones, baja este numero con --concurrency.
+async function mapWithConcurrency(items, limit, worker) {
+  let nextIndex = 0;
+  async function runWorker() {
+    for (;;) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      if (currentIndex >= items.length) return;
+      await worker(items[currentIndex], currentIndex);
+    }
+  }
+  const workerCount = Math.min(limit, items.length);
+  await Promise.all(Array.from({ length: workerCount }, runWorker));
 }
 
 function parseArgs(argv) {
@@ -260,7 +237,7 @@ function unescapeMysqlChar(char) {
     case 't':
       return '\t';
     case 'Z':
-      return '\u001a';
+      return '';
     default:
       return char;
   }
@@ -361,27 +338,34 @@ async function upsertProductSeo(prisma, productId, legacyProduct) {
   });
 }
 
-async function upsertMediaAsset(prisma, legacyImage, productId) {
+// Trabajo de disco (hash + copia) para una imagen, sin tocar la base. Se corre
+// en paralelo para todas las imagenes de un producto con Promise.all antes de
+// mandar los upserts en batch.
+async function prepareImageAsset(legacyImage) {
   const relativePath = legacyImage.path.replace(/^\/+/, '').replaceAll('\\', '/');
   const source = path.resolve(assetsRoot, relativePath.replace(/^assets\//, ''));
+
   if (!existsSync(source)) {
     console.warn(`Imagen no encontrada: ${source}`);
-    return prisma.mediaAsset.upsert({
-      where: { contentHash: `missing:${legacyImage.id}` },
-      create: {
-        filename: `missing-${legacyImage.id}.webp`,
-        originalName: path.basename(relativePath),
-        mimeType: 'image/webp',
-        type: 'IMAGE',
-        size: 0,
-        altText: legacyImage.alt,
-        title: legacyImage.alt,
-        contentHash: `missing:${legacyImage.id}`,
-        storageKey: `${MEDIA_PREFIX}/missing-${legacyImage.id}.webp`,
-        url: `/uploads/${MEDIA_PREFIX}/missing-${legacyImage.id}.webp`,
+    return {
+      legacyImage,
+      upsertArgs: {
+        where: { contentHash: `missing:${legacyImage.id}` },
+        create: {
+          filename: `missing-${legacyImage.id}.webp`,
+          originalName: path.basename(relativePath),
+          mimeType: 'image/webp',
+          type: 'IMAGE',
+          size: 0,
+          altText: legacyImage.alt,
+          title: legacyImage.alt,
+          contentHash: `missing:${legacyImage.id}`,
+          storageKey: `${MEDIA_PREFIX}/missing-${legacyImage.id}.webp`,
+          url: `/uploads/${MEDIA_PREFIX}/missing-${legacyImage.id}.webp`,
+        },
+        update: {},
       },
-      update: {},
-    });
+    };
   }
 
   const buffer = await readFile(source);
@@ -393,75 +377,125 @@ async function upsertMediaAsset(prisma, legacyImage, productId) {
   await copyFile(source, destination);
   const fileStat = await stat(destination);
 
-  const mediaAsset = await prisma.mediaAsset.upsert({
-    where: { contentHash },
-    create: {
-      filename,
-      originalName: filename,
-      mimeType: 'image/webp',
-      type: 'IMAGE',
-      size: fileStat.size,
-      altText: legacyImage.alt,
-      title: legacyImage.alt,
-      contentHash,
-      storageKey,
-      url: `/uploads/${storageKey}`,
-    },
-    update: {
-      altText: legacyImage.alt,
-      title: legacyImage.alt,
-      storageKey,
-      url: `/uploads/${storageKey}`,
-    },
-  });
-
-  await prisma.mediaAssetUsage.upsert({
-    where: {
-      mediaAssetId_referenceType_referenceId: {
-        mediaAssetId: mediaAsset.id,
-        referenceType: 'PRODUCT',
-        referenceId: productId,
+  return {
+    legacyImage,
+    upsertArgs: {
+      where: { contentHash },
+      create: {
+        filename,
+        originalName: filename,
+        mimeType: 'image/webp',
+        type: 'IMAGE',
+        size: fileStat.size,
+        altText: legacyImage.alt,
+        title: legacyImage.alt,
+        contentHash,
+        storageKey,
+        url: `/uploads/${storageKey}`,
+      },
+      update: {
+        altText: legacyImage.alt,
+        title: legacyImage.alt,
+        storageKey,
+        url: `/uploads/${storageKey}`,
       },
     },
-    create: {
-      mediaAssetId: mediaAsset.id,
-      referenceType: 'PRODUCT',
-      referenceId: productId,
-    },
-    update: {},
-  });
-
-  return mediaAsset;
+  };
 }
 
+// Importa todas las imagenes de un producto en 2 round-trips a la base (en vez
+// de hasta 3 por imagen, secuenciales): un $transaction batched para los
+// upserts de mediaAsset, y un segundo para usage + productMedia una vez que
+// ya tenemos los ids reales.
+async function importImages(prisma, productId, productImages) {
+  if (productImages.length === 0) return 0;
+
+  const prepared = await Promise.all(productImages.map(prepareImageAsset));
+  const mediaAssets = await prisma.$transaction(prepared.map((entry) => prisma.mediaAsset.upsert(entry.upsertArgs)));
+
+  const linkOps = mediaAssets.flatMap((mediaAsset, i) => {
+    const legacyImage = prepared[i].legacyImage;
+    return [
+      prisma.mediaAssetUsage.upsert({
+        where: {
+          mediaAssetId_referenceType_referenceId: {
+            mediaAssetId: mediaAsset.id,
+            referenceType: 'PRODUCT',
+            referenceId: productId,
+          },
+        },
+        create: { mediaAssetId: mediaAsset.id, referenceType: 'PRODUCT', referenceId: productId },
+        update: {},
+      }),
+      prisma.productMedia.upsert({
+        where: { productId_mediaId: { productId, mediaId: mediaAsset.id } },
+        create: { productId, mediaId: mediaAsset.id, sortOrder: numberOrZero(legacyImage.sort_order) },
+        update: { sortOrder: numberOrZero(legacyImage.sort_order) },
+      }),
+    ];
+  });
+
+  if (linkOps.length > 0) {
+    await prisma.$transaction(linkOps);
+  }
+
+  return mediaAssets.length;
+}
+
+// Crea/actualiza las opciones (Talla/Dorsal/Version) y sus valores para un
+// producto en 2 transacciones batched en vez de una llamada por opcion y otra
+// por cada valor.
 async function ensureOptions(prisma, productId, legacyVariants) {
   const optionDefinitions = [
     ['Talla', 'size'],
     ['Dorsal', 'color'],
     ['Version', 'presentation'],
   ];
-  const cache = new Map();
 
-  for (const [optionName, legacyField] of optionDefinitions) {
-    const values = unique(legacyVariants.map((variant) => variant[legacyField]).filter(Boolean));
-    if (values.length === 0) continue;
+  const activeDefs = optionDefinitions
+    .map(([optionName, legacyField], position) => ({
+      optionName,
+      legacyField,
+      position,
+      values: unique(legacyVariants.map((variant) => variant[legacyField]).filter(Boolean)),
+    }))
+    .filter((def) => def.values.length > 0);
 
-    const option = await prisma.productOption.upsert({
-      where: { productId_name: { productId, name: optionName } },
-      create: { productId, name: optionName, position: optionDefinitions.findIndex(([name]) => name === optionName) },
-      update: { position: optionDefinitions.findIndex(([name]) => name === optionName) },
+  if (activeDefs.length === 0) return new Map();
+
+  const options = await prisma.$transaction(
+    activeDefs.map((def) =>
+      prisma.productOption.upsert({
+        where: { productId_name: { productId, name: def.optionName } },
+        create: { productId, name: def.optionName, position: def.position },
+        update: { position: def.position },
+      }),
+    ),
+  );
+
+  const valueMeta = [];
+  const valueOps = [];
+  activeDefs.forEach((def, defIndex) => {
+    const optionId = options[defIndex].id;
+    def.values.forEach((value, position) => {
+      valueOps.push(
+        prisma.productOptionValue.upsert({
+          where: { optionId_value: { optionId, value } },
+          create: { optionId, value, position },
+          update: { position },
+        }),
+      );
+      valueMeta.push({ legacyField: def.legacyField, value });
     });
+  });
 
-    for (const [position, value] of values.entries()) {
-      const optionValue = await prisma.productOptionValue.upsert({
-        where: { optionId_value: { optionId: option.id, value } },
-        create: { optionId: option.id, value, position },
-        update: { position },
-      });
-      cache.set(`${legacyField}:${value}`, optionValue.id);
-    }
-  }
+  const optionValues = await prisma.$transaction(valueOps);
 
+  const cache = new Map();
+  optionValues.forEach((optionValue, i) => {
+    const { legacyField, value } = valueMeta[i];
+    cache.set(`${legacyField}:${value}`, optionValue.id);
+  });
   return cache;
 }
 
@@ -475,6 +509,87 @@ function getVariantOptionValueIds(cache, legacyVariant) {
 
 function buildVariantTitle(legacyVariant) {
   return [legacyVariant.presentation, legacyVariant.size, legacyVariant.color].filter(Boolean).join(' / ') || legacyVariant.sku;
+}
+
+function buildVariantUpsertArgs(product, legacyProduct, legacyVariant, combinationKey) {
+  return {
+    where: { sku: legacyVariant.sku },
+    create: {
+      productId: product.id,
+      sku: legacyVariant.sku,
+      slug: `${product.slug}-${legacyVariant.id}`,
+      title: buildVariantTitle(legacyVariant),
+      price: decimalAdd(legacyProduct.price, legacyVariant.price_modifier),
+      compareAtPrice: nullableDecimal(legacyProduct.compare_at_price),
+      status: legacyVariant.active === '1' ? 'ACTIVE' : 'ARCHIVED',
+      combinationKey,
+      createdAt: dateOrNow(legacyVariant.created_at),
+      updatedAt: dateOrNow(legacyVariant.updated_at),
+    },
+    update: {
+      title: buildVariantTitle(legacyVariant),
+      price: decimalAdd(legacyProduct.price, legacyVariant.price_modifier),
+      compareAtPrice: nullableDecimal(legacyProduct.compare_at_price),
+      status: legacyVariant.active === '1' ? 'ACTIVE' : 'ARCHIVED',
+      combinationKey,
+      updatedAt: dateOrNow(legacyVariant.updated_at),
+    },
+  };
+}
+
+// Importa todas las variantes de un producto en 2 round-trips batched (en vez
+// de hasta 5 por variante, secuenciales): un $transaction para los upserts de
+// productVariant, y un segundo para los option-values + inventario una vez
+// que ya tenemos los ids reales de cada variante.
+async function importVariants(prisma, product, legacyProduct, productVariants, optionValueCache, warehouseId) {
+  if (productVariants.length === 0) return 0;
+
+  // El export legacy trae productos con filas de variantes duplicadas (misma
+  // Talla/Dorsal/Version, distinto SKU/id). No las colapsamos: si la combinacion
+  // de opciones ya se uso en este producto, se desambigua con el id legacy para
+  // mantenerlas como variantes separadas en vez de chocar contra la unique
+  // constraint (productId, combinationKey).
+  const usedCombinationKeys = new Set();
+  const combinationKeys = productVariants.map((legacyVariant) => {
+    const optionValueIds = getVariantOptionValueIds(optionValueCache, legacyVariant);
+    const baseCombinationKey = optionValueIds.slice().sort().join(':') || `legacy:${legacyVariant.id}`;
+    const combinationKey = usedCombinationKeys.has(baseCombinationKey)
+      ? `${baseCombinationKey}:legacy-${legacyVariant.id}`
+      : baseCombinationKey;
+    usedCombinationKeys.add(combinationKey);
+    return combinationKey;
+  });
+
+  const variantRecords = await prisma.$transaction(
+    productVariants.map((legacyVariant, i) =>
+      prisma.productVariant.upsert(buildVariantUpsertArgs(product, legacyProduct, legacyVariant, combinationKeys[i])),
+    ),
+  );
+
+  const followUpOps = variantRecords.flatMap((variant, i) => {
+    const legacyVariant = productVariants[i];
+    const optionValueIds = getVariantOptionValueIds(optionValueCache, legacyVariant);
+    return [
+      ...optionValueIds.map((optionValueId) =>
+        prisma.productVariantOptionValue.upsert({
+          where: { variantId_optionValueId: { variantId: variant.id, optionValueId } },
+          create: { variantId: variant.id, optionValueId },
+          update: {},
+        }),
+      ),
+      prisma.inventoryItem.upsert({
+        where: { variantId_warehouseId: { variantId: variant.id, warehouseId } },
+        create: { variantId: variant.id, warehouseId, availableQuantity: numberOrZero(legacyVariant.stock) },
+        update: { availableQuantity: numberOrZero(legacyVariant.stock) },
+      }),
+    ];
+  });
+
+  if (followUpOps.length > 0) {
+    await prisma.$transaction(followUpOps);
+  }
+
+  return variantRecords.length;
 }
 
 async function countMissingImages(legacyImages) {
