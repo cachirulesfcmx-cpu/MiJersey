@@ -14,6 +14,7 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full/ .
+COPY tsconfig.base.json ./tsconfig.base.json
 RUN pnpm turbo run build --filter=@mijersey/admin...
 
 FROM base AS runner
