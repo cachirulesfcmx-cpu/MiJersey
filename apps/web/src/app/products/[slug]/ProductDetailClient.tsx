@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { BreadcrumbItem } from '../../../components/plp/Breadcrumbs';
 import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
 import { ProductGrid } from '../../../components/plp/ProductGrid';
+import { ProductReviews } from '../../../components/products/ProductReviews';
 import { Reveal } from '../../../components/ui/Reveal';
 import { WishlistButton } from '../../../components/wishlist/WishlistButton';
 import { env } from '../../../config/env';
@@ -258,6 +259,8 @@ export default function ProductDetailClient({
           <ProductGrid products={related} view="grid" />
         </Reveal>
       )}
+
+      <ProductReviews slug={product.slug} />
     </main>
   );
 }

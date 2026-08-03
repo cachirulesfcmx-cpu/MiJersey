@@ -63,6 +63,7 @@ function buildContext(overrides: Partial<EligibilityContext> = {}): EligibilityC
     productIds: [],
     categoryIds: [],
     brandIds: [],
+    totalQuantity: 0,
     ...overrides,
   };
 }
@@ -72,6 +73,12 @@ describe('evaluateRule', () => {
     const rule = buildRule({ ruleType: 'MIN_CART_AMOUNT', operator: 'GTE', value: '500' });
     expect(evaluateRule(rule, buildContext({ subtotal: 500 }))).toBe(true);
     expect(evaluateRule(rule, buildContext({ subtotal: 499.99 }))).toBe(false);
+  });
+
+  it('MIN_CART_QUANTITY + GTE passes when total quantity meets the threshold', () => {
+    const rule = buildRule({ ruleType: 'MIN_CART_QUANTITY', operator: 'GTE', value: '3' });
+    expect(evaluateRule(rule, buildContext({ totalQuantity: 3 }))).toBe(true);
+    expect(evaluateRule(rule, buildContext({ totalQuantity: 2 }))).toBe(false);
   });
 
   it('PRODUCT + IN passes when any cart product matches', () => {

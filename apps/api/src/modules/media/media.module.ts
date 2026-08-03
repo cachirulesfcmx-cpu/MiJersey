@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 
+import { APP_CONFIG } from '../../config/env.config';
+import type { AppConfig } from '../../config/env.schema';
 import { IdentityModule } from '../identity/identity.module';
 import { MediaProcessingService } from './application/services/media-processing.service';
 import { MediaUsageService } from './application/services/media-usage.service';
@@ -19,6 +21,7 @@ import { PrismaFolderRepository } from './infrastructure/persistence/prisma-fold
 import { PrismaMediaAssetRepository } from './infrastructure/persistence/prisma-media-asset.repository';
 import { PrismaMediaAssetUsageRepository } from './infrastructure/persistence/prisma-media-usage.repository';
 import { LocalDiskStorageAdapter } from './infrastructure/storage/local-disk-storage.adapter';
+import { R2StorageAdapter } from './infrastructure/storage/r2-storage.adapter';
 import {
   ASSET_TAG_REPOSITORY,
   FOLDER_REPOSITORY,
@@ -50,7 +53,17 @@ import { AdminMediaController } from './presentation/controllers/admin-media.con
     { provide: FOLDER_REPOSITORY, useClass: PrismaFolderRepository },
     { provide: ASSET_TAG_REPOSITORY, useClass: PrismaAssetTagRepository },
     { provide: MEDIA_ASSET_USAGE_REPOSITORY, useClass: PrismaMediaAssetUsageRepository },
-    { provide: STORAGE_PORT, useClass: LocalDiskStorageAdapter },
+    LocalDiskStorageAdapter,
+    {
+      // No se registra R2StorageAdapter como provider de Nest: su constructor lanza si faltan
+      // las variables R2_* (fail-fast intencional), y Nest instanciaría igual la clase aunque
+      // STORAGE_DRIVER fuera 'local' por estar listada en `providers`. Se construye a mano aquí,
+      // solo cuando de verdad se va a usar.
+      provide: STORAGE_PORT,
+      useFactory: (config: AppConfig, local: LocalDiskStorageAdapter) =>
+        config.storageDriver === 'r2' ? new R2StorageAdapter(config) : local,
+      inject: [APP_CONFIG, LocalDiskStorageAdapter],
+    },
   ],
   exports: [MediaUsageService],
 })

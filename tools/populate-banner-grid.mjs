@@ -1,0 +1,158 @@
+#!/usr/bin/env node
+/**
+ * Puebla (o actualiza) la seccion BANNER_GRID del home con imagenes reales del
+ * catalogo importado (categoria "jerseys"), para el nuevo banner-slider
+ * diagonal de HomeSectionRenderer (Fase 1 del rediseno del storefront).
+ *
+ * - Si ya existe una seccion BANNER_GRID publicada y visible, reemplaza su
+ *   `configuration.banners` por productos reales (no toca titulo/sortOrder).
+ * - Si no existe ninguna, crea una nueva, publicada y visible, justo despues
+ *   del HERO_BANNER publicado (o al principio si no hay hero).
+ * - Cada banner enlaza a `/products/:slug` del producto elegido.
+ *
+ * Uso:
+ *   node tools/populate-banner-grid.mjs --dry-run   # solo muestra que haria
+ *   node tools/populate-banner-grid.mjs             # aplica los cambios
+ *   node tools/populate-banner-grid.mjs --count 8   # cuantos banners (default 6)
+ */
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import process from 'node:process';
+
+const repoRoot = process.cwd();
+const args = parseArgs(process.argv.slice(2));
+const dryRun = Boolean(args['dry-run']);
+const bannerCount = Number(args.count ?? 6);
+
+const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/];
+
+const PrismaClient = loadPrismaClient();
+const prisma = new PrismaClient();
+
+try {
+  const category = await prisma.category.findUnique({ where: { slug: 'jerseys' } });
+  if (!category) {
+    fail('No existe la categoria "jerseys". Corre primero tools/import-legacy-jerseys.mjs.');
+  }
+
+  const candidates = await prisma.product.findMany({
+    where: {
+      status: 'ACTIVE',
+      visibility: 'PUBLIC',
+      categories: { some: { categoryId: category.id } },
+    },
+    orderBy: { name: 'asc' },
+    take: 80,
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      variants: {
+        where: { status: 'ACTIVE' },
+        orderBy: { price: 'asc' },
+        take: 1,
+        select: { imageId: true },
+      },
+    },
+  });
+
+  const withImage = candidates
+    .filter((product) => !EXCLUDE_SLUG_PATTERNS.some((pattern) => pattern.test(product.slug)))
+    .filter((product) => Boolean(product.variants[0]?.imageId));
+
+  if (withImage.length === 0) {
+    fail(
+      'Ningun producto de "jerseys" tiene imagen en su variante mas barata -- revisa que el import de imagenes haya corrido bien.',
+    );
+  }
+
+  const chosen = withImage.slice(0, bannerCount);
+  console.log(`Banners elegidos (${chosen.length} de ${withImage.length} elegibles):`);
+  for (const product of chosen) {
+    console.log(`  - ${product.name} (${product.slug})`);
+  }
+
+  const banners = chosen.map((product) => ({
+    imageMediaId: product.variants[0].imageId,
+    title: product.name,
+    linkUrl: `/products/${product.slug}`,
+  }));
+
+  const existing = await prisma.homeSection.findFirst({
+    where: { type: 'BANNER_GRID', status: 'PUBLISHED', isVisible: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+
+  if (existing) {
+    const beforeCount = Array.isArray(existing.configuration?.banners)
+      ? existing.configuration.banners.length
+      : 0;
+    console.log(
+      `[BANNER_GRID] "${existing.title}": ${beforeCount} banner(s) actual(es) -> ${banners.length} banner(s) reales`,
+    );
+    if (!dryRun) {
+      await prisma.homeSection.update({
+        where: { id: existing.id },
+        data: { configuration: { banners } },
+      });
+    }
+  } else {
+    const hero = await prisma.homeSection.findFirst({
+      where: { type: 'HERO_BANNER', status: 'PUBLISHED', isVisible: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    const sortOrder = hero ? hero.sortOrder + 1 : 1;
+    console.log(
+      `[BANNER_GRID] No habia ninguna seccion BANNER_GRID publicada/visible -- se crea una nueva (sortOrder ${sortOrder}) con ${banners.length} banner(s) reales.`,
+    );
+    if (!dryRun) {
+      await prisma.homeSection.create({
+        data: {
+          type: 'BANNER_GRID',
+          title: 'Destacados',
+          configuration: { banners },
+          sortOrder,
+          status: 'PUBLISHED',
+          isVisible: true,
+        },
+      });
+    }
+  }
+
+  console.log('');
+  console.log(
+    dryRun
+      ? 'Dry run terminado. No se escribio nada en la base.'
+      : 'Listo. El home lee HomeSection sin cache, asi que el cambio es inmediato (sujeto al ISR de 60s de Next.js).',
+  );
+} finally {
+  await prisma.$disconnect();
+}
+
+function parseArgs(argv) {
+  const parsed = {};
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    const next = argv[index + 1];
+    if (!next || next.startsWith('--')) {
+      parsed[key] = true;
+    } else {
+      parsed[key] = next;
+      index += 1;
+    }
+  }
+  return parsed;
+}
+
+function loadPrismaClient() {
+  const apiPackageJson = path.resolve(repoRoot, 'apps/api/package.json');
+  const requireFromApi = createRequire(apiPackageJson);
+  return requireFromApi('@prisma/client').PrismaClient;
+}
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}

@@ -153,4 +153,14 @@
   .animate-fade-in-up {
     animation: fade-in-up var(--tf-dur-slow, 0.5s) var(--tf-ease-decel, cubic-bezier(0.16, 1, 0.3, 1)) both;
   }
+
+  /* Oculta la barra de scroll del banner-slider horizontal (HomeSectionRenderer, BANNER_GRID)
+     sin quitarle la capacidad de scroll — el gesto de swipe/drag sigue funcionando igual. */
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

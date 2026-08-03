@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { IdentityModule } from '../identity/identity.module';
+import { MediaModule } from '../media/media.module';
 import { AttributeCacheService } from './application/services/attribute-cache.service';
 import { AssignAttributeToProductUseCase } from './application/use-cases/assign-attribute-to-product.use-case';
 import { BulkAssignAttributesToProductUseCase } from './application/use-cases/bulk-assign-attributes-to-product.use-case';
@@ -26,7 +27,7 @@ import { AdminProductAttributesController } from './presentation/controllers/adm
 import { PublicFiltersController } from './presentation/controllers/public-filters.controller';
 
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, MediaModule],
   controllers: [
     AdminAttributesController,
     AdminProductAttributesController,

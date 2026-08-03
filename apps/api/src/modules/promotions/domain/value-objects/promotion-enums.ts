@@ -15,6 +15,7 @@ export enum PromotionStatus {
 
 export enum PromotionRuleType {
   MIN_CART_AMOUNT = 'MIN_CART_AMOUNT',
+  MIN_CART_QUANTITY = 'MIN_CART_QUANTITY',
   PRODUCT = 'PRODUCT',
   CATEGORY = 'CATEGORY',
   BRAND = 'BRAND',

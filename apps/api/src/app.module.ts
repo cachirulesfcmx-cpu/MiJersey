@@ -31,6 +31,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
@@ -96,6 +97,7 @@ import { RedisModule } from './redis/redis.module';
     OrdersModule,
     PaymentsModule,
     PromotionsModule,
+    ReviewsModule,
     ShippingModule,
     SupportModule,
     CmsModule,

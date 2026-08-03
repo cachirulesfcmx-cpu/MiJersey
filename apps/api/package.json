@@ -18,6 +18,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.637.0",
     "@mijersey/config": "workspace:*",
     "@mijersey/shared-types": "workspace:*",
     "@mijersey/shared-utils": "workspace:*",

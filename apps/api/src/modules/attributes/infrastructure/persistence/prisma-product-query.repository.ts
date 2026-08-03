@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { MediaUsageService } from '../../../media/application/services/media-usage.service';
 import type {
   AttributeFilterInput,
   FacetResult,
@@ -62,7 +63,10 @@ function buildScopeWhere(scope?: ProductListingScope): Prisma.ProductWhereInput 
 
 @Injectable()
 export class PrismaProductQueryRepository implements ProductQueryPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaUsage: MediaUsageService,
+  ) {}
 
   async exists(productId: string): Promise<boolean> {
     const count = await this.prisma.product.count({ where: { id: productId, deletedAt: null } });
@@ -153,20 +157,52 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
         orderBy: { [sortBy]: sortDir },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
+        include: {
+          // Misma resolución que Home (013, ver PrismaHomeLookupRepository): la variante activa
+          // más barata aporta la imagen/precio "de vitrina" del producto en listados.
+          variants: {
+            where: { status: 'ACTIVE' },
+            orderBy: { price: 'asc' },
+            take: 1,
+            select: { price: true, compareAtPrice: true, imageId: true },
+          },
+        },
       }),
       this.prisma.product.count({ where }),
     ]);
 
+    const mediaIds = [
+      ...new Set(
+        items
+          .map((product) => product.variants[0]?.imageId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const mediaEntries = await Promise.all(
+      mediaIds.map(async (id) => [id, await this.mediaUsage.resolveUrls(id)] as const),
+    );
+    const mediaUrlById = new Map(mediaEntries.map(([id, resolved]) => [id, resolved?.url ?? null]));
+
     return {
-      items: items.map((product) => ({
-        id: product.id,
-        sku: product.sku,
-        slug: product.slug,
-        name: product.name,
-        status: product.status,
-        visibility: product.visibility,
-        createdAt: product.createdAt,
-      })),
+      items: items.map((product) => {
+        const cheapestVariant = product.variants[0];
+        return {
+          id: product.id,
+          sku: product.sku,
+          slug: product.slug,
+          name: product.name,
+          status: product.status,
+          visibility: product.visibility,
+          createdAt: product.createdAt,
+          imageUrl: cheapestVariant?.imageId
+            ? (mediaUrlById.get(cheapestVariant.imageId) ?? null)
+            : null,
+          price: cheapestVariant ? Number(cheapestVariant.price) : null,
+          compareAtPrice: cheapestVariant?.compareAtPrice
+            ? Number(cheapestVariant.compareAtPrice)
+            : null,
+        };
+      }),
       total,
     };
   }

@@ -55,7 +55,7 @@ export function HomeSectionRenderer({
       const headline = str(c.headline);
       if (!imageUrl || !headline) return null;
       return (
-        <section className="bg-arena-950 relative flex h-[70vh] min-h-[380px] w-full items-end overflow-hidden sm:h-[75vh]">
+        <section className="bg-arena-950 relative flex h-[78vh] min-h-[440px] w-full items-end overflow-hidden sm:h-[85vh]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
@@ -63,9 +63,14 @@ export function HomeSectionRenderer({
             loading={priority ? 'eager' : 'lazy'}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="from-arena-950 via-arena-900/60 absolute inset-0 bg-gradient-to-t to-transparent" />
-          <div className="relative z-10 flex flex-col gap-4 p-6 text-white sm:p-12">
-            <h1 className="font-display max-w-2xl text-4xl uppercase leading-none tracking-wide sm:text-6xl">
+          {/* Vignette doble: vertical (legibilidad del texto) + radial sutil (profundidad, look "editorial" en vez de foto plana) */}
+          <div className="from-arena-950 via-arena-950/50 absolute inset-0 bg-gradient-to-t to-transparent" />
+          <div className="from-arena-950/40 absolute inset-0 bg-gradient-to-r to-transparent sm:to-transparent" />
+          <div className="relative z-10 flex flex-col gap-5 p-6 text-white sm:p-16">
+            <span className="tf-caption w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm">
+              MiJersey
+            </span>
+            <h1 className="font-display max-w-3xl text-5xl uppercase leading-[0.95] tracking-wide sm:text-7xl">
               {headline}
             </h1>
             {str(c.subheadline) && (
@@ -77,6 +82,20 @@ export function HomeSectionRenderer({
               </Link>
             )}
           </div>
+          {/* Indicador de scroll — puramente decorativo, ayuda a comunicar que hay más contenido debajo del fold. */}
+          <div className="absolute bottom-6 right-6 z-10 hidden animate-bounce sm:block">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="text-white/70"
+            >
+              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
         </section>
       );
     }
@@ -85,31 +104,43 @@ export function HomeSectionRenderer({
       const grid = banners(c.banners).filter((b) => b.imageUrl);
       if (grid.length === 0) return null;
       return (
-        <section className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-6 lg:grid-cols-3">
-          {grid.map((banner, index) => {
-            const content = (
-              <div className="group relative h-48 w-full overflow-hidden rounded-2xl sm:h-64">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={banner.imageUrl ?? undefined}
-                  alt={banner.title ?? ''}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="from-arena-950/85 via-arena-950/10 absolute inset-0 bg-gradient-to-t to-transparent" />
-                {banner.title && (
-                  <span className="font-display absolute bottom-4 left-4 text-2xl uppercase tracking-wide text-white sm:text-3xl">
-                    {banner.title}
-                  </span>
-                )}
-              </div>
-            );
-            return (
-              <div key={`${section.id}-${index}`}>
-                {banner.linkUrl ? <Link href={banner.linkUrl}>{content}</Link> : content}
-              </div>
-            );
-          })}
+        <section className="tf-section py-10 sm:py-14">
+          <div className="tf-container flex items-end justify-between gap-4 pb-6">
+            <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+              Destacados
+            </h2>
+          </div>
+          {/* Tira horizontal con scroll-snap + recorte diagonal por tarjeta — inspirado en el
+              banner-slider de bartjerseys.com, sin copiar su layout/assets/copy. */}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2 sm:px-6">
+            {grid.map((banner, index) => {
+              const content = (
+                <div
+                  className="group relative h-72 w-64 overflow-hidden sm:h-96 sm:w-80"
+                  style={{ clipPath: 'polygon(7% 0, 100% 0, 93% 100%, 0 100%)' }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={banner.imageUrl ?? undefined}
+                    alt={banner.title ?? ''}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="from-arena-950/90 via-arena-950/15 absolute inset-0 bg-gradient-to-t to-transparent" />
+                  {banner.title && (
+                    <span className="font-display absolute bottom-8 left-8 right-8 text-xl uppercase leading-tight tracking-wide text-white sm:text-2xl">
+                      {banner.title}
+                    </span>
+                  )}
+                </div>
+              );
+              return (
+                <div key={`${section.id}-${index}`} className="shrink-0 snap-start">
+                  {banner.linkUrl ? <Link href={banner.linkUrl}>{content}</Link> : content}
+                </div>
+              );
+            })}
+          </div>
         </section>
       );
     }

@@ -204,6 +204,7 @@ import type {
   UpdatePromotionInput,
   ValidatePromotionResult,
 } from './promotions.types.js';
+import type { CreateReviewInput, ProductReviewsResult, Review } from './reviews.types.js';
 import type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
@@ -2068,6 +2069,26 @@ export class ApiClient {
     return this.request<{ usage: RecordedPromotionUsage | null }>('/promotions/record-usage', {
       method: 'POST',
       body: JSON.stringify({ orderId }),
+    });
+  }
+
+  listProductReviews(
+    slug: string,
+    params: { page?: number; pageSize?: number } = {},
+  ): Promise<ProductReviewsResult> {
+    const query = toQueryString({ page: params.page, pageSize: params.pageSize });
+    return this.request<ProductReviewsResult>(`/products/${slug}/reviews${query}`);
+  }
+
+  createProductReview(
+    slug: string,
+    input: CreateReviewInput,
+    accessToken?: string,
+  ): Promise<{ review: Review }> {
+    return this.request<{ review: Review }>(`/products/${slug}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+      ...(accessToken ? { accessToken } : {}),
     });
   }
 

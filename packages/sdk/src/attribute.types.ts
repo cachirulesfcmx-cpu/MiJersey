@@ -120,6 +120,9 @@ export interface ProductSearchSummary {
   status: string;
   visibility: string;
   createdAt: string;
+  imageUrl: string | null;
+  price: number | null;
+  compareAtPrice: number | null;
 }
 
 /** Alcance opcional reutilizado por categorías/marcas/búsqueda (014) — el mismo motor de listados sirve a los tres. */

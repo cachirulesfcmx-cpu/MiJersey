@@ -28,6 +28,12 @@ export interface ProductSummary {
   status: string;
   visibility: string;
   createdAt: Date;
+  /// Imagen de la variante activa más barata, ya resuelta a URL servible (mismo criterio que Home 013, ver HomeEnrichmentService).
+  imageUrl: string | null;
+  /// Precio de la variante activa más barata — null si el producto no tiene variantes activas.
+  price: number | null;
+  /// compareAtPrice de esa misma variante, para poder mostrar el descuento en el storefront.
+  compareAtPrice: number | null;
 }
 
 /**

@@ -73,6 +73,7 @@ export class ValidatePromotionUseCase {
       productIds,
       categoryIds: Array.from(categoryIds),
       brandIds: Array.from(brandIds),
+      totalQuantity: cart.items.reduce((sum, item) => sum + item.quantity, 0),
     };
 
     let applicable: PromotionEntity[];

@@ -272,6 +272,13 @@ export type {
   ValidatePromotionResult,
 } from './promotions.types.js';
 export type {
+  CreateReviewInput,
+  ProductReviewsResult,
+  Review,
+  ReviewStatus,
+  ReviewSummary,
+} from './reviews.types.js';
+export type {
   CreateSearchSynonymInput,
   LogSearchClickInput,
   SearchAnalytics,

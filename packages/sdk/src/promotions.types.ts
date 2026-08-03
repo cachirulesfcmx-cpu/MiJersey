@@ -1,7 +1,8 @@
 export type PromotionType = 'MANUAL_COUPON' | 'AUTOMATIC';
 export type PromotionDiscountType = 'PERCENTAGE' | 'FIXED';
 export type PromotionStatus = 'ACTIVE' | 'INACTIVE';
-export type PromotionRuleType = 'MIN_CART_AMOUNT' | 'PRODUCT' | 'CATEGORY' | 'BRAND' | 'CUSTOMER';
+export type PromotionRuleType =
+  'MIN_CART_AMOUNT' | 'MIN_CART_QUANTITY' | 'PRODUCT' | 'CATEGORY' | 'BRAND' | 'CUSTOMER';
 export type PromotionRuleOperator = 'GTE' | 'IN';
 
 export interface PromotionRule {

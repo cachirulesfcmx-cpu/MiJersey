@@ -8,6 +8,8 @@ export interface EligibilityContext {
   productIds: string[];
   categoryIds: string[];
   brandIds: string[];
+  /// Suma de `quantity` de todas las líneas del carrito — habilita reglas MIN_CART_QUANTITY (descuento por volumen, fase 2).
+  totalQuantity: number;
 }
 
 function splitIds(value: string): string[] {
@@ -22,6 +24,8 @@ export function evaluateRule(rule: PromotionRuleEntity, context: EligibilityCont
   switch (rule.ruleType) {
     case 'MIN_CART_AMOUNT':
       return context.subtotal >= Number(rule.value);
+    case 'MIN_CART_QUANTITY':
+      return context.totalQuantity >= Number(rule.value);
     case 'PRODUCT':
       return splitIds(rule.value).some((id) => context.productIds.includes(id));
     case 'CATEGORY':
