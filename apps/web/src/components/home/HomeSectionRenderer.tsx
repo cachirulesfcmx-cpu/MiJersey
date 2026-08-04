@@ -57,6 +57,9 @@ interface BannerGridItem {
   imageUrl: string | null;
   title: string | null;
   linkUrl: string | null;
+  /** Texto corto opcional bajo el título (ej. "Envío incluido") -- solo se muestra si viene un
+      dato real desde el script que puebla la sección, nunca un porcentaje inventado. */
+  badge?: string | null;
 }
 
 function str(value: unknown): string {
@@ -285,11 +288,16 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
     case 'BANNER_GRID': {
       const grid = banners(c.banners).filter((b) => b.imageUrl);
       if (grid.length === 0) return null;
+      // "Explora" (tools/populate-explore-banners.mjs) reutiliza BANNER_GRID para el slider
+      // lateral de categorías/promos reales -- se distingue visualmente de "Destacados" con
+      // fotos en blanco y negro y tipografía en itálica bold, sin usar fotografía de acción de
+      // jugadores (no tenemos licencia para eso), solo fotos reales del catálogo.
+      const isExplore = section.title === 'Explora';
       return (
         <section className="tf-section py-10 sm:py-14">
           <div className="tf-container flex items-end justify-between gap-4 pb-6">
             <h2 className="font-display text-arena-950 text-3xl uppercase tracking-wide sm:text-4xl">
-              Destacados
+              {isExplore ? 'Explora' : 'Destacados'}
             </h2>
           </div>
           {/* Tira horizontal con scroll-snap + recorte diagonal por tarjeta — inspirado en el
@@ -306,12 +314,28 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                     src={banner.imageUrl ?? undefined}
                     alt={banner.title ?? ''}
                     loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${
+                      isExplore ? 'grayscale' : ''
+                    }`}
                   />
                   <div className="from-arena-950/90 via-arena-950/15 absolute inset-0 bg-gradient-to-t to-transparent" />
                   {banner.title && (
-                    <span className="font-display absolute bottom-8 left-8 right-8 text-xl uppercase leading-tight tracking-wide text-white sm:text-2xl">
+                    <span
+                      className={`absolute bottom-8 left-8 right-8 leading-tight text-white ${
+                        isExplore
+                          ? 'font-sans text-2xl font-black uppercase italic tracking-tight sm:text-3xl'
+                          : 'font-display text-xl uppercase tracking-wide sm:text-2xl'
+                      }`}
+                    >
                       {banner.title}
+                    </span>
+                  )}
+                  {isExplore && banner.badge && (
+                    <span
+                      className="absolute bottom-3 left-8 rounded px-2 py-1 text-xs font-bold uppercase tracking-wide text-white"
+                      style={{ background: 'var(--tf-danger)' }}
+                    >
+                      {banner.badge}
                     </span>
                   )}
                 </div>
