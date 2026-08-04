@@ -339,10 +339,8 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       // envío express (confirmado real, no una afirmación inventada).
       const isSecretJersey = section.title === 'Jersey sorpresa';
       return (
-        <section
-          className={`tf-section flex flex-col gap-4 py-8 sm:gap-6 sm:py-12 ${isSecretJersey ? 'bg-arena-950' : ''}`}
-        >
-          <div className="tf-container">
+        <section className="tf-section flex flex-col gap-4 py-8 sm:gap-6 sm:py-12">
+          <div className="tf-container flex flex-col gap-1">
             {str(c.heading) && (
               <h2
                 className={`font-display text-3xl uppercase tracking-wide sm:text-4xl ${
