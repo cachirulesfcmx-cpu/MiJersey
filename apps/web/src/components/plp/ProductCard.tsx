@@ -115,7 +115,7 @@ function QuickAddButton({ variantId }: { variantId: string }) {
       onClick={handleClick}
       aria-label="Agregar al carrito"
       disabled={status !== 'idle'}
-      className="absolute bottom-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
+      className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
       style={{ background: 'var(--tf-danger)' }}
     >
       {status === 'added' ? (
@@ -216,9 +216,17 @@ export function ProductCard({
     );
   }
 
+  // Sin envoltura de "tarjeta blanca" (card-arena) -- el fondo de color debe llegar hasta el
+  // borde de la imagen, igual que las tarjetas del home (ProductSliderCard) y que bartjerseys.com.
+  // Antes esto usaba `card-arena` (fondo blanco + borde + sombra + padding) mientras el home no
+  // llevaba nada de eso -- por eso el mismo producto se veía como dos componentes distintos según
+  // en qué parte del sitio apareciera.
   return (
-    <Link href={`/products/${product.slug}`} className="card-arena group flex flex-col gap-3">
-      <ProductMedia product={product} className="aspect-square w-full rounded-xl" bg={bg} />
+    <Link
+      href={`/products/${product.slug}`}
+      className="group flex flex-col gap-2 transition-transform duration-300 hover:-translate-y-1.5"
+    >
+      <ProductMedia product={product} className="aspect-[4/5] w-full rounded-2xl" bg={bg} />
       <div className="flex flex-col gap-1">
         <span className="truncate text-sm font-medium text-neutral-900">{product.name}</span>
         <RatingRow rating={product.rating} reviewCount={product.reviewCount} />

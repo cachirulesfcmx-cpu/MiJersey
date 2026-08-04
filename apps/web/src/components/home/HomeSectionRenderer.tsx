@@ -89,7 +89,22 @@ const ENTITY_PATH_BY_TYPE: Record<string, string> = {
  * pasar por el PDP, como en el patrón de referencia. Sin `defaultVariantId` el botón no se
  * muestra -- nunca simula un agregado que no ocurrió.
  */
-function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: string; bg: string }) {
+function ProductSliderCard({
+  item,
+  href,
+  bg,
+  expressBanner,
+}: {
+  item: FeaturedItem;
+  href: string;
+  /** Si no se pasa (o viene undefined), la tarjeta no fuerza ningún color de fondo -- útil cuando
+      la propia foto del producto ya trae su propio fondo (ej. las composiciones de "Jersey
+      sorpresa"). */
+  bg?: string | undefined;
+  /** Banner rojo "Envío Express" -- solo se pasa cuando el llamador confirmó que es un servicio
+      real (ver "Jersey sorpresa"), nunca por defecto. */
+  expressBanner?: boolean;
+}) {
   const { addItem } = useCart();
   const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle');
 
@@ -185,6 +200,11 @@ function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: strin
             )}
           </button>
         )}
+        {expressBanner && (
+          <span className="absolute inset-x-0 bottom-0 z-10 bg-red-600 py-2 text-center text-sm font-bold uppercase tracking-wide text-white">
+            ⚡ Envío express
+          </span>
+        )}
       </div>
       <span className="truncate text-sm font-medium text-neutral-900">{item.name}</span>
       {typeof item.rating === 'number' && (item.reviewCount ?? 0) > 0 && (
@@ -224,19 +244,22 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       return (
         <section className="tf-section py-10 sm:py-14">
           <div className="tf-container flex items-end justify-between gap-4 pb-6">
-            <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+            <h2 className="font-display text-arena-950 text-3xl uppercase tracking-wide sm:text-4xl">
               {str(c.heading) || 'Compra por liga'}
             </h2>
           </div>
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
+          {/* Tira grande, tipo franja de ligas -- tarjetas altas y anchas con la foto real de la
+              categoría bien visible (no un fondo translúcido) y el nombre anclado abajo, muy
+              juntas entre sí para que se sienta como una sola franja continua. */}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-4 pb-2 sm:gap-2 sm:px-6">
             {list.map((item, index) => {
               const gradient = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
               return (
                 <Link
                   key={item.id}
                   href={`/categories/${item.slug}`}
-                  className={`group relative flex h-28 w-40 shrink-0 snap-start items-center justify-center overflow-hidden bg-gradient-to-br transition-transform duration-300 hover:-translate-y-1 sm:h-36 sm:w-52 ${gradient}`}
-                  style={{ clipPath: 'polygon(10% 0, 100% 0, 90% 100%, 0 100%)' }}
+                  className={`group relative flex h-56 w-44 shrink-0 snap-start items-end overflow-hidden bg-gradient-to-b transition-transform duration-300 hover:-translate-y-2 sm:h-72 sm:w-60 ${gradient}`}
+                  style={{ clipPath: 'polygon(12% 0, 100% 0, 88% 100%, 0 100%)' }}
                 >
                   {item.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -244,10 +267,11 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                       src={item.imageUrl}
                       alt=""
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover opacity-30 transition-opacity duration-300 group-hover:opacity-40"
+                      className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-500 group-hover:scale-110"
                     />
                   )}
-                  <span className="font-display relative z-10 px-4 text-center text-base uppercase leading-tight tracking-wide text-white transition-transform duration-300 group-hover:scale-105 sm:text-xl">
+                  <div className="from-arena-950 absolute inset-0 bg-gradient-to-t via-black/10 to-transparent" />
+                  <span className="font-display relative z-10 w-full px-4 pb-6 text-center text-2xl uppercase leading-none tracking-wide text-white sm:text-4xl">
                     {item.name}
                   </span>
                 </Link>
@@ -264,7 +288,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       return (
         <section className="tf-section py-10 sm:py-14">
           <div className="tf-container flex items-end justify-between gap-4 pb-6">
-            <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+            <h2 className="font-display text-arena-950 text-3xl uppercase tracking-wide sm:text-4xl">
               Destacados
             </h2>
           </div>
@@ -309,11 +333,22 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       const list = items(c.items);
       if (list.length === 0) return null;
       const basePath = ENTITY_PATH_BY_TYPE[section.type] ?? '/';
+      // "Jersey sorpresa" (tools/enable-secret-jersey.mjs) reutiliza FEATURED_PRODUCTS para poder
+      // mostrar 1 a N variantes reales (Actual/Retro/Selecciones...) en vez de estar limitado a
+      // un solo producto -- con tratamiento especial: fondo oscuro, heading neón y el banner de
+      // envío express (confirmado real, no una afirmación inventada).
+      const isSecretJersey = section.title === 'Jersey sorpresa';
       return (
-        <section className="tf-section flex flex-col gap-4 py-8 sm:gap-6 sm:py-12">
+        <section
+          className={`tf-section flex flex-col gap-4 py-8 sm:gap-6 sm:py-12 ${isSecretJersey ? 'bg-arena-950' : ''}`}
+        >
           <div className="tf-container">
             {str(c.heading) && (
-              <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
+              <h2
+                className={`font-display text-3xl uppercase tracking-wide sm:text-4xl ${
+                  isSecretJersey ? 'text-neon-gradient' : 'text-arena-950'
+                }`}
+              >
                 {str(c.heading)}
               </h2>
             )}
@@ -322,9 +357,12 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             {list.map((item, index) => (
               <ProductSliderCard
                 key={item.id}
+                expressBanner={isSecretJersey}
+                bg={
+                  isSecretJersey ? undefined : (PRODUCT_BG[index % PRODUCT_BG.length] ?? '#6C7FE8')
+                }
                 item={item}
                 href={`${basePath}/${item.slug}`}
-                bg={PRODUCT_BG[index % PRODUCT_BG.length] ?? '#6C7FE8'}
               />
             ))}
           </div>
@@ -418,7 +456,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             {imageFirst && image}
             <div className="relative z-10 flex flex-1 flex-col gap-4 text-center sm:text-left">
               {str(c.title) && (
-                <h2 className="font-display text-3xl uppercase leading-tight tracking-wide text-white sm:text-4xl">
+                <h2 className="text-neon-gradient font-display text-4xl uppercase leading-tight tracking-wide sm:text-5xl">
                   {str(c.title)}
                 </h2>
               )}

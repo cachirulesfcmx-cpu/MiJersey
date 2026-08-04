@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /**
- * "Jersey sorpresa" (fase 2 del rediseno del storefront).
+ * "Jersey sorpresa" (fase 2 del rediseno del storefront, ahora con soporte multi-variante).
  *
- * Los productos demo "secret-jersey-*" del catalogo legacy YA estan ACTIVE+PUBLIC y dentro de
- * la categoria "jerseys" (por eso fix-storefront-showcase.mjs tuvo que EXCLUIRLOS de lo
- * destacado, no porque estuvieran ocultos). Es decir: ya son comprables hoy, solo que nadie los
- * encuentra porque no aparecen en ningun lado destacado. Este script:
+ * Antes esta seccion vivia como un solo bloque IMAGE_TEXT con UN producto elegido. Bartjerseys.com
+ * muestra hasta 3 variantes reales ("Secret Jersey Actual", "Secret Jersey Retro", "Secret Jersey
+ * Selecciones") en tarjetas de producto normales. Este script ahora:
  *
- * 1. Los localiza y elige el mejor candidato (con imagen real en su variante mas barata).
- * 2. Le agrega una descripcion clara explicando el mecanismo ("no sabras que jersey es hasta
- *    que te llegue, elegido al azar del catalogo") -- sin tocar el nombre/precio real.
- * 3. Crea (o actualiza) una seccion IMAGE_TEXT en el home que lo enlaza directo -- una forma de
- *    darle visibilidad sin mezclarlo con los productos "normales" destacados por
- *    fix-storefront-showcase.mjs.
+ * 1. Localiza TODOS los productos "secret-jersey-*" ACTIVE+PUBLIC en la categoria "jerseys" con
+ *    imagen real (variante o galeria) -- no solo el primero.
+ * 2. A cada uno le agrega la descripcion del mecanismo de sorpresa si todavia no la tiene.
+ * 3. Oculta (no borra) cualquier seccion IMAGE_TEXT vieja titulada "Jersey sorpresa" -- el formato
+ *    viejo no soporta mas de un producto.
+ * 4. Crea o actualiza una seccion FEATURED_PRODUCTS titulada "Jersey sorpresa" con los productIds
+ *    de TODOS los candidatos encontrados (1 si solo existe "Actual", hasta N si se agregan mas
+ *    variantes en /admin). HomeSectionRenderer detecta este titulo y le aplica el tratamiento
+ *    especial (heading neon, banner "Envio express").
  *
  * Uso:
  *   node tools/enable-secret-jersey.mjs --dry-run
@@ -26,6 +28,7 @@ const repoRoot = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
 
+const SECTION_TITLE = 'Jersey sorpresa';
 const MYSTERY_BLURB =
   'Jersey sorpresa: no sabras cual equipo te llega hasta que lo recibas. Lo elegimos al azar ' +
   'de nuestro catalogo real -- misma calidad, precio especial por la sorpresa.';
@@ -58,10 +61,6 @@ try {
         take: 1,
         select: { price: true, imageId: true },
       },
-      // Igual que populate-banner-grid.mjs: la galería es la fuente primaria de imagen en este
-      // catálogo legacy, variant.imageId casi nunca está poblado. Mirar solo variant.imageId
-      // dejaba esta sección con imageMediaId null (invisible en el home, ver IMAGE_TEXT en
-      // HomeSectionRenderer que se auto-oculta sin imageUrl).
       media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
     },
   });
@@ -69,47 +68,77 @@ try {
   if (candidates.length === 0) {
     fail(
       'No se encontro ningun producto "secret-jersey-*" ACTIVE+PUBLIC en la categoria "jerseys". ' +
-        'No se creo ninguno nuevo (requeriria inventario/variantes desde cero) -- si quieres uno, ' +
-        'creelo manualmente en /admin y vuelve a correr este script para agregarle la seccion del home.',
+        'Crea las variantes que quieras (ej. "Secret Jersey Retro", "Secret Jersey Selecciones") ' +
+        'en /admin con su propio inventario/foto y vuelve a correr este script.',
     );
   }
 
-  const withImageMediaId = candidates.map((product) => ({
-    ...product,
-    imageMediaId: product.variants[0]?.imageId ?? product.media[0]?.mediaId ?? null,
-  }));
-  const withImage = withImageMediaId.filter((product) => product.imageMediaId);
-  const chosen = withImage[0] ?? withImageMediaId[0];
-  console.log(`Candidatos "secret-jersey-*" encontrados: ${candidates.length}`);
-  console.log(`Elegido para destacar: "${chosen.name}" (${chosen.slug})${withImage[0] ? '' : ' -- sin imagen ni en variante ni en galeria'}`);
+  const withImage = candidates
+    .map((product) => ({
+      ...product,
+      imageMediaId: product.variants[0]?.imageId ?? product.media[0]?.mediaId ?? null,
+    }))
+    .filter((product) => Boolean(product.imageMediaId));
 
-  const alreadyHasBlurb = (chosen.description ?? '').includes('Jersey sorpresa');
-  if (alreadyHasBlurb) {
-    console.log('[PRODUCTO] Ya tiene la descripcion de "jersey sorpresa" -- no se toca.');
-  } else {
-    const nextDescription = chosen.description
-      ? `${MYSTERY_BLURB}\n\n${chosen.description}`
+  const withoutImage = candidates.filter(
+    (product) => !product.variants[0]?.imageId && !product.media[0]?.mediaId,
+  );
+
+  console.log(`Candidatos "secret-jersey-*" encontrados: ${candidates.length}`);
+  for (const product of withImage) {
+    console.log(`  - OK: "${product.name}" (${product.slug})`);
+  }
+  for (const product of withoutImage) {
+    console.log(`  - OMITIDO (sin imagen en variante ni galeria): "${product.name}" (${product.slug})`);
+  }
+
+  if (withImage.length === 0) {
+    fail('Ningun candidato tiene imagen -- sube al menos una foto a la galeria del producto en /admin.');
+  }
+
+  for (const product of withImage) {
+    const alreadyHasBlurb = (product.description ?? '').includes('Jersey sorpresa');
+    if (alreadyHasBlurb) {
+      console.log(`[PRODUCTO] "${product.name}" ya tiene la descripcion -- no se toca.`);
+      continue;
+    }
+    const nextDescription = product.description
+      ? `${MYSTERY_BLURB}\n\n${product.description}`
       : MYSTERY_BLURB;
-    console.log('[PRODUCTO] Se antepone la descripcion del mecanismo de sorpresa.');
+    console.log(`[PRODUCTO] "${product.name}": se antepone la descripcion del mecanismo de sorpresa.`);
     if (!dryRun) {
-      await prisma.product.update({ where: { id: chosen.id }, data: { description: nextDescription } });
+      await prisma.product.update({ where: { id: product.id }, data: { description: nextDescription } });
     }
   }
 
-  const existingSection = await prisma.homeSection.findFirst({
-    where: { type: 'IMAGE_TEXT', title: 'Jersey sorpresa' },
+  // El formato viejo (IMAGE_TEXT, un solo producto) no aplica mas -- se oculta en vez de borrar
+  // por si se quiere volver a consultar despues.
+  const oldSection = await prisma.homeSection.findFirst({
+    where: { type: 'IMAGE_TEXT', title: SECTION_TITLE },
   });
+  if (oldSection) {
+    console.log(
+      `[HOME] Se encontro la seccion vieja IMAGE_TEXT "${SECTION_TITLE}" -- se oculta (el formato nuevo usa FEATURED_PRODUCTS).`,
+    );
+    if (!dryRun) {
+      await prisma.homeSection.update({ where: { id: oldSection.id }, data: { isVisible: false } });
+    }
+  }
+
+  const productIds = withImage.map((p) => p.id);
   const configuration = {
-    imageMediaId: chosen.imageMediaId,
-    title: '¿Te atreves con el jersey sorpresa?',
-    body: 'Un jersey real de nuestro catalogo, elegido al azar. La emocion de no saber cual te toca.',
-    ctaLabel: 'Ver jersey sorpresa',
-    ctaUrl: `/products/${chosen.slug}`,
-    imagePosition: 'left',
+    heading: '¿Te atreves con el jersey sorpresa?',
+    productIds,
   };
 
+  const existingSection = await prisma.homeSection.findFirst({
+    where: { type: 'FEATURED_PRODUCTS', title: SECTION_TITLE },
+  });
+
   if (existingSection) {
-    console.log('[HOME] Ya existe la seccion "Jersey sorpresa" -- se actualiza para apuntar al producto elegido.');
+    console.log(
+      `[HOME] Ya existe la seccion FEATURED_PRODUCTS "${SECTION_TITLE}" -- se actualiza con ${productIds.length} producto(s).`,
+    );
     if (!dryRun) {
       await prisma.homeSection.update({ where: { id: existingSection.id }, data: { configuration } });
     }
@@ -119,12 +148,14 @@ try {
       orderBy: { sortOrder: 'desc' },
     });
     const sortOrder = (lastSection?.sortOrder ?? 0) + 1;
-    console.log(`[HOME] Se crea la seccion "Jersey sorpresa" (sortOrder ${sortOrder}), publicada y visible.`);
+    console.log(
+      `[HOME] Se crea la seccion FEATURED_PRODUCTS "${SECTION_TITLE}" (sortOrder ${sortOrder}) con ${productIds.length} producto(s), publicada y visible.`,
+    );
     if (!dryRun) {
       await prisma.homeSection.create({
         data: {
-          type: 'IMAGE_TEXT',
-          title: 'Jersey sorpresa',
+          type: 'FEATURED_PRODUCTS',
+          title: SECTION_TITLE,
           configuration,
           sortOrder,
           status: 'PUBLISHED',

@@ -135,6 +135,28 @@
     border: 1px solid var(--tf-border);
     box-shadow: var(--tf-shadow-lg);
   }
+
+  /* Texto con degradado animado tipo "neón" -- usado en encabezados de secciones destacadas
+     sobre fondo oscuro (ej. Jersey sorpresa) para darles más presencia visual. Solo afecta
+     tipografía, no copia ningún asset. */
+  .text-neon-gradient {
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6, #38bdf8);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: neon-shift 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 14px rgba(167, 139, 250, 0.45));
+  }
+  @keyframes neon-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
 }
 
 @layer utilities {

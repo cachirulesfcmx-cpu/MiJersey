@@ -99,18 +99,17 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
   if (slides.length === 0) return null;
 
   return (
-    <section className="bg-arena-950 relative flex h-[50vh] min-h-[380px] w-full items-end overflow-hidden sm:h-[62vh]">
+    <section className="bg-arena-950 relative flex h-[56vh] min-h-[420px] w-full items-center overflow-hidden sm:h-[68vh]">
       {slides.map((slide, index) => {
         const offset = index - active;
         return (
           <div
             key={slide.id}
             aria-hidden={index !== active}
-            // flex + justify-end es necesario aquí mismo (no solo en el <section> padre): este div
-            // está posicionado con `absolute inset-0`, así que queda fuera del flujo flex del
-            // section y el `items-end` de arriba nunca le aplicaba -- el texto quedaba pegado
-            // arriba en vez de abajo.
-            className="absolute inset-0 flex h-full flex-col justify-end transition-transform duration-700 ease-[cubic-bezier(0.32,0.08,0.16,1)]"
+            // flex + items-center es necesario aquí mismo (no solo en el <section> padre): este
+            // div está posicionado con `absolute inset-0`, así que queda fuera del flujo flex del
+            // section y el `items-center` de arriba nunca le aplicaba.
+            className="absolute inset-0 flex h-full flex-col items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.32,0.08,0.16,1)]"
             style={{
               transform: `translateX(${offset * 100}%)`,
               pointerEvents: index === active ? 'auto' : 'none',
@@ -121,10 +120,14 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
               isActive={index === active}
               eager={priority && index === 0}
             />
-            <div className="from-arena-950 via-arena-950/50 absolute inset-0 bg-gradient-to-t to-transparent" />
-            <div className="from-arena-950/40 absolute inset-0 bg-gradient-to-r to-transparent sm:to-transparent" />
+            {/* Overlay más oscuro y dramático (vignette de esquinas + degradado central) --
+                referencia: el hero real de bartjerseys.com usa una imagen de fondo muy oscurecida
+                para que el texto grande al centro siempre resalte, en vez de un degradado suave
+                solo en la parte de abajo. */}
+            <div className="from-arena-950/85 via-arena-950/55 absolute inset-0 bg-gradient-to-t to-black/40" />
+            <div className="from-arena-950/70 absolute inset-0 bg-gradient-to-r via-transparent to-black/30" />
             <div
-              className="relative z-10 flex flex-col gap-5 p-6 text-white transition-all duration-700 sm:p-16"
+              className="relative z-10 flex max-w-3xl flex-col items-center gap-5 p-6 text-center text-white transition-all duration-700"
               style={{
                 opacity: index === active ? 1 : 0,
                 transform: index === active ? 'translateY(0)' : 'translateY(12px)',
@@ -134,7 +137,7 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
               <span className="tf-caption w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm">
                 MiJersey
               </span>
-              <h1 className="font-display max-w-2xl text-4xl uppercase leading-[0.95] tracking-wide sm:text-6xl">
+              <h1 className="font-display max-w-2xl text-5xl uppercase leading-[0.92] tracking-wide sm:text-7xl">
                 {slide.headline}
               </h1>
               {slide.subheadline && (
