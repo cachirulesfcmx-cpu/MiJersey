@@ -6,6 +6,11 @@ export interface ProductLookupSummary {
   fromPrice: number | null;
   /** `compareAtPrice` real de la variante usada para `fromPrice` — para el badge de descuento en el home (nunca inventado). */
   compareAtPrice: number | null;
+  /** Promedio real de `Review.rating` (APPROVED) — `null` si el producto no tiene reseñas todavía, nunca se inventa. */
+  rating: number | null;
+  reviewCount: number;
+  /** Variante ACTIVE más barata — habilita "agregar al carrito" directo desde el home sin pasar por el PDP. */
+  defaultVariantId: string | null;
 }
 
 export interface CategoryLookupSummary {

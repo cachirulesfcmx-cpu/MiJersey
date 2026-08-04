@@ -1,6 +1,11 @@
+'use client';
+
 import type { PublicHomeSection } from '@mijersey/sdk';
 import Link from 'next/link';
+import { useState } from 'react';
 
+import { useCart } from '../../providers/cart-provider';
+import { StarRating } from '../ui/StarRating';
 import { NewsletterForm } from './NewsletterForm';
 
 /** Paleta cíclica para el grid de ligas/categorías — no representa colores oficiales de ninguna liga, solo variedad visual entre tarjetas. */
@@ -15,17 +20,17 @@ const CATEGORY_GRADIENTS = [
   'from-neutral-900 to-neutral-600',
 ];
 
-/** Paleta cíclica de fondos sólidos suaves detrás de la foto de cada producto — separa la
+/** Paleta cíclica de fondos saturados detrás de la foto de cada producto — separa la
     imagen del blanco de la tarjeta, sin representar ninguna marca/liga en particular. */
 const PRODUCT_BG = [
-  '#eef2ff',
-  '#fef2f2',
-  '#ecfdf5',
-  '#fffbeb',
-  '#f0f9ff',
-  '#fdf4ff',
-  '#f7fee7',
-  '#fef1f9',
+  '#6C7FE8',
+  '#5B4FCF',
+  '#4C8FE0',
+  '#7B5FD9',
+  '#3D7FD9',
+  '#8B5FE0',
+  '#5A6FE0',
+  '#6F5FD0',
 ];
 
 interface FeaturedItem {
@@ -35,6 +40,9 @@ interface FeaturedItem {
   imageUrl: string | null;
   fromPrice?: number | null;
   compareAtPrice?: number | null;
+  rating?: number | null;
+  reviewCount?: number;
+  defaultVariantId?: string | null;
 }
 
 function formatMxn(value: number): string {
@@ -73,6 +81,133 @@ const ENTITY_PATH_BY_TYPE: Record<string, string> = {
   FEATURED_COLLECTIONS: '/collections',
   FEATURED_BRANDS: '/brands',
 };
+
+/**
+ * Tarjeta de producto en slider horizontal — fondo saturado detrás de la foto, badge de
+ * descuento real, estrellas/reseñas reales (si existen) y un botón flotante de "agregar al
+ * carrito" directo (usa `defaultVariantId`, la variante ACTIVE más barata) para no obligar a
+ * pasar por el PDP, como en el patrón de referencia. Sin `defaultVariantId` el botón no se
+ * muestra -- nunca simula un agregado que no ocurrió.
+ */
+function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: string; bg: string }) {
+  const { addItem } = useCart();
+  const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle');
+
+  const hasDiscount =
+    typeof item.fromPrice === 'number' &&
+    typeof item.compareAtPrice === 'number' &&
+    item.compareAtPrice > item.fromPrice;
+  const percentOff = hasDiscount
+    ? Math.round(
+        (((item.compareAtPrice as number) - (item.fromPrice as number)) /
+          (item.compareAtPrice as number)) *
+          100,
+      )
+    : 0;
+
+  const handleQuickAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!item.defaultVariantId || status !== 'idle') return;
+    setStatus('adding');
+    try {
+      await addItem({ variantId: item.defaultVariantId, quantity: 1 });
+      setStatus('added');
+      setTimeout(() => setStatus('idle'), 1800);
+    } catch {
+      setStatus('idle');
+    }
+  };
+
+  return (
+    <Link
+      href={href}
+      className="group flex w-40 shrink-0 snap-start flex-col gap-2 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg sm:w-52"
+    >
+      <div
+        className="relative aspect-square w-full overflow-hidden rounded-xl"
+        style={{ background: bg }}
+      >
+        {hasDiscount && (
+          <span
+            className="badge-pop absolute left-2 top-2 z-10 animate-pulse"
+            style={{ background: 'var(--tf-danger)', color: 'white' }}
+          >
+            -{percentOff}% OFF
+          </span>
+        )}
+        {item.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            loading="lazy"
+            className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="h-full w-full" />
+        )}
+        {item.defaultVariantId && (
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            aria-label="Agregar al carrito"
+            disabled={status !== 'idle'}
+            className="absolute bottom-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
+            style={{ background: 'var(--tf-danger)' }}
+          >
+            {status === 'added' ? (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  d="M6 6h15l-1.5 9h-12z M6 6L5 3H2 M9 20a1 1 0 100-2 1 1 0 000 2zM18 20a1 1 0 100-2 1 1 0 000 2z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
+      <span className="truncate text-sm font-medium text-neutral-900">{item.name}</span>
+      {typeof item.rating === 'number' && (item.reviewCount ?? 0) > 0 && (
+        <div className="flex items-center gap-1.5">
+          <StarRating value={item.rating} size={13} />
+          <span className="tf-caption text-neutral-400">{item.reviewCount}</span>
+        </div>
+      )}
+      {typeof item.fromPrice === 'number' && (
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-arena-950 text-lg tracking-wide">
+            Desde {formatMxn(item.fromPrice)}
+          </span>
+          {hasDiscount && (
+            <span className="text-xs text-neutral-400 line-through">
+              {formatMxn(item.compareAtPrice as number)}
+            </span>
+          )}
+        </div>
+      )}
+    </Link>
+  );
+}
 
 export function HomeSectionRenderer({ section }: { section: PublicHomeSection }) {
   const c = section.configuration;
@@ -175,7 +310,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       if (list.length === 0) return null;
       const basePath = ENTITY_PATH_BY_TYPE[section.type] ?? '/';
       return (
-        <section className="tf-section flex flex-col gap-4 py-10 sm:gap-6 sm:py-14">
+        <section className="tf-section flex flex-col gap-4 py-8 sm:gap-6 sm:py-12">
           <div className="tf-container">
             {str(c.heading) && (
               <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
@@ -183,66 +318,15 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               </h2>
             )}
           </div>
-          <div className="tf-container grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5">
-            {list.map((item, index) => {
-              const hasDiscount =
-                typeof item.fromPrice === 'number' &&
-                typeof item.compareAtPrice === 'number' &&
-                item.compareAtPrice > item.fromPrice;
-              const percentOff = hasDiscount
-                ? Math.round(
-                    (((item.compareAtPrice as number) - (item.fromPrice as number)) /
-                      (item.compareAtPrice as number)) *
-                      100,
-                  )
-                : 0;
-              const bg = PRODUCT_BG[index % PRODUCT_BG.length];
-              return (
-                <Link
-                  key={item.id}
-                  href={`${basePath}/${item.slug}`}
-                  className="group flex flex-col gap-2 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg"
-                >
-                  <div
-                    className="relative aspect-square w-full overflow-hidden rounded-xl"
-                    style={{ background: bg }}
-                  >
-                    {hasDiscount && (
-                      <span
-                        className="badge-pop absolute left-2 top-2 z-10 animate-pulse"
-                        style={{ background: 'var(--tf-danger)', color: 'white' }}
-                      >
-                        -{percentOff}% OFF
-                      </span>
-                    )}
-                    {item.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        loading="lazy"
-                        className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="h-full w-full" />
-                    )}
-                  </div>
-                  <span className="truncate text-sm font-medium text-neutral-900">{item.name}</span>
-                  {typeof item.fromPrice === 'number' && (
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-display text-arena-950 text-lg tracking-wide">
-                        Desde {formatMxn(item.fromPrice)}
-                      </span>
-                      {hasDiscount && (
-                        <span className="text-xs text-neutral-400 line-through">
-                          {formatMxn(item.compareAtPrice as number)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:gap-5 sm:px-6">
+            {list.map((item, index) => (
+              <ProductSliderCard
+                key={item.id}
+                item={item}
+                href={`${basePath}/${item.slug}`}
+                bg={PRODUCT_BG[index % PRODUCT_BG.length] ?? '#6C7FE8'}
+              />
+            ))}
           </div>
         </section>
       );

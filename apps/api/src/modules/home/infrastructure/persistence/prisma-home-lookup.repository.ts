@@ -16,37 +16,53 @@ export class PrismaHomeLookupRepository implements HomeLookupPort {
 
   async findProductsByIds(ids: string[]): Promise<ProductLookupSummary[]> {
     if (ids.length === 0) return [];
-    const rows = await this.prisma.product.findMany({
-      where: { id: { in: ids }, status: 'ACTIVE', visibility: 'PUBLIC', deletedAt: null },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        variants: {
-          where: { status: 'ACTIVE' },
-          orderBy: { price: 'asc' },
-          take: 1,
-          select: { price: true, imageId: true, compareAtPrice: true },
+    const [rows, ratings] = await Promise.all([
+      this.prisma.product.findMany({
+        where: { id: { in: ids }, status: 'ACTIVE', visibility: 'PUBLIC', deletedAt: null },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          variants: {
+            where: { status: 'ACTIVE' },
+            orderBy: { price: 'asc' },
+            take: 1,
+            select: { id: true, price: true, imageId: true, compareAtPrice: true },
+          },
+          // Fallback a la galería del producto (ProductMedia, 015) -- `variant.imageId` es un
+          // override opcional (007) que el catálogo legacy importado nunca pobló.
+          media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
         },
-        // Fallback a la galería del producto (ProductMedia, 015) -- `variant.imageId` es un
-        // override opcional (007) que el catálogo legacy importado nunca pobló.
-        media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
-      },
-    });
+      }),
+      // Promedio/conteo real de reseñas aprobadas -- se muestran solo si existen, nunca se inventan.
+      this.prisma.review.groupBy({
+        by: ['productId'],
+        where: { productId: { in: ids }, status: 'APPROVED' },
+        _avg: { rating: true },
+        _count: { rating: true },
+      }),
+    ]);
     const byId = new Map(rows.map((row) => [row.id, row]));
+    const ratingById = new Map(ratings.map((r) => [r.productId, r]));
     return ids
       .map((id) => byId.get(id))
       .filter((row): row is (typeof rows)[number] => row !== undefined)
-      .map((row) => ({
-        id: row.id,
-        slug: row.slug,
-        name: row.name,
-        imageMediaId: row.variants[0]?.imageId ?? row.media[0]?.mediaId ?? null,
-        fromPrice: row.variants[0] ? Number(row.variants[0].price) : null,
-        compareAtPrice: row.variants[0]?.compareAtPrice
-          ? Number(row.variants[0].compareAtPrice)
-          : null,
-      }));
+      .map((row) => {
+        const rating = ratingById.get(row.id);
+        return {
+          id: row.id,
+          slug: row.slug,
+          name: row.name,
+          imageMediaId: row.variants[0]?.imageId ?? row.media[0]?.mediaId ?? null,
+          fromPrice: row.variants[0] ? Number(row.variants[0].price) : null,
+          compareAtPrice: row.variants[0]?.compareAtPrice
+            ? Number(row.variants[0].compareAtPrice)
+            : null,
+          rating: rating?._avg.rating ?? null,
+          reviewCount: rating?._count.rating ?? 0,
+          defaultVariantId: row.variants[0]?.id ?? null,
+        };
+      });
   }
 
   async findCategoriesByIds(ids: string[]): Promise<CategoryLookupSummary[]> {

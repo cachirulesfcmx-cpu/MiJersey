@@ -139,6 +139,9 @@ export class HomeEnrichmentService {
               imageUrl: url(p.imageMediaId),
               fromPrice: p.fromPrice,
               compareAtPrice: p.compareAtPrice,
+              rating: p.rating,
+              reviewCount: p.reviewCount,
+              defaultVariantId: p.defaultVariantId,
             })),
         };
         break;
