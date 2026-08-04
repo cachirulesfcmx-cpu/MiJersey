@@ -264,19 +264,24 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                   className={`group relative flex h-56 w-44 shrink-0 snap-start items-end overflow-hidden bg-gradient-to-b transition-transform duration-300 hover:-translate-y-2 sm:h-72 sm:w-60 ${gradient}`}
                   style={{ clipPath: 'polygon(12% 0, 100% 0, 88% 100%, 0 100%)' }}
                 >
-                  {item.imageUrl && (
+                  {item.imageUrl ? (
+                    // La imagen de categoría (logo de liga) ya trae su propio fondo y nombre --
+                    // se muestra a pantalla completa sin overlay ni texto duplicado encima.
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.imageUrl}
-                      alt=""
+                      alt={item.name}
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-500 group-hover:scale-110"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
+                  ) : (
+                    <>
+                      <div className="from-arena-950 absolute inset-0 bg-gradient-to-t via-black/10 to-transparent" />
+                      <span className="font-display relative z-10 w-full px-4 pb-6 text-center text-2xl uppercase leading-none tracking-wide text-white sm:text-4xl">
+                        {item.name}
+                      </span>
+                    </>
                   )}
-                  <div className="from-arena-950 absolute inset-0 bg-gradient-to-t via-black/10 to-transparent" />
-                  <span className="font-display relative z-10 w-full px-4 pb-6 text-center text-2xl uppercase leading-none tracking-wide text-white sm:text-4xl">
-                    {item.name}
-                  </span>
                 </Link>
               );
             })}
