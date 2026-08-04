@@ -83,6 +83,12 @@ export interface CollectionProductSummary {
   type: string;
   status: string;
   visibility: string;
+  imageUrl: string | null;
+  price: number | null;
+  compareAtPrice: number | null;
+  rating: number | null;
+  reviewCount: number;
+  defaultVariantId: string | null;
 }
 
 export interface CollectionWithProducts extends Collection {

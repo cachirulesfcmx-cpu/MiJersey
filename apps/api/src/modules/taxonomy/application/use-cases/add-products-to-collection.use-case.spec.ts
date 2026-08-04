@@ -39,6 +39,12 @@ function buildProduct(id: string): ProductSummary {
     type: 'PHYSICAL',
     status: 'ACTIVE',
     visibility: 'PUBLIC',
+    imageUrl: null,
+    price: null,
+    compareAtPrice: null,
+    rating: null,
+    reviewCount: 0,
+    defaultVariantId: null,
   };
 }
 

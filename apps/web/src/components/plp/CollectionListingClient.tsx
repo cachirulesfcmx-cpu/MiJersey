@@ -6,6 +6,7 @@ import { EmptyState, Pagination, Skeleton } from '@mijersey/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
+import { VolumeDiscountProgress } from '../home/VolumeDiscountProgress';
 import { Reveal } from '../ui/Reveal';
 import { ProductGrid } from './ProductGrid';
 import { useProductListingUrlState } from './use-product-listing-url-state';
@@ -49,6 +50,8 @@ export function CollectionListingClient({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col gap-4">
       {error && <p className="text-danger-600 text-sm">{error}</p>}
+
+      <VolumeDiscountProgress variant="inline" />
 
       <div className="flex justify-end">
         <ViewToggle view={state.view} onChange={(view) => update({ view })} />

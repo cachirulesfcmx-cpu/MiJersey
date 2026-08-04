@@ -1,18 +1,40 @@
 'use client';
 
-import type { ProductSearchSummary, PublicProduct } from '@mijersey/sdk';
+import type { ProductSearchSummary, PublicProduct, ReviewSummary } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { VolumeDiscountProgress } from '../../../components/home/VolumeDiscountProgress';
 import type { BreadcrumbItem } from '../../../components/plp/Breadcrumbs';
 import { Breadcrumbs } from '../../../components/plp/Breadcrumbs';
 import { ProductGrid } from '../../../components/plp/ProductGrid';
+import { FitGuideSlider } from '../../../components/products/FitGuideSlider';
 import { ProductReviews } from '../../../components/products/ProductReviews';
+import { SecretJerseyUpsell } from '../../../components/products/SecretJerseyUpsell';
 import { Reveal } from '../../../components/ui/Reveal';
+import { StarRating } from '../../../components/ui/StarRating';
 import { WishlistButton } from '../../../components/wishlist/WishlistButton';
 import { env } from '../../../config/env';
 import { useCart } from '../../../providers/cart-provider';
+
+/** Misma paleta saturada del home/PLP -- fondo detrás de la galería en vez de gris liso. Determinista por id para que no "parpadee" de color entre visitas/revalidaciones. */
+const PRODUCT_BG = [
+  '#6C7FE8',
+  '#5B4FCF',
+  '#4C8FE0',
+  '#7B5FD9',
+  '#3D7FD9',
+  '#8B5FE0',
+  '#5A6FE0',
+  '#6F5FD0',
+];
+
+function bgForProduct(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return PRODUCT_BG[hash % PRODUCT_BG.length] ?? '#6C7FE8';
+}
 
 function initialSelection(product: PublicProduct): Record<string, string> {
   const seedVariant = product.variants[0];
@@ -61,6 +83,7 @@ export default function ProductDetailClient({
   const [cartError, setCartError] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
 
   const activeVariant = useMemo(
     () => findMatchingVariant(product, selection),
@@ -76,6 +99,13 @@ export default function ProductDetailClient({
       .getRelatedProducts(product.slug)
       .then((result) => setRelated(result.items))
       .catch(() => setRelated([]));
+  }, [client, product.slug]);
+
+  useEffect(() => {
+    client
+      .listProductReviews(product.slug)
+      .then((result) => setReviewSummary(result.summary))
+      .catch(() => setReviewSummary(null));
   }, [client, product.slug]);
 
   const images =
@@ -113,7 +143,10 @@ export default function ProductDetailClient({
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
         <Reveal className="flex flex-col gap-3">
-          <div className="aspect-square overflow-hidden rounded-3xl bg-neutral-50 shadow-sm">
+          <div
+            className="aspect-square overflow-hidden rounded-3xl shadow-sm"
+            style={{ background: bgForProduct(product.id) }}
+          >
             {mainImage && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={mainImage} alt={product.name} className="h-full w-full object-cover" />
@@ -142,6 +175,15 @@ export default function ProductDetailClient({
 
         <Reveal delayMs={100} className="flex flex-col gap-5">
           {product.brand && <span className="label-arena">{product.brand.name}</span>}
+          {reviewSummary && reviewSummary.count > 0 && (
+            <a href="#reseñas" className="flex items-center gap-2">
+              <StarRating value={reviewSummary.average} size={16} />
+              <span className="text-sm text-neutral-500">
+                {reviewSummary.average.toFixed(1)} · {reviewSummary.count}{' '}
+                {reviewSummary.count === 1 ? 'reseña' : 'reseñas'}
+              </span>
+            </a>
+          )}
           <h1 className="section-heading">{product.name}</h1>
           {product.shortDescription && (
             <p className="text-neutral-600">{product.shortDescription}</p>
@@ -153,11 +195,20 @@ export default function ProductDetailClient({
                 <span className="font-display text-pop-600 text-3xl tracking-wide">
                   {formatPrice(activeVariant.price)}
                 </span>
-                {activeVariant.compareAtPrice && (
-                  <span className="text-neutral-400 line-through">
-                    {formatPrice(activeVariant.compareAtPrice)}
-                  </span>
-                )}
+                {activeVariant.compareAtPrice &&
+                  activeVariant.compareAtPrice > activeVariant.price && (
+                    <>
+                      <span className="text-neutral-400 line-through">
+                        {formatPrice(activeVariant.compareAtPrice)}
+                      </span>
+                      <span
+                        className="badge-pop"
+                        style={{ background: 'var(--tf-success)', color: 'white' }}
+                      >
+                        Ahorras {formatPrice(activeVariant.compareAtPrice - activeVariant.price)}
+                      </span>
+                    </>
+                  )}
               </>
             ) : (
               <span className="text-sm text-neutral-500">Combinación no disponible</span>
@@ -185,6 +236,8 @@ export default function ProductDetailClient({
               </div>
             </div>
           ))}
+
+          <FitGuideSlider />
 
           <div className="flex items-center gap-3">
             <span className="label-arena">Cantidad</span>
@@ -229,6 +282,10 @@ export default function ProductDetailClient({
               <WishlistButton productId={product.id} variantId={activeVariant.id} />
             )}
           </div>
+
+          <VolumeDiscountProgress variant="inline" />
+
+          <SecretJerseyUpsell currentProductSlug={product.slug} />
 
           {product.specifications.length > 0 && (
             <div className="border-t border-neutral-200 pt-4">

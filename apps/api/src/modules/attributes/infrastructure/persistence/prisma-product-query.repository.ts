@@ -164,7 +164,7 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
             where: { status: 'ACTIVE' },
             orderBy: { price: 'asc' },
             take: 1,
-            select: { price: true, compareAtPrice: true, imageId: true },
+            select: { id: true, price: true, compareAtPrice: true, imageId: true },
           },
           // Imagen real del producto: la galería (ProductMedia, 015) es la fuente primaria --
           // `variant.imageId` es solo un override opcional por variante (007) que el catálogo
@@ -187,10 +187,22 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
     );
     const mediaUrlById = new Map(mediaEntries.map(([id, resolved]) => [id, resolved?.url ?? null]));
 
+    const productIds = items.map((product) => product.id);
+    const ratings = productIds.length
+      ? await this.prisma.review.groupBy({
+          by: ['productId'],
+          where: { productId: { in: productIds }, status: 'APPROVED' },
+          _avg: { rating: true },
+          _count: { rating: true },
+        })
+      : [];
+    const ratingById = new Map(ratings.map((row) => [row.productId, row]));
+
     return {
       items: items.map((product) => {
         const cheapestVariant = product.variants[0];
         const imageId = cheapestVariant?.imageId ?? product.media[0]?.mediaId ?? null;
+        const rating = ratingById.get(product.id);
         return {
           id: product.id,
           sku: product.sku,
@@ -204,6 +216,9 @@ export class PrismaProductQueryRepository implements ProductQueryPort {
           compareAtPrice: cheapestVariant?.compareAtPrice
             ? Number(cheapestVariant.compareAtPrice)
             : null,
+          rating: rating?._avg.rating ?? null,
+          reviewCount: rating?._count.rating ?? 0,
+          defaultVariantId: cheapestVariant?.id ?? null,
         };
       }),
       total,

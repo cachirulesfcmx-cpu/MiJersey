@@ -6,6 +6,7 @@ import { EmptyState, Pagination, Skeleton } from '@mijersey/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
+import { VolumeDiscountProgress } from '../home/VolumeDiscountProgress';
 import { SearchBox } from '../search/SearchBox';
 import { Reveal } from '../ui/Reveal';
 import { ActiveFilters } from './ActiveFilters';
@@ -130,6 +131,8 @@ export function ProductListingClient({ scope, showSearchBox = false }: ProductLi
 
       <div className="flex flex-1 flex-col gap-4">
         {error && <p className="text-danger-600 text-sm">{error}</p>}
+
+        <VolumeDiscountProgress variant="inline" />
 
         {hasActiveFilters && (
           <ActiveFilters

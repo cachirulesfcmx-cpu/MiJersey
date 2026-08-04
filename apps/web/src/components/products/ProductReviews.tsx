@@ -84,7 +84,7 @@ export function ProductReviews({ slug }: { slug: string }) {
   const hasReviews = (summary?.count ?? 0) > 0;
 
   return (
-    <section className="border-t border-neutral-200 pt-8">
+    <section id="reseñas" className="border-t border-neutral-200 pt-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="section-heading text-xl sm:text-2xl">Reseñas</h2>
         {!showForm && (

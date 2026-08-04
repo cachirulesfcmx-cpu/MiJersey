@@ -123,6 +123,9 @@ export interface ProductSearchSummary {
   imageUrl: string | null;
   price: number | null;
   compareAtPrice: number | null;
+  rating: number | null;
+  reviewCount: number;
+  defaultVariantId: string | null;
 }
 
 /** Alcance opcional reutilizado por categorías/marcas/búsqueda (014) — el mismo motor de listados sirve a los tres. */
