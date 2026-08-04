@@ -38,6 +38,7 @@ function toHeroSlide(section: PublicHomeSection): HeroSlide | null {
   return {
     id: section.id,
     imageUrl,
+    videoUrl: typeof c.videoUrl === 'string' ? c.videoUrl : null,
     headline,
     subheadline: typeof c.subheadline === 'string' ? c.subheadline : null,
     ctaLabel: typeof c.ctaLabel === 'string' ? c.ctaLabel : null,

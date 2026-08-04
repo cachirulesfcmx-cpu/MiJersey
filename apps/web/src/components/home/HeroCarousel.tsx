@@ -1,15 +1,69 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface HeroSlide {
   id: string;
   imageUrl: string;
+  /** Video de fondo opcional -- si viene, se reproduce en loop (mudo) sobre imageUrl como poster/fallback. */
+  videoUrl: string | null;
   headline: string;
   subheadline: string | null;
   ctaLabel: string | null;
   ctaUrl: string | null;
+}
+
+/** Reproduce/pausa el video solo mientras su slide esté activo -- evita que varios clips corran a la vez en segundo plano. */
+function HeroSlideMedia({
+  slide,
+  isActive,
+  eager,
+}: {
+  slide: HeroSlide;
+  isActive: boolean;
+  eager: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isActive) {
+      video.currentTime = 0;
+      void video.play().catch(() => undefined);
+    } else {
+      video.pause();
+    }
+  }, [isActive]);
+
+  if (slide.videoUrl) {
+    return (
+      <video
+        ref={videoRef}
+        src={slide.videoUrl}
+        poster={slide.imageUrl}
+        muted
+        loop
+        playsInline
+        autoPlay={isActive}
+        preload={eager ? 'auto' : 'metadata'}
+        className="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-[6000ms] ease-linear"
+        style={{ transform: isActive ? 'scale(1.08)' : 'scale(1.0)' }}
+      />
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={slide.imageUrl}
+      alt={slide.headline}
+      loading={eager ? 'eager' : 'lazy'}
+      className="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-[6000ms] ease-linear"
+      style={{ transform: isActive ? 'scale(1.08)' : 'scale(1.0)' }}
+    />
+  );
 }
 
 const AUTOPLAY_MS = 6000;
@@ -56,13 +110,10 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
               pointerEvents: index === active ? 'auto' : 'none',
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.imageUrl}
-              alt={slide.headline}
-              loading={priority && index === 0 ? 'eager' : 'lazy'}
-              className="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-[6000ms] ease-linear"
-              style={{ transform: index === active ? 'scale(1.08)' : 'scale(1.0)' }}
+            <HeroSlideMedia
+              slide={slide}
+              isActive={index === active}
+              eager={priority && index === 0}
             />
             <div className="from-arena-950 via-arena-950/50 absolute inset-0 bg-gradient-to-t to-transparent" />
             <div className="from-arena-950/40 absolute inset-0 bg-gradient-to-r to-transparent sm:to-transparent" />

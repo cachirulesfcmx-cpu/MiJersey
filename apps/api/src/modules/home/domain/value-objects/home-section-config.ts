@@ -3,6 +3,8 @@ import { HomeSectionType } from './home-section-enums';
 export interface HeroBannerConfig {
   imageMediaId: string;
   mobileImageMediaId?: string;
+  /** Video de fondo opcional (MediaAsset type=VIDEO) -- si está presente, el frontend lo reproduce en loop y usa imageMediaId como poster/fallback. */
+  videoMediaId?: string;
   headline: string;
   subheadline?: string;
   ctaLabel?: string;
@@ -166,7 +168,9 @@ export function extractMediaIds(
   switch (type) {
     case HomeSectionType.HERO_BANNER: {
       const c = configuration as Partial<HeroBannerConfig>;
-      return [c.imageMediaId, c.mobileImageMediaId].filter((id): id is string => !!id);
+      return [c.imageMediaId, c.mobileImageMediaId, c.videoMediaId].filter(
+        (id): id is string => !!id,
+      );
     }
     case HomeSectionType.BANNER_GRID: {
       const c = configuration as Partial<BannerGridConfig>;

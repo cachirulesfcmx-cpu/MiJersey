@@ -107,6 +107,7 @@ export class HomeEnrichmentService {
         configuration = {
           imageUrl: url(cfg.imageMediaId),
           mobileImageUrl: url(cfg.mobileImageMediaId),
+          videoUrl: url(cfg.videoMediaId),
           headline: cfg.headline,
           subheadline: cfg.subheadline ?? null,
           ctaLabel: cfg.ctaLabel ?? null,
