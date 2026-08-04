@@ -15,6 +15,19 @@ const CATEGORY_GRADIENTS = [
   'from-neutral-900 to-neutral-600',
 ];
 
+/** Paleta cíclica de fondos sólidos suaves detrás de la foto de cada producto — separa la
+    imagen del blanco de la tarjeta, sin representar ninguna marca/liga en particular. */
+const PRODUCT_BG = [
+  '#eef2ff',
+  '#fef2f2',
+  '#ecfdf5',
+  '#fffbeb',
+  '#f0f9ff',
+  '#fdf4ff',
+  '#f7fee7',
+  '#fef1f9',
+];
+
 interface FeaturedItem {
   id: string;
   slug: string;
@@ -80,14 +93,15 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               {str(c.heading) || 'Compra por liga'}
             </h2>
           </div>
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:px-6">
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
             {list.map((item, index) => {
               const gradient = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
               return (
                 <Link
                   key={item.id}
                   href={`/categories/${item.slug}`}
-                  className={`group relative flex h-40 w-56 shrink-0 snap-start items-end overflow-hidden rounded-2xl bg-gradient-to-br p-5 transition-transform duration-300 hover:-translate-y-1 sm:h-48 sm:w-72 ${gradient}`}
+                  className={`group relative flex h-28 w-40 shrink-0 snap-start items-center justify-center overflow-hidden bg-gradient-to-br transition-transform duration-300 hover:-translate-y-1 sm:h-36 sm:w-52 ${gradient}`}
+                  style={{ clipPath: 'polygon(10% 0, 100% 0, 90% 100%, 0 100%)' }}
                 >
                   {item.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -98,7 +112,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                       className="absolute inset-0 h-full w-full object-cover opacity-30 transition-opacity duration-300 group-hover:opacity-40"
                     />
                   )}
-                  <span className="font-display relative z-10 text-xl uppercase leading-tight tracking-wide text-white sm:text-2xl">
+                  <span className="font-display relative z-10 px-4 text-center text-base uppercase leading-tight tracking-wide text-white transition-transform duration-300 group-hover:scale-105 sm:text-xl">
                     {item.name}
                   </span>
                 </Link>
@@ -170,7 +184,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             )}
           </div>
           <div className="tf-container grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5">
-            {list.map((item) => {
+            {list.map((item, index) => {
               const hasDiscount =
                 typeof item.fromPrice === 'number' &&
                 typeof item.compareAtPrice === 'number' &&
@@ -182,19 +196,23 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                       100,
                   )
                 : 0;
+              const bg = PRODUCT_BG[index % PRODUCT_BG.length];
               return (
                 <Link
                   key={item.id}
                   href={`${basePath}/${item.slug}`}
-                  className="group flex flex-col gap-2 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                  className="group flex flex-col gap-2 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg"
                 >
-                  <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-50">
+                  <div
+                    className="relative aspect-square w-full overflow-hidden rounded-xl"
+                    style={{ background: bg }}
+                  >
                     {hasDiscount && (
                       <span
-                        className="badge-pop absolute left-2 top-2 z-10"
+                        className="badge-pop absolute left-2 top-2 z-10 animate-pulse"
                         style={{ background: 'var(--tf-danger)', color: 'white' }}
                       >
-                        -{percentOff}%
+                        -{percentOff}% OFF
                       </span>
                     )}
                     {item.imageUrl ? (
@@ -203,7 +221,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                         src={item.imageUrl}
                         alt={item.name}
                         loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
                       <div className="h-full w-full" />

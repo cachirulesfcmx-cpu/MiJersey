@@ -4,8 +4,10 @@ import type { Metadata } from 'next';
 
 import type { HeroSlide } from '../components/home/HeroCarousel';
 import { HeroCarousel } from '../components/home/HeroCarousel';
+import { HomeFaq } from '../components/home/HomeFaq';
 import { HomeReviews } from '../components/home/HomeReviews';
 import { HomeSectionRenderer } from '../components/home/HomeSectionRenderer';
+import { VolumeDiscountProgress } from '../components/home/VolumeDiscountProgress';
 import { Reveal } from '../components/ui/Reveal';
 import { env } from '../config/env';
 
@@ -98,7 +100,13 @@ export default async function HomePage() {
         ),
       )}
       <Reveal>
+        <VolumeDiscountProgress />
+      </Reveal>
+      <Reveal>
         <HomeReviews />
+      </Reveal>
+      <Reveal>
+        <HomeFaq />
       </Reveal>
     </main>
   );

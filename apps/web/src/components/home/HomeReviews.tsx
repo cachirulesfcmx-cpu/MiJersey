@@ -26,12 +26,20 @@ export function HomeReviews() {
 
   if (!reviews || reviews.length === 0) return null;
 
+  const average = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
   return (
     <section className="tf-section py-10 sm:py-14">
-      <div className="tf-container flex items-end justify-between gap-4 pb-6">
+      <div className="tf-container flex flex-col gap-3 pb-6 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
           Lo que dicen nuestros clientes
         </h2>
+        <div className="flex items-center gap-2">
+          <StarRating value={average} size={18} />
+          <span className="text-sm font-medium text-neutral-700">
+            {average.toFixed(1)} · {reviews.length} reseña{reviews.length === 1 ? '' : 's'}
+          </span>
+        </div>
       </div>
       <div className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:px-6">
         {reviews.map((review) => (

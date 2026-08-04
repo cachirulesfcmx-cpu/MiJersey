@@ -44,43 +44,57 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
 
   return (
     <section className="bg-arena-950 relative flex h-[78vh] min-h-[440px] w-full items-end overflow-hidden sm:h-[85vh]">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          aria-hidden={index !== active}
-          className="absolute inset-0 transition-opacity duration-700 ease-out"
-          style={{
-            opacity: index === active ? 1 : 0,
-            pointerEvents: index === active ? 'auto' : 'none',
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={slide.imageUrl}
-            alt={slide.headline}
-            loading={priority && index === 0 ? 'eager' : 'lazy'}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="from-arena-950 via-arena-950/50 absolute inset-0 bg-gradient-to-t to-transparent" />
-          <div className="from-arena-950/40 absolute inset-0 bg-gradient-to-r to-transparent sm:to-transparent" />
-          <div className="relative z-10 flex flex-col gap-5 p-6 text-white sm:p-16">
-            <span className="tf-caption w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm">
-              MiJersey
-            </span>
-            <h1 className="font-display max-w-3xl text-5xl uppercase leading-[0.95] tracking-wide sm:text-7xl">
-              {slide.headline}
-            </h1>
-            {slide.subheadline && (
-              <p className="max-w-xl text-base text-white/80 sm:text-lg">{slide.subheadline}</p>
-            )}
-            {slide.ctaLabel && slide.ctaUrl && (
-              <Link href={slide.ctaUrl} className="btn-pop mt-2 w-fit">
-                {slide.ctaLabel}
-              </Link>
-            )}
+      {slides.map((slide, index) => {
+        const offset = index - active;
+        return (
+          <div
+            key={slide.id}
+            aria-hidden={index !== active}
+            className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.32,0.08,0.16,1)]"
+            style={{
+              transform: `translateX(${offset * 100}%)`,
+              pointerEvents: index === active ? 'auto' : 'none',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={slide.imageUrl}
+              alt={slide.headline}
+              loading={priority && index === 0 ? 'eager' : 'lazy'}
+              className="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-[6000ms] ease-linear"
+              style={{ transform: index === active ? 'scale(1.08)' : 'scale(1.0)' }}
+            />
+            <div className="from-arena-950 via-arena-950/50 absolute inset-0 bg-gradient-to-t to-transparent" />
+            <div className="from-arena-950/40 absolute inset-0 bg-gradient-to-r to-transparent sm:to-transparent" />
+            <div
+              className="relative z-10 flex flex-col gap-5 p-6 text-white transition-all duration-700 sm:p-16"
+              style={{
+                opacity: index === active ? 1 : 0,
+                transform: index === active ? 'translateY(0)' : 'translateY(12px)',
+                transitionDelay: index === active ? '200ms' : '0ms',
+              }}
+            >
+              <span className="tf-caption w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm">
+                MiJersey
+              </span>
+              <h1 className="font-display max-w-3xl text-5xl uppercase leading-[0.95] tracking-wide sm:text-7xl">
+                {slide.headline}
+              </h1>
+              {slide.subheadline && (
+                <p className="max-w-xl text-base text-white/80 sm:text-lg">{slide.subheadline}</p>
+              )}
+              {slide.ctaLabel && slide.ctaUrl && (
+                <Link
+                  href={slide.ctaUrl}
+                  className="btn-pop mt-2 w-fit transition-transform duration-200 hover:scale-105 active:scale-95"
+                >
+                  {slide.ctaLabel}
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {hasMultiple && (
         <>
