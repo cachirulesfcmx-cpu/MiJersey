@@ -32,9 +32,21 @@ const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
 const leagueCount = Number(args.leagues ?? 3);
 
-const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/];
+const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/, /-demo$/];
+// Productos de prueba insertados a mano (ej. "Jersey Local - Equipo Águilas (Demo)") -- sus
+// imágenes apuntan al disco local efímero de Railway (/uploads/...), nunca migradas a R2, así
+// que siempre se ven rotas en producción. Se excluyen por nombre además de por slug porque no
+// siguen ningún patrón de slug consistente.
+const EXCLUDE_NAME_PATTERNS = [/\(demo\)/i, /producto de prueba/i];
 const MIN_BESTSELLERS_TO_CLAIM = 4;
 const ROW_SIZE = 10;
+
+function isExcludedProduct(product) {
+  return (
+    EXCLUDE_SLUG_PATTERNS.some((re) => re.test(product.slug)) ||
+    EXCLUDE_NAME_PATTERNS.some((re) => re.test(product.name))
+  );
+}
 
 const PrismaClient = loadPrismaClient();
 const prisma = new PrismaClient();
@@ -71,10 +83,10 @@ async function fillBestsellersOrNewArrivals(prisma, dryRun) {
     const productIds = sales.map((s) => s.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, status: 'ACTIVE', visibility: 'PUBLIC' },
-      select: { id: true, name: true },
+      select: { id: true, slug: true, name: true },
     });
     const byId = new Map(products.map((p) => [p.id, p]));
-    const ordered = productIds.filter((id) => byId.has(id));
+    const ordered = productIds.filter((id) => byId.has(id) && !isExcludedProduct(byId.get(id)));
 
     console.log(`[MAS VENDIDOS] ${ordered.length} producto(s) con ventas reales pagadas:`);
     for (const id of ordered) {
@@ -96,9 +108,7 @@ async function fillBestsellersOrNewArrivals(prisma, dryRun) {
     take: ROW_SIZE * 2,
     select: { id: true, slug: true, name: true },
   });
-  const filtered = recent
-    .filter((p) => !EXCLUDE_SLUG_PATTERNS.some((re) => re.test(p.slug)))
-    .slice(0, ROW_SIZE);
+  const filtered = recent.filter((p) => !isExcludedProduct(p)).slice(0, ROW_SIZE);
   console.log(`[RECIEN AGREGADOS] ${filtered.length} producto(s):`);
   for (const p of filtered) console.log(`  - ${p.name}`);
   await upsertProductsSection(
@@ -145,9 +155,7 @@ async function fillLeagueRows(prisma, jerseysCategory, leagueCount, dryRun) {
       take: ROW_SIZE,
       select: { id: true, slug: true, name: true },
     });
-    const filtered = products.filter(
-      (p) => !EXCLUDE_SLUG_PATTERNS.some((re) => re.test(p.slug)),
-    );
+    const filtered = products.filter((p) => !isExcludedProduct(p));
     if (filtered.length === 0) {
       console.log(`  - ${league.name}: 0 producto(s) elegibles, se omite.`);
       continue;

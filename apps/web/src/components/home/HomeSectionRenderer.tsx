@@ -122,15 +122,15 @@ function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: strin
   return (
     <Link
       href={href}
-      className="group flex w-40 shrink-0 snap-start flex-col gap-2 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg sm:w-52"
+      className="group flex w-56 shrink-0 snap-start flex-col gap-2 transition-transform duration-300 hover:-translate-y-1.5 sm:w-72"
     >
       <div
-        className="relative aspect-square w-full overflow-hidden rounded-xl"
+        className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl"
         style={{ background: bg }}
       >
         {hasDiscount && (
           <span
-            className="badge-pop absolute left-2 top-2 z-10 animate-pulse"
+            className="badge-pop absolute left-3 top-3 z-10 animate-pulse"
             style={{ background: 'var(--tf-danger)', color: 'white' }}
           >
             -{percentOff}% OFF
@@ -142,7 +142,7 @@ function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: strin
             src={item.imageUrl}
             alt={item.name}
             loading="lazy"
-            className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
           <div className="h-full w-full" />
@@ -153,7 +153,7 @@ function ProductSliderCard({ item, href, bg }: { item: FeaturedItem; href: strin
             onClick={handleQuickAdd}
             aria-label="Agregar al carrito"
             disabled={status !== 'idle'}
-            className="absolute bottom-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
+            className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
             style={{ background: 'var(--tf-danger)' }}
           >
             {status === 'added' ? (
@@ -318,7 +318,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               </h2>
             )}
           </div>
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:gap-5 sm:px-6">
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
             {list.map((item, index) => (
               <ProductSliderCard
                 key={item.id}

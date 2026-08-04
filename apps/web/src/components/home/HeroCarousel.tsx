@@ -38,6 +38,9 @@ function HeroSlideMedia({
   }, [isActive]);
 
   if (slide.videoUrl) {
+    // Sin el zoom Ken Burns de las imágenes: el video ya se ve forzado a cubrir un marco mucho
+    // más ancho que su propio cuadro (fuente cuadrada) y agregarle un 8% más de zoom lo hacía
+    // ver aún más recortado/borroso de lo necesario.
     return (
       <video
         ref={videoRef}
@@ -48,8 +51,7 @@ function HeroSlideMedia({
         playsInline
         autoPlay={isActive}
         preload={eager ? 'auto' : 'metadata'}
-        className="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-[6000ms] ease-linear"
-        style={{ transform: isActive ? 'scale(1.08)' : 'scale(1.0)' }}
+        className="absolute inset-0 h-full w-full object-cover"
       />
     );
   }
@@ -97,14 +99,18 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
   if (slides.length === 0) return null;
 
   return (
-    <section className="bg-arena-950 relative flex h-[78vh] min-h-[440px] w-full items-end overflow-hidden sm:h-[85vh]">
+    <section className="bg-arena-950 relative flex h-[50vh] min-h-[380px] w-full items-end overflow-hidden sm:h-[62vh]">
       {slides.map((slide, index) => {
         const offset = index - active;
         return (
           <div
             key={slide.id}
             aria-hidden={index !== active}
-            className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.32,0.08,0.16,1)]"
+            // flex + justify-end es necesario aquí mismo (no solo en el <section> padre): este div
+            // está posicionado con `absolute inset-0`, así que queda fuera del flujo flex del
+            // section y el `items-end` de arriba nunca le aplicaba -- el texto quedaba pegado
+            // arriba en vez de abajo.
+            className="absolute inset-0 flex h-full flex-col justify-end transition-transform duration-700 ease-[cubic-bezier(0.32,0.08,0.16,1)]"
             style={{
               transform: `translateX(${offset * 100}%)`,
               pointerEvents: index === active ? 'auto' : 'none',
@@ -128,7 +134,7 @@ export function HeroCarousel({ slides, priority }: { slides: HeroSlide[]; priori
               <span className="tf-caption w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm">
                 MiJersey
               </span>
-              <h1 className="font-display max-w-3xl text-5xl uppercase leading-[0.95] tracking-wide sm:text-7xl">
+              <h1 className="font-display max-w-2xl text-4xl uppercase leading-[0.95] tracking-wide sm:text-6xl">
                 {slide.headline}
               </h1>
               {slide.subheadline && (

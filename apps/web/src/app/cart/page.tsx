@@ -3,10 +3,12 @@
 import Link from 'next/link';
 
 import { CartItemRow } from '../../components/cart/CartItemRow';
+import { CartRecommendations } from '../../components/cart/CartRecommendations';
 import { CouponBox } from '../../components/cart/CouponBox';
 import { DiscountSummary } from '../../components/cart/DiscountSummary';
 import { OrderSummary } from '../../components/cart/OrderSummary';
 import { PromotionBanner } from '../../components/cart/PromotionBanner';
+import { VolumeDiscountProgress } from '../../components/home/VolumeDiscountProgress';
 import { Breadcrumbs } from '../../components/plp/Breadcrumbs';
 import { Reveal } from '../../components/ui/Reveal';
 import { useCart } from '../../providers/cart-provider';
@@ -37,29 +39,37 @@ export default function CartPage() {
           <Link href="/search" className="btn-pop">
             Ir a comprar
           </Link>
+          <div className="mt-4 w-full">
+            <CartRecommendations excludeProductIds={[]} />
+          </div>
         </div>
       ) : (
-        <Reveal className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="flex flex-col gap-3 md:col-span-2">
-            {cart.items.map((item) => (
-              <CartItemRow
-                key={item.id}
-                item={item}
-                onUpdateQuantity={updateItem}
-                onRemove={removeItem}
-              />
-            ))}
-          </div>
+        <>
+          <Reveal className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="flex flex-col gap-3 md:col-span-2">
+              {cart.items.map((item) => (
+                <CartItemRow
+                  key={item.id}
+                  item={item}
+                  onUpdateQuantity={updateItem}
+                  onRemove={removeItem}
+                />
+              ))}
+            </div>
 
-          <div className="flex flex-col gap-4">
-            <OrderSummary cart={cart} />
-            <CouponBox coupon={cart.coupon} onApply={applyCoupon} onRemove={removeCoupon} />
-            {sessionId && <DiscountSummary sessionId={sessionId} />}
-            <Link href="/checkout" className="btn-pop">
-              Ir a pagar
-            </Link>
-          </div>
-        </Reveal>
+            <div className="flex flex-col gap-4">
+              <VolumeDiscountProgress variant="inline" />
+              <OrderSummary cart={cart} />
+              <CouponBox coupon={cart.coupon} onApply={applyCoupon} onRemove={removeCoupon} />
+              {sessionId && <DiscountSummary sessionId={sessionId} />}
+              <Link href="/checkout" className="btn-pop">
+                Ir a pagar
+              </Link>
+            </div>
+          </Reveal>
+
+          <CartRecommendations excludeProductIds={cart.items.map((item) => item.productId)} />
+        </>
       )}
     </main>
   );

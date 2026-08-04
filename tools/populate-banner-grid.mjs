@@ -24,7 +24,8 @@ const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
 const bannerCount = Number(args.count ?? 6);
 
-const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/];
+const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/, /-demo$/];
+const EXCLUDE_NAME_PATTERNS = [/\(demo\)/i, /producto de prueba/i];
 
 const PrismaClient = loadPrismaClient();
 const prisma = new PrismaClient();
@@ -53,16 +54,26 @@ try {
         take: 1,
         select: { imageId: true },
       },
+      // La galería (ProductMedia) es la fuente PRIMARIA de imagen en este catálogo legacy --
+      // variant.imageId es solo un override opcional que el import nunca pobló. Mirar solo
+      // variant.imageId (como hacía este script antes) deja `withImage` en 0 casi siempre, que
+      // es exactamente por lo que BANNER_GRID nunca se poblaba en producción.
+      media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
     },
   });
 
   const withImage = candidates
     .filter((product) => !EXCLUDE_SLUG_PATTERNS.some((pattern) => pattern.test(product.slug)))
-    .filter((product) => Boolean(product.variants[0]?.imageId));
+    .filter((product) => !EXCLUDE_NAME_PATTERNS.some((pattern) => pattern.test(product.name)))
+    .map((product) => ({
+      ...product,
+      imageMediaId: product.variants[0]?.imageId ?? product.media[0]?.mediaId ?? null,
+    }))
+    .filter((product) => Boolean(product.imageMediaId));
 
   if (withImage.length === 0) {
     fail(
-      'Ningun producto de "jerseys" tiene imagen en su variante mas barata -- revisa que el import de imagenes haya corrido bien.',
+      'Ningun producto de "jerseys" tiene imagen (ni en su variante ni en su galeria) -- revisa que el import de imagenes haya corrido bien.',
     );
   }
 
@@ -73,7 +84,7 @@ try {
   }
 
   const banners = chosen.map((product) => ({
-    imageMediaId: product.variants[0].imageId,
+    imageMediaId: product.imageMediaId,
     title: product.name,
     linkUrl: `/products/${product.slug}`,
   }));

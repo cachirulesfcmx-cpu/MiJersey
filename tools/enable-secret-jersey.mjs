@@ -58,6 +58,11 @@ try {
         take: 1,
         select: { price: true, imageId: true },
       },
+      // Igual que populate-banner-grid.mjs: la galería es la fuente primaria de imagen en este
+      // catálogo legacy, variant.imageId casi nunca está poblado. Mirar solo variant.imageId
+      // dejaba esta sección con imageMediaId null (invisible en el home, ver IMAGE_TEXT en
+      // HomeSectionRenderer que se auto-oculta sin imageUrl).
+      media: { orderBy: { sortOrder: 'asc' }, take: 1, select: { mediaId: true } },
     },
   });
 
@@ -69,10 +74,14 @@ try {
     );
   }
 
-  const withImage = candidates.filter((product) => product.variants[0]?.imageId);
-  const chosen = withImage[0] ?? candidates[0];
+  const withImageMediaId = candidates.map((product) => ({
+    ...product,
+    imageMediaId: product.variants[0]?.imageId ?? product.media[0]?.mediaId ?? null,
+  }));
+  const withImage = withImageMediaId.filter((product) => product.imageMediaId);
+  const chosen = withImage[0] ?? withImageMediaId[0];
   console.log(`Candidatos "secret-jersey-*" encontrados: ${candidates.length}`);
-  console.log(`Elegido para destacar: "${chosen.name}" (${chosen.slug})${withImage[0] ? '' : ' -- sin imagen en su variante mas barata'}`);
+  console.log(`Elegido para destacar: "${chosen.name}" (${chosen.slug})${withImage[0] ? '' : ' -- sin imagen ni en variante ni en galeria'}`);
 
   const alreadyHasBlurb = (chosen.description ?? '').includes('Jersey sorpresa');
   if (alreadyHasBlurb) {
@@ -90,9 +99,8 @@ try {
   const existingSection = await prisma.homeSection.findFirst({
     where: { type: 'IMAGE_TEXT', title: 'Jersey sorpresa' },
   });
-  const imageMediaId = chosen.variants[0]?.imageId ?? null;
   const configuration = {
-    imageMediaId,
+    imageMediaId: chosen.imageMediaId,
     title: '¿Te atreves con el jersey sorpresa?',
     body: 'Un jersey real de nuestro catalogo, elegido al azar. La emocion de no saber cual te toca.',
     ctaLabel: 'Ver jersey sorpresa',

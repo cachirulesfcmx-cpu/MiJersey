@@ -8,6 +8,24 @@ function formatPrice(amount: number): string {
   return amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }
 
+/** Misma paleta saturada del home/PLP/PDP -- fondo detrás de la miniatura en vez de gris liso. */
+const PRODUCT_BG = [
+  '#6C7FE8',
+  '#5B4FCF',
+  '#4C8FE0',
+  '#7B5FD9',
+  '#3D7FD9',
+  '#8B5FE0',
+  '#5A6FE0',
+  '#6F5FD0',
+];
+
+function bgForProduct(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return PRODUCT_BG[hash % PRODUCT_BG.length] ?? '#6C7FE8';
+}
+
 export function CartItemRow({
   item,
   onUpdateQuantity,
@@ -33,7 +51,8 @@ export function CartItemRow({
     <div className="card-arena flex gap-4">
       <Link
         href={`/products/${item.productSlug}`}
-        className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-50"
+        className="h-20 w-20 shrink-0 overflow-hidden rounded-xl"
+        style={{ background: bgForProduct(item.productSlug) }}
       >
         {item.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
