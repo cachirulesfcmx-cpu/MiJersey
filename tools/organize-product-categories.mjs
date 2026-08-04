@@ -56,8 +56,9 @@ const COUNTRY_TEAMS = [
   'Dinamarca', 'Denmark', 'Suecia', 'Sweden', 'Noruega', 'Norway', 'Gales', 'Wales', 'Escocia',
   'Scotland', 'Irlanda', 'Ireland', 'Nueva Zelanda', 'New Zealand', 'Cabo Verde', 'Tunez',
   'Tunisia', 'Argelia', 'Algeria', 'Iran', 'Turquia', 'Turkey', 'Rusia', 'Russia', 'Ucrania',
-  'Ukraine', 'Austria', 'Chequia', 'Czech', 'Hungria', 'Hungary', 'Rumania', 'Romania', 'Grecia',
-  'Greece', 'Islandia', 'Iceland', 'Finlandia', 'Finland',
+  'Ukraine', 'Austria', 'Chequia', 'Czech', 'Republica Checa', 'Hungria', 'Hungary', 'Rumania',
+  'Romania', 'Grecia', 'Greece', 'Islandia', 'Iceland', 'Finlandia', 'Finland', 'Bosnia',
+  'Curazao', 'Curacao', 'Israel', 'Sudafrica', 'South Africa',
 ];
 
 // Clubes -> liga real que ya existe como categoria en MiJersey.
@@ -66,13 +67,13 @@ const LEAGUE_CLUBS = {
     'Real Madrid', 'Barcelona', 'Barca', 'Atletico Madrid', 'Atletico de Madrid', 'Sevilla',
     'Real Sociedad', 'Villarreal', 'Athletic Bilbao', 'Athletic Club', 'Valencia', 'Betis',
     'Real Betis', 'Celta Vigo', 'Osasuna', 'Getafe', 'Espanyol', 'Girona', 'Rayo Vallecano',
-    'Mallorca', 'Alaves', 'Las Palmas', 'Leganes', 'Valladolid',
+    'Mallorca', 'Alaves', 'Las Palmas', 'Leganes', 'Valladolid', 'Real Oviedo',
   ],
   'premier-league': [
     'Manchester United', 'Manchester City', 'Arsenal', 'Chelsea', 'Liverpool', 'Tottenham',
-    'Newcastle', 'Aston Villa', 'West Ham', 'Everton', 'Leicester', 'Brighton', 'Wolves',
-    'Wolverhampton', 'Crystal Palace', 'Fulham', 'Brentford', 'Nottingham', 'Bournemouth',
-    'Southampton', 'Burnley', 'Sheffield United', 'Luton',
+    'Newcastle', 'New Castle', 'Aston Villa', 'West Ham', 'Everton', 'Leicester', 'Brighton',
+    'Wolves', 'Wolverhampton', 'Crystal Palace', 'Fulham', 'Brentford', 'Nottingham',
+    'Bournemouth', 'Southampton', 'Burnley', 'Sheffield United', 'Luton', 'Sunderland',
   ],
   bundesliga: [
     'Bayern Munich', 'Bayern Munchen', 'Bayern', 'Borussia Dortmund', 'Dortmund', 'RB Leipzig',
@@ -84,11 +85,11 @@ const LEAGUE_CLUBS = {
   'serie-a': [
     'Juventus', 'AC Milan', 'Milan', 'Inter de Milan', 'Inter Milan', 'Napoli', 'AS Roma',
     'Roma', 'Lazio', 'Atalanta', 'Fiorentina', 'Torino', 'Bologna', 'Sampdoria', 'Genoa',
-    'Udinese',
+    'Udinese', 'Como', 'Como 1907', 'Venezia',
   ],
   'ligue-1': [
-    'Paris Saint Germain', 'PSG', 'Marsella', 'Marseille', 'Lyon', 'Monaco', 'Lille', 'Nice',
-    'Rennes', 'Lens', 'Nantes',
+    'Paris Saint Germain', 'Paris Saint-Germain', 'PSG', 'Marsella', 'Marseille', 'Lyon',
+    'Monaco', 'Lille', 'Nice', 'Rennes', 'Lens', 'Nantes',
   ],
   eredivisie: ['Ajax', 'PSV', 'Feyenoord', 'AZ Alkmaar'],
   'liga-mx': [
@@ -102,9 +103,12 @@ const LEAGUE_CLUBS = {
 // Clubes reconocidos de ligas que NO tienen categoria propia en el arbol (Brasil, Argentina,
 // MLS, etc.) -- van al cajon "Otros" de Retro/Otros en vez de quedar sin categoria.
 const OTHER_CLUBS = [
-  'Boca Juniors', 'River Plate', 'Flamengo', 'Palmeiras', 'Fluminense', 'Botafogo',
+  'Boca Juniors', 'Boca', 'River Plate', 'Flamengo', 'Palmeiras', 'Fluminense', 'Botafogo',
   'Atletico Mineiro', 'Internacional', 'Sao Paulo', 'Corinthians', 'Gremio', 'Vasco da Gama',
-  'Inter Miami', 'Los Angeles', 'LA Galaxy', 'LAFC', 'Seattle Sounders',
+  'Inter Miami', 'Los Angeles', 'LA Galaxy', 'Galaxy', 'LAFC', 'Seattle Sounders', 'Al Nassr',
+  'Al Nasr', 'Atletico Nacional', 'Benfica', 'Bodo Glimt', 'Galatasaray', 'Porto', 'Racing',
+  'San Lorenzo', 'Sporting De Lisboa', 'Sporting Lisboa', "Newell's Old Boys", 'Newells Old Boys',
+  'Toros Neza',
 ];
 
 const TARGET_SLUGS = [
@@ -160,17 +164,29 @@ try {
       matched = true;
     }
 
-    const isClubWorldCup = /mundial de clubes/i.test(normalizedName);
     if (countryRegex.some(({ re }) => re.test(normalizedName))) {
       wantedSlugs.add('selecciones');
       matched = true;
-      if (/mundial/i.test(normalizedName) && !isClubWorldCup) {
-        wantedSlugs.add('mundial-2026');
-      }
+    }
+
+    // "Mundial" (cualquier año) es señal de Mundial 2026 por si sola -- no depende de que el
+    // nombre tambien mencione un pais (cubre packs genericos tipo "Pack Mundialista"), pero
+    // "Mundial de Clubes" es un torneo de clubes, no de selecciones, asi que se excluye.
+    const isClubWorldCup = /mundial de clubes/i.test(normalizedName);
+    if (/mundial/i.test(normalizedName) && !isClubWorldCup) {
+      wantedSlugs.add('mundial-2026');
+      matched = true;
     }
 
     if (/26\s*\/\s*27/.test(normalizedName)) {
       wantedSlugs.add('temporada-26-27');
+    }
+
+    // Palabra "Tee" como palabra completa -- señal fuerte y real de playera tipo streetwear
+    // (ej. "El Diego Tee", "Red Devil Tee") en vez de jersey de equipo.
+    if (/\btee\b/i.test(normalizedName)) {
+      wantedSlugs.add('tee-shirts');
+      matched = true;
     }
 
     // Señal real (no inventada): el catalogo legacy marca las versiones "Retro" en la propia
@@ -241,6 +257,7 @@ function normalize(value) {
   return value
     .normalize('NFD')
     .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '')
+    .replace(/-/g, ' ')
     .toLowerCase();
 }
 
