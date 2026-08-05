@@ -7,4 +7,11 @@ const envSchema = z.object({
   NEXT_PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
 });
 
-export const env = loadEnv(envSchema, process.env);
+// Ver el comentario equivalente en apps/web/src/config/env.ts -- Next.js solo hornea
+// `process.env.NEXT_PUBLIC_*` en el bundle del navegador si ve el acceso literal y directo, no
+// si se reenvia `process.env` completo a una funcion generica.
+export const env = loadEnv(envSchema, {
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL,
+});
