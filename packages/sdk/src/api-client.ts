@@ -177,6 +177,10 @@ import type {
   UpdateMenuInput,
 } from './navigation.types.js';
 import type {
+  SubscribeToNewsletterInput,
+  SubscribeToNewsletterResult,
+} from './newsletter.types.js';
+import type {
   ListMyNotificationsParams,
   ListNotificationsParams,
   Notification,
@@ -2100,6 +2104,13 @@ export class ApiClient {
   listFeaturedReviews(limit?: number): Promise<FeaturedReviewsResult> {
     const query = toQueryString({ limit });
     return this.request<FeaturedReviewsResult>(`/reviews/featured${query}`);
+  }
+
+  subscribeToNewsletter(input: SubscribeToNewsletterInput): Promise<SubscribeToNewsletterResult> {
+    return this.request<SubscribeToNewsletterResult>('/newsletter/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
   }
 
   listPromotions(

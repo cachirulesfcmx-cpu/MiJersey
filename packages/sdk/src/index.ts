@@ -234,6 +234,10 @@ export type {
   UpdateMenuInput,
 } from './navigation.types.js';
 export type {
+  SubscribeToNewsletterInput,
+  SubscribeToNewsletterResult,
+} from './newsletter.types.js';
+export type {
   ListMyNotificationsParams,
   ListNotificationsParams,
   Notification,

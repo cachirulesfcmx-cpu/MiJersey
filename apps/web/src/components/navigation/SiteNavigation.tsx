@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 
 import { env } from '../../config/env';
+import { NewsletterSignupForm } from './NewsletterSignupForm';
 
 function isExternal(href: string): boolean {
   return /^https?:\/\//.test(href);
@@ -166,6 +167,19 @@ export async function SiteNavigation({ location }: { location: string }) {
   return (
     <footer className="tf-footer">
       <div className="tf-container flex flex-col gap-12">
+        <div
+          className="flex flex-col gap-4 border-b pb-10 sm:flex-row sm:items-center sm:justify-between"
+          style={{ borderColor: 'var(--tf-border)' }}
+        >
+          <div className="flex flex-col gap-1">
+            <span className="tf-footer-col-title tf-caption">Suscríbete a nuestros emails</span>
+            <p className="tf-small" style={{ color: 'var(--tf-text-muted)' }}>
+              No te pierdas ninguna oferta — te avisamos primero.
+            </p>
+          </div>
+          <NewsletterSignupForm />
+        </div>
+
         <div className="tf-footer-grid">
           <div className="flex flex-col gap-3">
             <span className="font-display text-lg uppercase tracking-wide">MiJersey</span>

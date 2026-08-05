@@ -737,6 +737,20 @@ model SeoMetadata {
   @@map("seo_metadata")
 }
 
+/// Suscriptores del formulario de newsletter del footer (estilo bartjerseys.com) -- captura real
+/// de correos, a diferencia del resto del "estilo Bartjerseys" de fase 2 que solo replica UI: este
+/// si persiste datos reales del visitante para que el cliente pueda exportarlos/usarlos despues.
+model NewsletterSubscriber {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  source      String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("newsletter_subscribers")
+}
+
 /// Redirecciones permanentes — spec §4 "redirecciones permanentes cuando cambie un slug".
 model Redirect {
   id         String   @id @default(uuid())
