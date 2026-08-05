@@ -57,10 +57,11 @@ const sharp = requireFromApi('sharp');
 const PrismaClient = requireFromApi('@prisma/client').PrismaClient;
 const prisma = new PrismaClient();
 
-// Fondo azul de marca del sitio (--tf-accent: hsl(217, 91%, 60%) en theme-framework.css),
-// oscurecido hacia los bordes para una vinieta sutil tipo estudio fotografico.
-const BG_CENTER = { r: 47, g: 92, b: 214 }; // azul mas vivo, hacia el centro
-const BG_EDGE = { r: 10, g: 21, b: 56 }; // azul marino, hacia los bordes
+// Fondo azul de marca del sitio -- rgb(60,131,246) es el --tf-accent exacto (hsl(217, 91%, 60%)
+// en theme-framework.css) convertido a RGB, oscurecido hacia los bordes para una vinieta sutil
+// tipo estudio fotografico.
+const BG_CENTER = { r: 60, g: 131, b: 246 }; // azul de marca exacto, hacia el centro
+const BG_EDGE = { r: 8, g: 18, b: 48 }; // azul marino oscuro, hacia los bordes
 const CANVAS_SIZE = 1200;
 const SUBJECT_FILL = 0.62; // el jersey ocupa ~62% del canvas -- deja mucho aire (mas "alejado")
 const BG_MATCH_TOLERANCE = 18; // distancia de color para considerar "fondo" (fondo liso real)
@@ -218,6 +219,18 @@ async function restyleImage(originalBuffer, backdropBuffer) {
       if (dist <= BG_MATCH_TOLERANCE) alpha = 0;
       else if (dist >= BG_MATCH_TOLERANCE + BG_FEATHER) alpha = 255;
       else alpha = Math.round(((dist - BG_MATCH_TOLERANCE) / BG_FEATHER) * 255);
+
+      // Descontaminacion de color: los pixeles semi-transparentes del borde (alpha entre 0 y 255)
+      // todavia traen mezclado el color del fondo original (blanco/gris), lo que se veia como un
+      // halo palido alrededor del jersey al componer sobre el azul. Se "empuja" su color lejos del
+      // fondo muestreado en proporcion inversa al alpha para recuperar el color real de la tela.
+      if (alpha > 0 && alpha < 255) {
+        const a = alpha / 255;
+        data[idx] = clampByte(bg.r + (data[idx] - bg.r) / a);
+        data[idx + 1] = clampByte(bg.g + (data[idx + 1] - bg.g) / a);
+        data[idx + 2] = clampByte(bg.b + (data[idx + 2] - bg.b) / a);
+      }
+
       data[idx + 3] = alpha;
       if (alpha > 20) {
         if (x < minX) minX = x;
@@ -295,6 +308,10 @@ function sampleCornerColor(data, width, height, channels) {
 
 function colorDistance(r, g, b, bg) {
   return Math.sqrt((r - bg.r) ** 2 + (g - bg.g) ** 2 + (b - bg.b) ** 2);
+}
+
+function clampByte(value) {
+  return Math.max(0, Math.min(255, Math.round(value)));
 }
 
 function buildBackdropSvg() {
