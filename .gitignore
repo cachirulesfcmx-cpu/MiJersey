@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 .vercel/
 .vercel
+
+# Manifiesto local de tools/restyle-product-images.mjs (mapeo id-viejo -> id-nuevo de imagenes).
+tools/.image-restyle-manifest.json
