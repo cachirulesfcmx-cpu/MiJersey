@@ -2,11 +2,12 @@
 
 import type { CollectionProductSummary } from '@mijersey/sdk';
 import { ApiClient, ApiClientError } from '@mijersey/sdk';
-import { EmptyState, Pagination, Skeleton } from '@mijersey/ui';
+import { EmptyState, Skeleton } from '@mijersey/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 import { env } from '../../config/env';
 import { VolumeDiscountProgress } from '../home/VolumeDiscountProgress';
+import { RecentPurchaseToast, ViewersBadge } from '../promotions/SocialProofBar';
 import { Reveal } from '../ui/Reveal';
 import { ProductGrid } from './ProductGrid';
 import { useProductListingUrlState } from './use-product-listing-url-state';
@@ -24,13 +25,16 @@ export function CollectionListingClient({ slug }: { slug: string }) {
 
   const [products, setProducts] = useState<CollectionProductSummary[] | null>(null);
   const [total, setTotal] = useState(0);
+  const [loadedPage, setLoadedPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setProducts(null);
+    setLoadedPage(1);
     client
-      .getPublicCollection(slug, { page: state.page, pageSize: PAGE_SIZE })
+      .getPublicCollection(slug, { page: 1, pageSize: PAGE_SIZE })
       .then((result) => {
         if (cancelled) return;
         setProducts(result.products);
@@ -45,7 +49,28 @@ export function CollectionListingClient({ slug }: { slug: string }) {
     return () => {
       cancelled = true;
     };
-  }, [client, slug, state.page]);
+  }, [client, slug]);
+
+  async function handleLoadMore() {
+    if (loadingMore) return;
+    const nextPage = loadedPage + 1;
+    setLoadingMore(true);
+    try {
+      const result = await client.getPublicCollection(slug, {
+        page: nextPage,
+        pageSize: PAGE_SIZE,
+      });
+      setProducts((prev) => [...(prev ?? []), ...result.products]);
+      setTotal(result.total);
+      setLoadedPage(nextPage);
+    } catch (err) {
+      setError(
+        err instanceof ApiClientError ? err.message : 'No se pudieron cargar más productos.',
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,7 +78,8 @@ export function CollectionListingClient({ slug }: { slug: string }) {
 
       <VolumeDiscountProgress variant="inline" />
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <ViewersBadge />
         <ViewToggle view={state.view} onChange={(view) => update({ view })} />
       </div>
 
@@ -72,15 +98,26 @@ export function CollectionListingClient({ slug }: { slug: string }) {
       ) : (
         <Reveal>
           <ProductGrid products={products} view={state.view} />
-          <div className="mt-6">
-            <Pagination
-              page={state.page}
-              pageSize={PAGE_SIZE}
-              total={total}
-              onPageChange={(page) => update({ page })}
-            />
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <span className="tf-caption text-neutral-400">
+              Mostrando {products.length} de {total} productos
+            </span>
+            {products.length < total && (
+              <button
+                type="button"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="btn-pop-outline disabled:opacity-50"
+              >
+                {loadingMore ? 'Cargando…' : 'Mostrar más productos'}
+              </button>
+            )}
           </div>
         </Reveal>
+      )}
+
+      {products && products.length > 0 && (
+        <RecentPurchaseToast productNames={products.map((p) => p.name)} />
       )}
     </div>
   );

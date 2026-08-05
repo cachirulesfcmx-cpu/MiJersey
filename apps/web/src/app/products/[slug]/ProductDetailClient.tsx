@@ -12,6 +12,7 @@ import { ProductGrid } from '../../../components/plp/ProductGrid';
 import { FitGuideSlider } from '../../../components/products/FitGuideSlider';
 import { ProductReviews } from '../../../components/products/ProductReviews';
 import { SecretJerseyUpsell } from '../../../components/products/SecretJerseyUpsell';
+import { ViewersBadge } from '../../../components/promotions/SocialProofBar';
 import { Reveal } from '../../../components/ui/Reveal';
 import { StarRating } from '../../../components/ui/StarRating';
 import { WishlistButton } from '../../../components/wishlist/WishlistButton';
@@ -175,15 +176,18 @@ export default function ProductDetailClient({
 
         <Reveal delayMs={100} className="flex flex-col gap-5">
           {product.brand && <span className="label-arena">{product.brand.name}</span>}
-          {reviewSummary && reviewSummary.count > 0 && (
-            <a href="#reseñas" className="flex items-center gap-2">
-              <StarRating value={reviewSummary.average} size={16} />
-              <span className="text-sm text-neutral-500">
-                {reviewSummary.average.toFixed(1)} · {reviewSummary.count}{' '}
-                {reviewSummary.count === 1 ? 'reseña' : 'reseñas'}
-              </span>
-            </a>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {reviewSummary && reviewSummary.count > 0 && (
+              <a href="#reseñas" className="flex items-center gap-2">
+                <StarRating value={reviewSummary.average} size={16} />
+                <span className="text-sm text-neutral-500">
+                  {reviewSummary.average.toFixed(1)} · {reviewSummary.count}{' '}
+                  {reviewSummary.count === 1 ? 'reseña' : 'reseñas'}
+                </span>
+              </a>
+            )}
+            <ViewersBadge />
+          </div>
           <h1 className="section-heading">{product.name}</h1>
           {product.shortDescription && (
             <p className="text-neutral-600">{product.shortDescription}</p>
@@ -257,6 +261,18 @@ export default function ProductDetailClient({
             {activeVariant && !activeVariant.inStock && (
               <span className="badge-pop bg-danger-600">Agotado</span>
             )}
+            {activeVariant &&
+              activeVariant.inStock &&
+              activeVariant.availableQuantity > 0 &&
+              activeVariant.availableQuantity <= 5 && (
+                <span
+                  className="badge-pop animate-pulse"
+                  style={{ background: 'var(--tf-danger)', color: 'white' }}
+                >
+                  ⚡ Quedan {activeVariant.availableQuantity}{' '}
+                  {activeVariant.availableQuantity === 1 ? 'pieza' : 'piezas'}
+                </span>
+              )}
           </div>
 
           {cartError && <p className="text-danger-600 text-sm">{cartError}</p>}
