@@ -19,24 +19,6 @@ import { WishlistButton } from '../../../components/wishlist/WishlistButton';
 import { env } from '../../../config/env';
 import { useCart } from '../../../providers/cart-provider';
 
-/** Misma paleta saturada del home/PLP -- fondo detrás de la galería en vez de gris liso. Determinista por id para que no "parpadee" de color entre visitas/revalidaciones. */
-const PRODUCT_BG = [
-  '#6C7FE8',
-  '#5B4FCF',
-  '#4C8FE0',
-  '#7B5FD9',
-  '#3D7FD9',
-  '#8B5FE0',
-  '#5A6FE0',
-  '#6F5FD0',
-];
-
-function bgForProduct(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return PRODUCT_BG[hash % PRODUCT_BG.length] ?? '#6C7FE8';
-}
-
 function initialSelection(product: PublicProduct): Record<string, string> {
   const seedVariant = product.variants[0];
   if (!seedVariant) return {};
@@ -144,9 +126,12 @@ export default function ProductDetailClient({
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
         <Reveal className="flex flex-col gap-3">
+          {/* Sin fondo CSS sintético ni esquinas redondeadas -- bartjerseys.com no aplica ninguno
+              de los dos en su galería de producto (el fondo de color que se ve ahí viene
+              horneado en la foto misma, confirmado inspeccionando su DOM en vivo). */}
           <div
-            className="aspect-square overflow-hidden rounded-3xl shadow-sm"
-            style={{ background: bgForProduct(product.id) }}
+            className="aspect-square overflow-hidden"
+            style={{ background: 'var(--tf-neutral-100)' }}
           >
             {mainImage && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -160,7 +145,7 @@ export default function ProductDetailClient({
                   key={url}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  className={`h-16 w-16 overflow-hidden rounded-xl border-2 transition-colors ${
+                  className={`h-16 w-16 overflow-hidden border-2 transition-colors ${
                     index === activeImage
                       ? 'border-pop-500'
                       : 'border-neutral-200 hover:border-neutral-300'
@@ -196,22 +181,30 @@ export default function ProductDetailClient({
           <div className="flex items-baseline gap-3">
             {activeVariant ? (
               <>
-                <span className="font-display text-pop-600 text-3xl tracking-wide">
+                {activeVariant.compareAtPrice &&
+                  activeVariant.compareAtPrice > activeVariant.price && (
+                    <span className="text-neutral-400 line-through">
+                      {formatPrice(activeVariant.compareAtPrice)}
+                    </span>
+                  )}
+                {/* Precio final: rojo bold, Helvetica -- clon 1:1 de bartjerseys.com (medido
+                    vía computed style real: 28px, font-weight 900, color rgb(255,0,1)). Antes
+                    usaba Bebas Neue + azul, una combinación que no existe en la referencia (ahí
+                    Bebas Neue es solo para encabezados de sección, nunca para precios). */}
+                <span
+                  className="text-3xl font-black tracking-tight"
+                  style={{ color: 'var(--tf-danger)' }}
+                >
                   {formatPrice(activeVariant.price)}
                 </span>
                 {activeVariant.compareAtPrice &&
                   activeVariant.compareAtPrice > activeVariant.price && (
-                    <>
-                      <span className="text-neutral-400 line-through">
-                        {formatPrice(activeVariant.compareAtPrice)}
-                      </span>
-                      <span
-                        className="badge-pop"
-                        style={{ background: 'var(--tf-success)', color: 'white' }}
-                      >
-                        Ahorras {formatPrice(activeVariant.compareAtPrice - activeVariant.price)}
-                      </span>
-                    </>
+                    <span
+                      className="px-2 py-1 text-xs font-bold uppercase tracking-wide text-white"
+                      style={{ background: 'var(--tf-success)' }}
+                    >
+                      Ahorras {formatPrice(activeVariant.compareAtPrice - activeVariant.price)}
+                    </span>
                   )}
               </>
             ) : (
@@ -228,9 +221,12 @@ export default function ProductDetailClient({
                     key={value.id}
                     type="button"
                     onClick={() => setSelection((prev) => ({ ...prev, [option.id]: value.id }))}
-                    className={`rounded-full border-2 px-4 py-1.5 text-sm font-medium transition-all ${
+                    // Selector negro-sólido-cuando-activo -- clon 1:1 del selector de talla/versión
+                    // de bartjerseys.com (fondo negro + texto blanco en la opción elegida, borde
+                    // gris simple en el resto), en vez de píldoras redondeadas de color.
+                    className={`border-2 px-4 py-1.5 text-sm font-medium transition-all ${
                       selection[option.id] === value.id
-                        ? 'border-pop-500 bg-pop-500/10 text-pop-600'
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
                         : 'border-neutral-200 text-neutral-700 hover:border-neutral-300'
                     }`}
                   >

@@ -8,34 +8,6 @@ import { useCart } from '../../providers/cart-provider';
 import { StarRating } from '../ui/StarRating';
 import { NewsletterForm } from './NewsletterForm';
 
-/** Paleta cíclica para el grid de ligas/categorías — no representa colores oficiales de ninguna liga, solo variedad visual entre tarjetas. */
-const CATEGORY_GRADIENTS = [
-  'from-slate-900 to-slate-700',
-  'from-blue-950 to-blue-700',
-  'from-emerald-950 to-emerald-700',
-  'from-rose-950 to-rose-700',
-  'from-amber-900 to-amber-600',
-  'from-indigo-950 to-indigo-700',
-  'from-teal-950 to-teal-700',
-  'from-neutral-900 to-neutral-600',
-];
-
-/** Paleta cíclica de fondos saturados detrás de la foto de cada producto — separa la
-    imagen del blanco de la tarjeta, sin representar ninguna marca/liga en particular.
-    Degradado diagonal (no color plano) para que la tarjeta tenga la misma profundidad
-    visual que el resto del rediseño (CATEGORY_GRADIENTS, banners) en vez de verse como
-    un bloque de color liso sin trabajar. */
-const PRODUCT_BG = [
-  'linear-gradient(135deg, #7C8DF0 0%, #4C3FC9 100%)',
-  'linear-gradient(135deg, #6C5FE0 0%, #3D2FA8 100%)',
-  'linear-gradient(135deg, #5C9FF0 0%, #2D5FC0 100%)',
-  'linear-gradient(135deg, #8B6FE8 0%, #4A2FC0 100%)',
-  'linear-gradient(135deg, #4D8FE8 0%, #2A4FC0 100%)',
-  'linear-gradient(135deg, #9B6FE8 0%, #5A2FC0 100%)',
-  'linear-gradient(135deg, #6A7FE8 0%, #3A2FB8 100%)',
-  'linear-gradient(135deg, #7F6FE0 0%, #402FB0 100%)',
-];
-
 interface FeaturedItem {
   id: string;
   slug: string;
@@ -89,24 +61,20 @@ const ENTITY_PATH_BY_TYPE: Record<string, string> = {
 };
 
 /**
- * Tarjeta de producto en slider horizontal — fondo saturado detrás de la foto, badge de
- * descuento real, estrellas/reseñas reales (si existen) y un botón flotante de "agregar al
- * carrito" directo (usa `defaultVariantId`, la variante ACTIVE más barata) para no obligar a
- * pasar por el PDP, como en el patrón de referencia. Sin `defaultVariantId` el botón no se
- * muestra -- nunca simula un agregado que no ocurrió.
+ * Tarjeta de producto en slider horizontal -- MISMO tratamiento que <ProductCard> del PLP
+ * (ver apps/web/src/components/plp/ProductCard.tsx), clonado 1:1 de bartjerseys.com: imagen
+ * casi cuadrada sin fondo CSS sintético (el fondo de color ya viene horneado en la foto),
+ * esquinas rectas, badge de descuento rojo sólido sin redondear, título Helvetica regular,
+ * precio rojo bold. Antes esta tarjeta y la del PLP se veían como dos componentes distintos
+ * (colores/tipografía/esquinas diferentes) -- ahora comparten el mismo lenguaje visual.
  */
 function ProductSliderCard({
   item,
   href,
-  bg,
   expressBanner,
 }: {
   item: FeaturedItem;
   href: string;
-  /** Si no se pasa (o viene undefined), la tarjeta no fuerza ningún color de fondo -- útil cuando
-      la propia foto del producto ya trae su propio fondo (ej. las composiciones de "Jersey
-      sorpresa"). */
-  bg?: string | undefined;
   /** Banner rojo "Envío Express" -- solo se pasa cuando el llamador confirmó que es un servicio
       real (ver "Jersey sorpresa"), nunca por defecto. */
   expressBanner?: boolean;
@@ -143,18 +111,18 @@ function ProductSliderCard({
   return (
     <Link
       href={href}
-      className="group flex w-56 shrink-0 snap-start flex-col gap-2 transition-transform duration-300 hover:-translate-y-1.5 sm:w-72"
+      className="group flex w-48 shrink-0 snap-start flex-col gap-2 transition-transform duration-300 hover:-translate-y-1 sm:w-64"
     >
       <div
-        className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl"
-        style={{ background: bg }}
+        className="relative aspect-square w-full overflow-hidden"
+        style={{ background: 'var(--tf-neutral-100)' }}
       >
         {hasDiscount && (
           <span
-            className="badge-pop absolute left-3 top-3 z-10 animate-pulse"
-            style={{ background: 'var(--tf-danger)', color: 'white' }}
+            className="absolute left-0 top-3 z-10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white"
+            style={{ background: 'var(--tf-danger)' }}
           >
-            -{percentOff}% OFF
+            -{percentOff}%
           </span>
         )}
         {item.imageUrl ? (
@@ -174,7 +142,7 @@ function ProductSliderCard({
             onClick={handleQuickAdd}
             aria-label="Agregar al carrito"
             disabled={status !== 'idle'}
-            className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
+            className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
             style={{ background: 'var(--tf-danger)' }}
           >
             {status === 'added' ? (
@@ -207,12 +175,15 @@ function ProductSliderCard({
           </button>
         )}
         {expressBanner && (
-          <span className="absolute inset-x-0 bottom-0 z-10 bg-red-600 py-2 text-center text-sm font-bold uppercase tracking-wide text-white">
+          <span
+            className="absolute inset-x-0 bottom-0 z-10 py-2 text-center text-sm font-bold uppercase tracking-wide text-white"
+            style={{ background: 'var(--tf-danger)' }}
+          >
             ⚡ Envío express
           </span>
         )}
       </div>
-      <span className="truncate text-sm font-medium text-neutral-900">{item.name}</span>
+      <span className="truncate text-sm font-normal text-neutral-900">{item.name}</span>
       {typeof item.rating === 'number' && (item.reviewCount ?? 0) > 0 && (
         <div className="flex items-center gap-1.5">
           <StarRating value={item.rating} size={13} />
@@ -221,14 +192,17 @@ function ProductSliderCard({
       )}
       {typeof item.fromPrice === 'number' && (
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-arena-950 text-lg tracking-wide">
-            Desde {formatMxn(item.fromPrice)}
-          </span>
           {hasDiscount && (
             <span className="text-xs text-neutral-400 line-through">
               {formatMxn(item.compareAtPrice as number)}
             </span>
           )}
+          <span
+            className="text-base font-bold tracking-tight"
+            style={{ color: 'var(--tf-danger)' }}
+          >
+            {formatMxn(item.fromPrice)}
+          </span>
         </div>
       )}
     </Link>
@@ -254,42 +228,36 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               {str(c.heading) || 'Compra por liga'}
             </h2>
           </div>
-          {/* Tira grande, tipo franja de ligas -- tarjetas altas y anchas con la foto real de la
-              categoría bien visible (no un fondo translúcido) y el nombre anclado abajo. Se
-              solapan ligeramente (-mr) para que se sienta como una sola franja continua en vez
-              de tarjetas sueltas con aire entre sí, y llevan sombra + borde superior/inferior
-              para que el corte diagonal no quede "pelón" cuando no hay foto de fondo. */}
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-0 overflow-x-auto px-4 pb-2 sm:px-6">
-            {list.map((item, index) => {
-              const gradient = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
-              return (
-                <Link
-                  key={item.id}
-                  href={`/categories/${item.slug}`}
-                  className={`group relative -mr-4 flex h-56 w-44 shrink-0 snap-start items-end overflow-hidden bg-gradient-to-b shadow-lg ring-1 ring-black/10 transition-transform duration-300 last:mr-0 hover:z-10 hover:-translate-y-2 sm:h-72 sm:w-60 ${gradient}`}
-                  style={{ clipPath: 'polygon(12% 0, 100% 0, 88% 100%, 0 100%)' }}
-                >
-                  {item.imageUrl ? (
-                    // La imagen de categoría (logo de liga) ya trae su propio fondo y nombre --
-                    // se muestra a pantalla completa sin overlay ni texto duplicado encima.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <>
-                      <div className="from-arena-950 absolute inset-0 bg-gradient-to-t via-black/10 to-transparent" />
-                      <span className="font-display relative z-10 w-full px-4 pb-6 text-center text-2xl uppercase leading-none tracking-wide text-white sm:text-4xl">
-                        {item.name}
-                      </span>
-                    </>
-                  )}
-                </Link>
-              );
-            })}
+          {/* Grid recto, sin cortes diagonales -- bartjerseys.com no usa clip-path en ninguna
+              parte de su sitio (confirmado inspeccionando su DOM/CSS en vivo), todas sus
+              tarjetas son rectángulos simples. */}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
+            {list.map((item) => (
+              <Link
+                key={item.id}
+                href={`/categories/${item.slug}`}
+                className="group relative flex h-40 w-40 shrink-0 snap-start items-end overflow-hidden bg-neutral-900 transition-transform duration-300 hover:-translate-y-1 sm:h-52 sm:w-52"
+              >
+                {item.imageUrl ? (
+                  // La imagen de categoría (logo de liga) ya trae su propio fondo y nombre --
+                  // se muestra a pantalla completa sin overlay ni texto duplicado encima.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <>
+                    <div className="from-arena-950 absolute inset-0 bg-gradient-to-t via-black/10 to-transparent" />
+                    <span className="font-display relative z-10 w-full px-4 pb-4 text-center text-xl uppercase leading-none tracking-wide text-white sm:text-2xl">
+                      {item.name}
+                    </span>
+                  </>
+                )}
+              </Link>
+            ))}
           </div>
         </section>
       );
@@ -300,8 +268,8 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       if (grid.length === 0) return null;
       // "Explora" (tools/populate-explore-banners.mjs) reutiliza BANNER_GRID para el slider
       // lateral de categorías/promos reales -- se distingue visualmente de "Destacados" con
-      // fotos en blanco y negro y tipografía en itálica bold, sin usar fotografía de acción de
-      // jugadores (no tenemos licencia para eso), solo fotos reales del catálogo.
+      // fotos en blanco y negro, sin usar fotografía de acción de jugadores (no tenemos
+      // licencia para eso), solo fotos reales del catálogo.
       const isExplore = section.title === 'Explora';
       return (
         <section className="tf-section py-10 sm:py-14">
@@ -310,15 +278,12 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               {isExplore ? 'Explora' : 'Destacados'}
             </h2>
           </div>
-          {/* Tira horizontal con scroll-snap + recorte diagonal por tarjeta — inspirado en el
-              banner-slider de bartjerseys.com, sin copiar su layout/assets/copy. */}
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2 sm:px-6">
+          {/* Tira horizontal con scroll-snap -- rectángulos rectos, sin recorte diagonal
+              (bartjerseys.com no usa clip-path en ningún banner de su sitio). */}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
             {grid.map((banner, index) => {
               const content = (
-                <div
-                  className="group relative h-72 w-64 overflow-hidden sm:h-96 sm:w-80"
-                  style={{ clipPath: 'polygon(7% 0, 100% 0, 93% 100%, 0 100%)' }}
-                >
+                <div className="group relative h-64 w-56 overflow-hidden sm:h-80 sm:w-72">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={banner.imageUrl ?? undefined}
@@ -330,19 +295,13 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                   />
                   <div className="from-arena-950/90 via-arena-950/15 absolute inset-0 bg-gradient-to-t to-transparent" />
                   {banner.title && (
-                    <span
-                      className={`absolute bottom-8 left-8 right-8 leading-tight text-white ${
-                        isExplore
-                          ? 'font-sans text-2xl font-black uppercase italic tracking-tight sm:text-3xl'
-                          : 'font-display text-xl uppercase tracking-wide sm:text-2xl'
-                      }`}
-                    >
+                    <span className="font-display absolute bottom-6 left-6 right-6 text-lg uppercase leading-tight tracking-wide text-white sm:text-xl">
                       {banner.title}
                     </span>
                   )}
                   {isExplore && banner.badge && (
                     <span
-                      className="absolute bottom-3 left-8 rounded px-2 py-1 text-xs font-bold uppercase tracking-wide text-white"
+                      className="absolute bottom-2 left-6 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white"
                       style={{ background: 'var(--tf-danger)' }}
                     >
                       {banner.badge}
@@ -386,13 +345,10 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             )}
           </div>
           <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
-            {list.map((item, index) => (
+            {list.map((item) => (
               <ProductSliderCard
                 key={item.id}
                 expressBanner={isSecretJersey}
-                bg={
-                  isSecretJersey ? undefined : (PRODUCT_BG[index % PRODUCT_BG.length] ?? '#6C7FE8')
-                }
                 item={item}
                 href={`${basePath}/${item.slug}`}
               />
@@ -412,12 +368,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
           style={backgroundColor ? { backgroundColor } : undefined}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={str(c.headline)}
-            loading="lazy"
-            className="max-h-40 rounded-md"
-          />
+          <img src={imageUrl} alt={str(c.headline)} loading="lazy" className="max-h-40" />
           <div className="flex flex-col gap-2">
             {str(c.headline) && (
               <h2 className="font-display text-arena-950 text-2xl uppercase tracking-wide sm:text-3xl">
@@ -451,7 +402,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       if (!imageUrl) return null;
       const imageFirst = str(c.imagePosition) !== 'right';
       const image = (
-        <div className="relative w-full overflow-hidden rounded-2xl sm:w-1/2">
+        <div className="relative w-full overflow-hidden sm:w-1/2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
@@ -464,7 +415,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
       return (
         <section className="tf-section py-10 sm:py-14">
           <div
-            className="tf-container relative flex flex-col items-center gap-8 overflow-hidden rounded-3xl p-6 sm:flex-row sm:p-12"
+            className="tf-container relative flex flex-col items-center gap-8 overflow-hidden p-6 sm:flex-row sm:p-12"
             style={{ background: 'var(--tf-neutral-950)' }}
           >
             {/* Patrón decorativo de signos de interrogación — comunica "sorpresa" sin depender de que el texto lo diga. */}
@@ -518,7 +469,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             controls
             preload="none"
             poster={strOrNull(c.posterImageUrl) ?? undefined}
-            className="w-full rounded-lg"
+            className="w-full"
           >
             <source src={videoUrl} />
           </video>

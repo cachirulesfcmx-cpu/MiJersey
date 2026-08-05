@@ -20,20 +20,6 @@ export interface ListableProduct {
   defaultVariantId?: string | null;
 }
 
-/** Misma paleta saturada del home (ver HomeSectionRenderer.PRODUCT_BG) -- degradado diagonal
-    detrás de la playera en vez de blanco liso o color plano, como bartjerseys.com. Debe quedar
-    idéntica al array del home para que un mismo producto se vea igual en PLP y en el slider. */
-const PRODUCT_BG = [
-  'linear-gradient(135deg, #7C8DF0 0%, #4C3FC9 100%)',
-  'linear-gradient(135deg, #6C5FE0 0%, #3D2FA8 100%)',
-  'linear-gradient(135deg, #5C9FF0 0%, #2D5FC0 100%)',
-  'linear-gradient(135deg, #8B6FE8 0%, #4A2FC0 100%)',
-  'linear-gradient(135deg, #4D8FE8 0%, #2A4FC0 100%)',
-  'linear-gradient(135deg, #9B6FE8 0%, #5A2FC0 100%)',
-  'linear-gradient(135deg, #6A7FE8 0%, #3A2FB8 100%)',
-  'linear-gradient(135deg, #7F6FE0 0%, #402FB0 100%)',
-];
-
 function formatPrice(value: number): string {
   return value.toLocaleString('es-MX', {
     style: 'currency',
@@ -42,19 +28,26 @@ function formatPrice(value: number): string {
   });
 }
 
+/** Badge de descuento -- clon 1:1 de bartjerseys.com: fondo rojo sólido (#FF0001, medido por
+    computed style real), texto blanco, ESQUINAS RECTAS (su tema no redondea ningún badge de
+    tarjeta de producto), sin animación de pulso (no existe en la referencia). */
 function DiscountBadge({ price, compareAtPrice }: { price: number; compareAtPrice: number }) {
   const percentOff = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
   if (percentOff <= 0) return null;
   return (
     <span
-      className="badge-pop absolute left-3 top-3 z-10 animate-pulse"
-      style={{ background: 'var(--tf-danger)', color: 'white' }}
+      className="absolute left-0 top-3 z-10 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white"
+      style={{ background: 'var(--tf-danger)' }}
     >
       -{percentOff}%
     </span>
   );
 }
 
+/** Precio -- mismo orden y tratamiento que bartjerseys.com: precio tachado gris primero, precio
+    final en rojo bold después (medido: 12px gris #BFBFBF tachado / 17px bold #FF1F1F). Nunca
+    Bebas Neue aquí -- esa fuente es solo para encabezados de sección en la referencia, el precio
+    de tarjeta usa la misma Helvetica del resto del texto. */
 function PriceRow({
   price,
   compareAtPrice,
@@ -66,12 +59,12 @@ function PriceRow({
   const hasDiscount = typeof compareAtPrice === 'number' && compareAtPrice > price;
   return (
     <div className="flex items-baseline gap-2">
-      <span className="font-display text-arena-950 text-base tracking-wide">
-        {formatPrice(price)}
-      </span>
       {hasDiscount && (
         <span className="text-xs text-neutral-400 line-through">{formatPrice(compareAtPrice)}</span>
       )}
+      <span className="text-base font-bold tracking-tight" style={{ color: 'var(--tf-danger)' }}>
+        {formatPrice(price)}
+      </span>
     </div>
   );
 }
@@ -92,7 +85,9 @@ function RatingRow({
   );
 }
 
-/** Botón "agregar al carrito" directo desde la tarjeta, sin pasar por el PDP -- solo aparece si el producto tiene una variante activa (`defaultVariantId`, ver Home 013/PLP). */
+/** Botón "agregar al carrito" directo desde la tarjeta -- círculo rojo con ícono de bolsa,
+    esquina inferior derecha de la imagen, igual que bartjerseys.com. Es el único elemento
+    redondo de la tarjeta (su tema tampoco lo cuadra). */
 function QuickAddButton({ variantId }: { variantId: string }) {
   const { addItem } = useCart();
   const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle');
@@ -117,7 +112,7 @@ function QuickAddButton({ variantId }: { variantId: string }) {
       onClick={handleClick}
       aria-label="Agregar al carrito"
       disabled={status !== 'idle'}
-      className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
+      className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-80"
       style={{ background: 'var(--tf-danger)' }}
     >
       {status === 'added' ? (
@@ -151,24 +146,21 @@ function QuickAddButton({ variantId }: { variantId: string }) {
   );
 }
 
-function ProductMedia({
-  product,
-  className,
-  bg,
-}: {
-  product: ListableProduct;
-  className: string;
-  bg?: string;
-}) {
+function ProductMedia({ product, className }: { product: ListableProduct; className: string }) {
   const hasDiscount =
     typeof product.price === 'number' &&
     typeof product.compareAtPrice === 'number' &&
     product.compareAtPrice > product.price;
 
   return (
+    // Sin border-radius ni fondo de color sintético -- bartjerseys.com no aplica ningún CSS
+    // background detrás de sus fotos de producto (confirmado inspeccionando el DOM en vivo: el
+    // fondo de color que se ve ahí viene HORNEADO en la foto misma, no de CSS). Las fotos de
+    // MiJersey ya traen ese mismo tratamiento (tools/restyle-product-images.mjs), así que el
+    // fallback aquí solo debe cubrir el caso raro de imagen faltante.
     <div
       className={`relative overflow-hidden ${className}`}
-      style={{ background: bg ?? 'var(--tf-neutral-50)' }}
+      style={{ background: 'var(--tf-neutral-100)' }}
     >
       {hasDiscount && (
         <DiscountBadge
@@ -192,24 +184,23 @@ function ProductMedia({
   );
 }
 
-/** Tarjeta de producto reutilizada en PLP (búsqueda/categoría/marca), colecciones y "relacionados" — jerarquía visual: fondo de color > imagen > descuento > nombre > estrellas > precio. */
+/** Tarjeta de producto reutilizada en PLP (búsqueda/categoría/marca), colecciones y "relacionados".
+    Clonada 1:1 de bartjerseys.com: imagen casi cuadrada (midieron 389x370px reales), esquinas
+    rectas, título Helvetica regular (no bold), precio rojo bold. */
 export function ProductCard({
   product,
   view = 'grid',
-  index = 0,
 }: {
   product: ListableProduct;
   view?: 'grid' | 'list';
   index?: number;
 }) {
-  const bg = PRODUCT_BG[index % PRODUCT_BG.length] ?? '#6C7FE8';
-
   if (view === 'list') {
     return (
       <Link href={`/products/${product.slug}`} className="card-arena group flex items-center gap-4">
-        <ProductMedia product={product} className="h-16 w-16 shrink-0 rounded-xl" />
+        <ProductMedia product={product} className="h-16 w-16 shrink-0" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-neutral-900">{product.name}</span>
+          <span className="text-sm font-normal text-neutral-900">{product.name}</span>
           <span className="text-xs text-neutral-400">{product.sku}</span>
           <RatingRow rating={product.rating} reviewCount={product.reviewCount} />
           <PriceRow price={product.price} compareAtPrice={product.compareAtPrice} />
@@ -218,19 +209,14 @@ export function ProductCard({
     );
   }
 
-  // Sin envoltura de "tarjeta blanca" (card-arena) -- el fondo de color debe llegar hasta el
-  // borde de la imagen, igual que las tarjetas del home (ProductSliderCard) y que bartjerseys.com.
-  // Antes esto usaba `card-arena` (fondo blanco + borde + sombra + padding) mientras el home no
-  // llevaba nada de eso -- por eso el mismo producto se veía como dos componentes distintos según
-  // en qué parte del sitio apareciera.
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group flex flex-col gap-2 transition-transform duration-300 hover:-translate-y-1.5"
+      className="group flex flex-col gap-2 transition-transform duration-300 hover:-translate-y-1"
     >
-      <ProductMedia product={product} className="aspect-[4/5] w-full rounded-2xl" bg={bg} />
+      <ProductMedia product={product} className="aspect-square w-full" />
       <div className="flex flex-col gap-1">
-        <span className="truncate text-sm font-medium text-neutral-900">{product.name}</span>
+        <span className="truncate text-sm font-normal text-neutral-900">{product.name}</span>
         <RatingRow rating={product.rating} reviewCount={product.reviewCount} />
         <PriceRow price={product.price} compareAtPrice={product.compareAtPrice} />
       </div>
