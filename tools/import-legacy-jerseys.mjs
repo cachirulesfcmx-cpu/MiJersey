@@ -6,7 +6,14 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 
-const DEFAULT_BRAND = 'Bart Jerseys';
+const DEFAULT_BRAND = 'MiJersey';
+/** El dump legacy trae `brand`/`meta_title`/`og_title` con el nombre de la tienda de origen
+ * ("Bart Jerseys" / "Go Center Suplementos") -- se normalizan a la marca de MiJersey al importar,
+ * para no tener que corregirlo despues con tools/fix-brand-and-seo-naming.mjs en cada reimport. */
+const LEGACY_NAME_REPLACEMENTS = [
+  ['Go Center Suplementos', 'MiJersey'],
+  ['Bart Jerseys', 'MiJersey'],
+];
 const DEFAULT_WAREHOUSE_CODE = 'LEGACY';
 const DEFAULT_WAREHOUSE_NAME = 'Legacy Jerseys';
 const MEDIA_PREFIX = 'legacy-jerseys/products';
@@ -322,18 +329,28 @@ async function upsertProduct(prisma, legacyProduct, categoryId, brandId) {
   return product;
 }
 
+function normalizeLegacyName(value) {
+  if (!value) return value;
+  return LEGACY_NAME_REPLACEMENTS.reduce(
+    (acc, [from, to]) => acc.replaceAll(from, to),
+    value,
+  );
+}
+
 async function upsertProductSeo(prisma, productId, legacyProduct) {
+  const metaTitle = normalizeLegacyName(legacyProduct.meta_title);
+  const metaDescription = normalizeLegacyName(legacyProduct.meta_description);
   await prisma.seoMetadata.upsert({
     where: { entityType_entityId: { entityType: 'PRODUCT', entityId: productId } },
     create: {
       entityType: 'PRODUCT',
       entityId: productId,
-      metaTitle: legacyProduct.meta_title,
-      metaDescription: legacyProduct.meta_description,
+      metaTitle,
+      metaDescription,
     },
     update: {
-      metaTitle: legacyProduct.meta_title,
-      metaDescription: legacyProduct.meta_description,
+      metaTitle,
+      metaDescription,
     },
   });
 }
