@@ -16,13 +16,18 @@
  *   node tools/populate-banner-grid.mjs --count 8   # cuantos banners (default 6)
  */
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
 const repoRoot = process.cwd();
+const apiDir = path.resolve(repoRoot, 'apps/api');
 const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
 const bannerCount = Number(args.count ?? 6);
+// Mismo criterio que populate-explore-banners.mjs: nunca elegir un MediaAsset que quedo apuntando
+// al disco efimero de Railway en vez de a R2 (ver tools/migrate-images-to-r2.mjs).
+const R2_PUBLIC_URL = (loadEnvFile(path.join(apiDir, '.env')).R2_PUBLIC_URL ?? '').replace(/\/$/, '');
 
 const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^product-\d+$/, /-demo$/];
 const EXCLUDE_NAME_PATTERNS = [/\(demo\)/i, /producto de prueba/i];
@@ -62,7 +67,7 @@ try {
     },
   });
 
-  const withImage = candidates
+  const candidatesWithImage = candidates
     .filter((product) => !EXCLUDE_SLUG_PATTERNS.some((pattern) => pattern.test(product.slug)))
     .filter((product) => !EXCLUDE_NAME_PATTERNS.some((pattern) => pattern.test(product.name)))
     .map((product) => ({
@@ -71,10 +76,32 @@ try {
     }))
     .filter((product) => Boolean(product.imageMediaId));
 
-  if (withImage.length === 0) {
+  if (candidatesWithImage.length === 0) {
     fail(
       'Ningun producto de "jerseys" tiene imagen (ni en su variante ni en su galeria) -- revisa que el import de imagenes haya corrido bien.',
     );
+  }
+
+  const withImage = [];
+  for (const product of candidatesWithImage) {
+    if (R2_PUBLIC_URL) {
+      const asset = await prisma.mediaAsset.findUnique({
+        where: { id: product.imageMediaId },
+        select: { url: true },
+      });
+      if (!asset || !asset.url.startsWith(R2_PUBLIC_URL)) {
+        console.log(
+          `  - saltando "${product.name}": imagen rota/no migrada a R2 (${asset?.url ?? 'sin asset'}).`,
+        );
+        continue;
+      }
+    }
+    withImage.push(product);
+    if (withImage.length >= bannerCount) break;
+  }
+
+  if (withImage.length === 0) {
+    fail('Ningun producto de "jerseys" tiene una imagen valida en R2.');
   }
 
   const chosen = withImage.slice(0, bannerCount);
@@ -161,6 +188,32 @@ function loadPrismaClient() {
   const apiPackageJson = path.resolve(repoRoot, 'apps/api/package.json');
   const requireFromApi = createRequire(apiPackageJson);
   return requireFromApi('@prisma/client').PrismaClient;
+}
+
+function loadEnvFile(filePath) {
+  const result = {};
+  let content;
+  try {
+    content = readFileSync(filePath, 'utf8');
+  } catch {
+    return result;
+  }
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    result[key] = value;
+  }
+  return result;
 }
 
 function fail(message) {

@@ -642,7 +642,9 @@
   position: relative;
   color: var(--tf-text-muted);
   font-size: var(--tf-small-size);
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   text-decoration: none;
   padding-block: var(--tf-space-2);
   transition: color var(--tf-dur-fast) var(--tf-ease-standard);

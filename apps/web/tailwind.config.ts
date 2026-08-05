@@ -26,7 +26,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['var(--tf-font-sans)', 'var(--font-display)'],
+        // OJO: el orden importa -- font-family hace fallback de izquierda a derecha, y
+        // `--tf-font-sans` ya es una LISTA completa de fuentes de sistema (ui-sans-serif,
+        // system-ui, Arial, sans-serif...) que SIEMPRE resuelve en cualquier dispositivo. Antes
+        // esta lista iba primero, así que `font-display` (usado en TODOS los títulos del sitio,
+        // home incluido) nunca llegaba a pedir Bebas Neue -- se veía como texto de sistema plano
+        // en vez de la tipografía condensada/bold que ya se estaba usando en el resto del diseño.
+        display: ['var(--font-display)', 'var(--tf-font-sans)'],
       },
       backgroundImage: {
         'arena-gradient': 'linear-gradient(135deg, var(--tw-gradient-stops))',

@@ -60,11 +60,12 @@
     background-image: theme('backgroundImage.stardust');
   }
 
-  /* Encabezado de sección reutilizable en todo el storefront (PLP, cuenta, blog, etc.) */
+  /* Encabezado de sección reutilizable en todo el storefront (PLP, cuenta, blog, etc.) -- misma
+     tipografía condensada/bold (font-display -> Bebas Neue) y tratamiento en mayúsculas que ya
+     usan los títulos del home (HomeSectionRenderer), para que categorías/carrito/cuenta/PDP no
+     se sientan como una app genérica distinta del resto del sitio. */
   .section-heading {
-    @apply text-2xl sm:text-3xl;
-    font-weight: var(--tf-h3-weight);
-    letter-spacing: var(--tf-h2-tracking);
+    @apply font-display text-3xl uppercase tracking-wide sm:text-4xl;
     color: var(--tf-text);
   }
 

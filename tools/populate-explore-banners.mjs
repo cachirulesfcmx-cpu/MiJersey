@@ -16,12 +16,18 @@
  *   node tools/populate-explore-banners.mjs
  */
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
 const repoRoot = process.cwd();
+const apiDir = path.resolve(repoRoot, 'apps/api');
 const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
+// Algunos MediaAsset viejos quedaron apuntando al disco efimero de Railway (nunca migrados a R2,
+// ver tools/migrate-images-to-r2.mjs) -- si se cuela uno de esos aqui, el tile sale con el icono
+// de imagen rota en vez de la foto. Se valida contra R2_PUBLIC_URL antes de aceptar un candidato.
+const R2_PUBLIC_URL = (loadEnvFile(path.join(apiDir, '.env')).R2_PUBLIC_URL ?? '').replace(/\/$/, '');
 
 const SECTION_TITLE = 'Explora';
 // Categorias reales a destacar, en este orden. Si alguna no tiene ningun producto con imagen se
@@ -54,13 +60,14 @@ try {
       continue;
     }
 
-    const product = await prisma.product.findFirst({
+    const products = await prisma.product.findMany({
       where: {
         status: 'ACTIVE',
         visibility: 'PUBLIC',
         categories: { some: { categoryId: category.id } },
       },
       orderBy: { createdAt: 'desc' },
+      take: 20,
       select: {
         variants: {
           where: { status: 'ACTIVE' },
@@ -72,9 +79,30 @@ try {
       },
     });
 
-    const imageMediaId = product?.variants[0]?.imageId ?? product?.media[0]?.mediaId ?? null;
+    let imageMediaId = null;
+    for (const candidate of products) {
+      const candidateId = candidate.variants[0]?.imageId ?? candidate.media[0]?.mediaId ?? null;
+      if (!candidateId) continue;
+      if (R2_PUBLIC_URL) {
+        const asset = await prisma.mediaAsset.findUnique({
+          where: { id: candidateId },
+          select: { url: true },
+        });
+        if (!asset || !asset.url.startsWith(R2_PUBLIC_URL)) {
+          console.log(
+            `  - saltando candidato de "${category.name}" con imagen rota/no migrada a R2 (${asset?.url ?? 'sin asset'}).`,
+          );
+          continue;
+        }
+      }
+      imageMediaId = candidateId;
+      break;
+    }
+
     if (!imageMediaId) {
-      console.log(`  - OMITIDO: categoria "${category.name}" no tiene ningun producto con imagen.`);
+      console.log(
+        `  - OMITIDO: categoria "${category.name}" no tiene ningun producto con imagen valida en R2.`,
+      );
       continue;
     }
 
@@ -149,6 +177,32 @@ function loadPrismaClient() {
   const apiPackageJson = path.resolve(repoRoot, 'apps/api/package.json');
   const requireFromApi = createRequire(apiPackageJson);
   return requireFromApi('@prisma/client').PrismaClient;
+}
+
+function loadEnvFile(filePath) {
+  const result = {};
+  let content;
+  try {
+    content = readFileSync(filePath, 'utf8');
+  } catch {
+    return result;
+  }
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    result[key] = value;
+  }
+  return result;
 }
 
 function fail(message) {

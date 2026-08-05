@@ -20,16 +20,18 @@ export interface ListableProduct {
   defaultVariantId?: string | null;
 }
 
-/** Misma paleta saturada del home (ver HomeSectionRenderer) -- fondo detrás de la playera en vez de blanco liso, como bartjerseys.com. */
+/** Misma paleta saturada del home (ver HomeSectionRenderer.PRODUCT_BG) -- degradado diagonal
+    detrás de la playera en vez de blanco liso o color plano, como bartjerseys.com. Debe quedar
+    idéntica al array del home para que un mismo producto se vea igual en PLP y en el slider. */
 const PRODUCT_BG = [
-  '#6C7FE8',
-  '#5B4FCF',
-  '#4C8FE0',
-  '#7B5FD9',
-  '#3D7FD9',
-  '#8B5FE0',
-  '#5A6FE0',
-  '#6F5FD0',
+  'linear-gradient(135deg, #7C8DF0 0%, #4C3FC9 100%)',
+  'linear-gradient(135deg, #6C5FE0 0%, #3D2FA8 100%)',
+  'linear-gradient(135deg, #5C9FF0 0%, #2D5FC0 100%)',
+  'linear-gradient(135deg, #8B6FE8 0%, #4A2FC0 100%)',
+  'linear-gradient(135deg, #4D8FE8 0%, #2A4FC0 100%)',
+  'linear-gradient(135deg, #9B6FE8 0%, #5A2FC0 100%)',
+  'linear-gradient(135deg, #6A7FE8 0%, #3A2FB8 100%)',
+  'linear-gradient(135deg, #7F6FE0 0%, #402FB0 100%)',
 ];
 
 function formatPrice(value: number): string {

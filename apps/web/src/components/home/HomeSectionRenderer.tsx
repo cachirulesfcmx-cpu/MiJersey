@@ -21,16 +21,19 @@ const CATEGORY_GRADIENTS = [
 ];
 
 /** Paleta cíclica de fondos saturados detrás de la foto de cada producto — separa la
-    imagen del blanco de la tarjeta, sin representar ninguna marca/liga en particular. */
+    imagen del blanco de la tarjeta, sin representar ninguna marca/liga en particular.
+    Degradado diagonal (no color plano) para que la tarjeta tenga la misma profundidad
+    visual que el resto del rediseño (CATEGORY_GRADIENTS, banners) en vez de verse como
+    un bloque de color liso sin trabajar. */
 const PRODUCT_BG = [
-  '#6C7FE8',
-  '#5B4FCF',
-  '#4C8FE0',
-  '#7B5FD9',
-  '#3D7FD9',
-  '#8B5FE0',
-  '#5A6FE0',
-  '#6F5FD0',
+  'linear-gradient(135deg, #7C8DF0 0%, #4C3FC9 100%)',
+  'linear-gradient(135deg, #6C5FE0 0%, #3D2FA8 100%)',
+  'linear-gradient(135deg, #5C9FF0 0%, #2D5FC0 100%)',
+  'linear-gradient(135deg, #8B6FE8 0%, #4A2FC0 100%)',
+  'linear-gradient(135deg, #4D8FE8 0%, #2A4FC0 100%)',
+  'linear-gradient(135deg, #9B6FE8 0%, #5A2FC0 100%)',
+  'linear-gradient(135deg, #6A7FE8 0%, #3A2FB8 100%)',
+  'linear-gradient(135deg, #7F6FE0 0%, #402FB0 100%)',
 ];
 
 interface FeaturedItem {
@@ -252,16 +255,18 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
             </h2>
           </div>
           {/* Tira grande, tipo franja de ligas -- tarjetas altas y anchas con la foto real de la
-              categoría bien visible (no un fondo translúcido) y el nombre anclado abajo, muy
-              juntas entre sí para que se sienta como una sola franja continua. */}
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-4 pb-2 sm:gap-2 sm:px-6">
+              categoría bien visible (no un fondo translúcido) y el nombre anclado abajo. Se
+              solapan ligeramente (-mr) para que se sienta como una sola franja continua en vez
+              de tarjetas sueltas con aire entre sí, y llevan sombra + borde superior/inferior
+              para que el corte diagonal no quede "pelón" cuando no hay foto de fondo. */}
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-0 overflow-x-auto px-4 pb-2 sm:px-6">
             {list.map((item, index) => {
               const gradient = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
               return (
                 <Link
                   key={item.id}
                   href={`/categories/${item.slug}`}
-                  className={`group relative flex h-56 w-44 shrink-0 snap-start items-end overflow-hidden bg-gradient-to-b transition-transform duration-300 hover:-translate-y-2 sm:h-72 sm:w-60 ${gradient}`}
+                  className={`group relative -mr-4 flex h-56 w-44 shrink-0 snap-start items-end overflow-hidden bg-gradient-to-b shadow-lg ring-1 ring-black/10 transition-transform duration-300 last:mr-0 hover:z-10 hover:-translate-y-2 sm:h-72 sm:w-60 ${gradient}`}
                   style={{ clipPath: 'polygon(12% 0, 100% 0, 88% 100%, 0 100%)' }}
                 >
                   {item.imageUrl ? (
