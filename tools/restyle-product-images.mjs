@@ -57,11 +57,28 @@ const sharp = requireFromApi('sharp');
 const PrismaClient = requireFromApi('@prisma/client').PrismaClient;
 const prisma = new PrismaClient();
 
-// Fondo azul de marca del sitio -- rgb(60,131,246) es el --tf-accent exacto (hsl(217, 91%, 60%)
-// en theme-framework.css) convertido a RGB, oscurecido hacia los bordes para una vinieta sutil
-// tipo estudio fotografico.
-const BG_CENTER = { r: 60, g: 131, b: 246 }; // azul de marca exacto, hacia el centro
-const BG_EDGE = { r: 8, g: 18, b: 48 }; // azul marino oscuro, hacia los bordes
+// Antes: un solo azul fijo para TODAS las fotos. bartjerseys.com varía el color de fondo real
+// por foto (violeta, celeste, negro, amarillo, verde...), no usa un único tono -- confirmado
+// viendo su captura completa de home lado a lado. Se elige un color determinista por asset (hash
+// de su id) de esta paleta, para que cada producto quede siempre con el mismo fondo entre
+// corridas (no "parpadea" de color si se vuelve a correr el script).
+const BG_PALETTE = [
+  { center: { r: 60, g: 131, b: 246 }, edge: { r: 8, g: 18, b: 48 } }, // azul
+  { center: { r: 124, g: 58, b: 237 }, edge: { r: 20, g: 8, b: 48 } }, // violeta
+  { center: { r: 236, g: 72, b: 153 }, edge: { r: 48, g: 8, b: 28 } }, // rosa/magenta
+  { center: { r: 34, g: 197, b: 94 }, edge: { r: 6, g: 40, b: 20 } }, // verde
+  { center: { r: 250, g: 204, b: 21 }, edge: { r: 48, g: 36, b: 4 } }, // amarillo
+  { center: { r: 40, g: 40, b: 46 }, edge: { r: 4, g: 4, b: 6 } }, // negro/gris carbón
+  { center: { r: 251, g: 146, b: 60 }, edge: { r: 48, g: 24, b: 4 } }, // naranja
+  { center: { r: 56, g: 189, b: 248 }, edge: { r: 6, g: 30, b: 44 } }, // celeste
+];
+
+function paletteForAsset(assetId) {
+  let hash = 0;
+  for (let i = 0; i < assetId.length; i += 1) hash = (hash * 31 + assetId.charCodeAt(i)) >>> 0;
+  return BG_PALETTE[hash % BG_PALETTE.length];
+}
+
 const CANVAS_SIZE = 1200;
 const SUBJECT_FILL = 0.62; // el jersey ocupa ~62% del canvas -- deja mucho aire (mas "alejado")
 const BG_MATCH_TOLERANCE = 18; // distancia de color para considerar "fondo" (fondo liso real)
@@ -97,9 +114,6 @@ try {
     process.exit(0);
   }
 
-  const backdropSvg = buildBackdropSvg();
-  const backdropBuffer = Buffer.from(backdropSvg);
-
   const mapping = {}; // oldAssetId -> newAssetId
   let ok = 0;
   let failed = 0;
@@ -111,6 +125,7 @@ try {
       if (!res.ok) throw new Error(`fetch ${res.status}`);
       const originalBuffer = Buffer.from(await res.arrayBuffer());
 
+      const backdropBuffer = Buffer.from(buildBackdropSvg(paletteForAsset(asset.id)));
       const processedBuffer = await restyleImage(originalBuffer, backdropBuffer);
       const contentHash = createHash('sha256').update(processedBuffer).digest('hex');
 
@@ -314,12 +329,13 @@ function clampByte(value) {
   return Math.max(0, Math.min(255, Math.round(value)));
 }
 
-function buildBackdropSvg() {
+function buildBackdropSvg(palette) {
+  const { center, edge } = palette;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS_SIZE}" height="${CANVAS_SIZE}">
     <defs>
       <radialGradient id="g" cx="50%" cy="42%" r="65%">
-        <stop offset="0%" stop-color="rgb(${BG_CENTER.r},${BG_CENTER.g},${BG_CENTER.b})" />
-        <stop offset="100%" stop-color="rgb(${BG_EDGE.r},${BG_EDGE.g},${BG_EDGE.b})" />
+        <stop offset="0%" stop-color="rgb(${center.r},${center.g},${center.b})" />
+        <stop offset="100%" stop-color="rgb(${edge.r},${edge.g},${edge.b})" />
       </radialGradient>
     </defs>
     <rect width="${CANVAS_SIZE}" height="${CANVAS_SIZE}" fill="url(#g)" />

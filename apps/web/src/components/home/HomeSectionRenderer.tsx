@@ -111,7 +111,7 @@ function ProductSliderCard({
   return (
     <Link
       href={href}
-      className="group flex w-48 shrink-0 snap-start flex-col gap-2 transition-transform duration-300 hover:-translate-y-1 sm:w-64"
+      className="group flex w-full flex-col gap-2 transition-transform duration-300 hover:-translate-y-1"
     >
       <div
         className="relative aspect-square w-full overflow-hidden"
@@ -230,13 +230,13 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
           </div>
           {/* Grid recto, sin cortes diagonales -- bartjerseys.com no usa clip-path en ninguna
               parte de su sitio (confirmado inspeccionando su DOM/CSS en vivo), todas sus
-              tarjetas son rectángulos simples. */}
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
+              tarjetas son rectángulos simples en cuadrícula, no tira de scroll horizontal. */}
+          <div className="tf-container grid grid-cols-3 gap-3 sm:grid-cols-6 sm:gap-4">
             {list.map((item) => (
               <Link
                 key={item.id}
                 href={`/categories/${item.slug}`}
-                className="group relative flex h-40 w-40 shrink-0 snap-start items-end overflow-hidden bg-neutral-900 transition-transform duration-300 hover:-translate-y-1 sm:h-52 sm:w-52"
+                className="group relative flex aspect-square w-full items-end overflow-hidden bg-neutral-900 transition-transform duration-300 hover:-translate-y-1"
               >
                 {item.imageUrl ? (
                   // La imagen de categoría (logo de liga) ya trae su propio fondo y nombre --
@@ -278,12 +278,12 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               {isExplore ? 'Explora' : 'Destacados'}
             </h2>
           </div>
-          {/* Tira horizontal con scroll-snap -- rectángulos rectos, sin recorte diagonal
-              (bartjerseys.com no usa clip-path en ningún banner de su sitio). */}
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
+          {/* Cuadrícula recta, sin recorte diagonal ni scroll horizontal (bartjerseys.com no usa
+              clip-path ni tiras de un solo renglón en ningún banner de su sitio). */}
+          <div className="tf-container grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {grid.map((banner, index) => {
               const content = (
-                <div className="group relative h-64 w-56 overflow-hidden sm:h-80 sm:w-72">
+                <div className="group relative aspect-[4/5] w-full overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={banner.imageUrl ?? undefined}
@@ -310,7 +310,7 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
                 </div>
               );
               return (
-                <div key={`${section.id}-${index}`} className="shrink-0 snap-start">
+                <div key={`${section.id}-${index}`}>
                   {banner.linkUrl ? <Link href={banner.linkUrl}>{content}</Link> : content}
                 </div>
               );
@@ -344,7 +344,10 @@ export function HomeSectionRenderer({ section }: { section: PublicHomeSection })
               </h2>
             )}
           </div>
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:gap-4 sm:px-6">
+          {/* Cuadrícula de 2/4/5 columnas que se llena de playeras reales -- bartjerseys.com no
+              muestra sus secciones de home como tiras de un renglón, sino como cuadrículas densas
+              de varias filas (confirmado en su captura completa de home). */}
+          <div className="tf-container grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
             {list.map((item) => (
               <ProductSliderCard
                 key={item.id}

@@ -24,7 +24,10 @@ const repoRoot = process.cwd();
 const apiDir = path.resolve(repoRoot, 'apps/api');
 const args = parseArgs(process.argv.slice(2));
 const dryRun = Boolean(args['dry-run']);
-const bannerCount = Number(args.count ?? 6);
+// Antes 6 (para el slider de una sola fila) -- ahora que HomeSectionRenderer muestra "Destacados"
+// como cuadrícula de 2/4 columnas en vez de tira horizontal, hacen falta más productos reales
+// para que se vea igual de lleno que la cuadrícula de bartjerseys.com.
+const bannerCount = Number(args.count ?? 12);
 // Mismo criterio que populate-explore-banners.mjs: nunca elegir un MediaAsset que quedo apuntando
 // al disco efimero de Railway en vez de a R2 (ver tools/migrate-images-to-r2.mjs).
 const R2_PUBLIC_URL = (loadEnvFile(path.join(apiDir, '.env')).R2_PUBLIC_URL ?? '').replace(/\/$/, '');

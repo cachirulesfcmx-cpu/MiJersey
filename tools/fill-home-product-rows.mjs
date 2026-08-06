@@ -39,7 +39,13 @@ const EXCLUDE_SLUG_PATTERNS = [/secret-jersey/, /^custom-/, /borradorretro/, /^p
 // siguen ningún patrón de slug consistente.
 const EXCLUDE_NAME_PATTERNS = [/\(demo\)/i, /producto de prueba/i];
 const MIN_BESTSELLERS_TO_CLAIM = 4;
-const ROW_SIZE = 10;
+// bartjerseys.com no muestra sus secciones de home como una sola tira de ~10 productos --
+// muestra cuadrículas densas de varias filas (confirmado en su captura completa de home, donde
+// "Los favoritos de nuestros clientes" sigue mostrando productos varias pantallas después de
+// donde empieza). Subido de 10 a 20 para que la cuadrícula de HomeSectionRenderer (ahora de
+// 4-5 columnas, no un slider) se vea igual de llena, siempre limitado a productos reales
+// disponibles -- si hay menos de 20 elegibles simplemente se muestran los que haya.
+const ROW_SIZE = 20;
 
 function isExcludedProduct(product) {
   return (
