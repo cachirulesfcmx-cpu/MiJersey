@@ -54,6 +54,13 @@ const s3 = new S3Client({
 });
 
 const sharp = requireFromApi('sharp');
+// CRITICAL: sharp/libvips cachea internamente operaciones repetidas (por defecto hasta 100
+// operaciones/50MB/20 archivos). Al procesar ~2000 SVGs de fondo con la MISMA estructura y solo
+// el color distinto, esa cache puede devolver el resultado de un color YA renderizado en vez de
+// re-renderizar el nuevo -- confirmado: pruebas chicas (3-8 imagenes) siempre daban el color
+// correcto, pero la corrida completa (1938 imagenes) termino con TODAS en azul. Desactivar la
+// cache fuerza a renderizar cada SVG desde cero.
+sharp.cache(false);
 const PrismaClient = requireFromApi('@prisma/client').PrismaClient;
 const prisma = new PrismaClient();
 
